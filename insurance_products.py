@@ -2014,6 +2014,142 @@ PRODUCTS = [
             },
         ],
     },
+    # ================================================================
+    {
+        "id": "trach_nhiem_cong_cong",
+        "name": "Bảo hiểm Trách nhiệm Công cộng",
+        "price": "Theo biểu phí PJICO",
+        "url": "https://www.pjico.com.vn",
+        "description": (
+            "Bảo hiểm trách nhiệm công cộng PJICO (QĐ 52/2015) - bồi thường trách nhiệm pháp lý của người được bảo hiểm về thương tật bất ngờ, bệnh tật về người và tổn thất về tài sản phát sinh từ hoạt động kinh doanh."
+        ),
+        "coverage": [
+            "Trách nhiệm pháp lý bồi thường thương tật bất ngờ hoặc bệnh tật về người",
+            "Trách nhiệm pháp lý bồi thường tổn thất bất ngờ về tài sản",
+            "Chi phí kiện tụng đã được PJICO đồng ý bằng văn bản",
+        ],
+        "exclusions": [
+            "Cố ý gây thiệt hại của người được bảo hiểm",
+            "Thỏa thuận riêng (trách nhiệm không mặc nhiên phải chịu)",
+            "Thương tật/ốm đau của người làm thuê theo hợp đồng dịch vụ/hợp đồng học nghề",
+            "Tài sản thuộc sở hữu/quản lý/kiểm soát của người được bảo hiểm",
+            "Thang máy, thang nâng, băng chuyền, cần câu (tré khi liệt kê trong GCNBH)",
+            "Phương tiện cơ giới có giấy phép lưu hành công lộ",
+            "Thuyền bè không liệt kê trong GCNBH",
+            "Tư vấn chuyên môn hoặc điều trị (trừ cấp cứu)",
+            "Hàng hóa đã bán/cung cụp/sửa/chô thuê không còn thuộc quyền sở hữu",
+            "Chiến tranh, xâm lược, nội chiến, khủng bố",
+            "Ô nhiễm/nhiễm bẩn",
+            "Bức xạ ion hóa, nhiễm phóng xạ hạt nhân",
+            "Nhiễm độc amiăng",
+        ],
+        "claim_questions": [
+            {
+                "id": "incident_type",
+                "question": "Sự cố gây ra khiếu nại thuộc loại nào?",
+                "options": ["Thương tật bất ngờ về người", "Bệnh tật về người", "Tổn thất về tài sản", "Khác"],
+                "required": True,
+            },
+            {
+                "id": "incident_within_coverage",
+                "question": "Sự cố có phát sinh từ hoạt động kinh doanh đã ghi trong GCNBH/HĐBH không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "within_policy_period",
+                "question": "Sự cố xảy ra có nằm trong thời hạn bảo hiểm còn hiệu lực không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "within_geography",
+                "question": "Sự cố xảy ra có nằm trong phạm vi địa lý quy định trong GCNBH/HĐBH không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "premium_paid",
+                "question": "Người được bảo hiểm đã thanh toán phí bảo hiểm đúng thời hạn ghi trong GCNBH/HĐBH không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "intentional_act",
+                "question": "Sự cố có phải do hành động cố ý gây thiệt hại của người được bảo hiểm không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "own_property",
+                "question": "Tài sản bị tổn thất có thuộc sở hữu, quyền quản lý hoặc kiểm soát của người được bảo hiểm không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "elevator_vehicle",
+                "question": "Sự cố có liên quan đến thang máy, thang nâng, băng chuyền, cần câu, phương tiện cơ giới có giấy phép lưu hành, hoặc thuyền bè (trê5 khi được liệt kê trong GCNBH) không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "employee_injury",
+                "question": "Thương tật/ốm đau có phát sinh trong quá trình người làm thuê theo hợp đồng dịch vụ/hợp đồng học nghề không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "pollution",
+                "question": "Sự cố có liên quan đến ô nhiễm hay nhiễm bẩn không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "war_terrorism",
+                "question": "Sự cố có do chiến tranh, xâm lược, nội chiến, khủng bố gây ra không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "nuclear_asbestos",
+                "question": "Sự cố có liên quan đến bức xạ ion hóa, nhiễm phóng xạ hạt nhân, hoặc nhiễm độc amiăng không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "notification_timely",
+                "question": "Người được bảo hiểm đã thông báo bằng văn bản cho PJICO về sự cố càng sớm càng tốt không?",
+                "options": ["Có", "Không", "Chưa thông báo"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "no_unauthorized_settlement",
+                "question": "Người được bảo hiểm có từ chối trách nhiệm, thương lượng, hoặc thanh toán bất kỳ khoản nào mà không có đồng ý bằng văn bản của PJICO không?",
+                "options": ["Có, đã làm không có đồng ý", "Không, chưa làm", "Không rõ"],
+                "required": True,
+                "fail_if": "Có, đã làm không có đồng ý",
+            },
+            {
+                "id": "has_documents",
+                "question": "Anh/chị có đầy đủ giấy tờ, chứng từ hợp lệ (ơn khiếu nại, giấy triệu tập tòa àn, chứng từ liên quan đến sự cố...) không?",
+                "options": ["Có", "Không", "Đang chuẩn bị"],
+                "required": True,
+                "fail_if": "Không",
+            },
+        ],
+    },
 ]
 
 
@@ -2048,6 +2184,7 @@ def get_product_by_keyword(text: str):
         "du_lich_quoc_te": ["du lịch quốc tế", "du lich quoc te", "bảo hiểm du lịch quốc tế", "bao hiem du lich quoc te", "quốc tế", "quoc te", "nước ngoài", "nuoc ngoai"],
         "cham_soc_suc_khoe_y_te": ["chăm sóc sức khỏe", "cham soc suc khoe", "hỗ trợ y tế", "ho tro y te", "sức khỏe", "suc khoe", "y tế", "y te", "tai nạn 383", "bao hiem tai nan 383"],
         "care_plus": ["care plus", "careplus", "chăm sóc sức khỏe quốc tế", "cham soc suc khoe quoc te", "sức khỏe quốc tế", "suc khoe quoc te", "y tế quốc tế", "y te quoc te"],
+        "trach_nhiem_cong_cong": ["trách nhiệm công cộng", "trach nhiem cong cong", "công cộng", "cong cong", "public liability", "trách nhiệm pháp lý"],
     }
     best_match = None
     best_score = 0

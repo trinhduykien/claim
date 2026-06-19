@@ -120,6 +120,7 @@ PRODUCT_KEYWORDS = {
     "du_lich_quoc_te": ["du lich quoc te", "bao hiem du lich quoc te", "travel international", "quoc te", "nuoc ngoai"],
     "cham_soc_suc_khoe_y_te": ["cham soc suc khoe", "ho tro y te", "suc khoe", "y te", "chăm sóc sức khỏe", "hỗ trợ y tế", "tai nan 383", "bao hiem tai nan"],
     "care_plus": ["care plus", "careplus", "chăm sóc sức khỏe quốc tế", "cham soc suc khoe quoc te", "suc khoe quoc te", "y te quoc te"],
+    "trach_nhiem_cong_cong": ["trach nhiem cong cong", "trách nhiệm công cộng", "cong cong", "công cộng", "public liability"],
 }
 
 def detect_product_smart(text):
@@ -167,6 +168,7 @@ AGE_RANGES = {
     "du_lich_quoc_te": None,
     "cham_soc_suc_khoe_y_te": None,
     "care_plus": None,
+    "trach_nhiem_cong_cong": None,
 }
 
 def check_age(answers, product_id):
