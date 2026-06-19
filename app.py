@@ -482,23 +482,27 @@ if user_input:
         elif not st.session_state.customer_name and not st.session_state.asked_name:
             # Kiểm tra AIML cho câu chào
             aiml_resp = aiml_respond(user_input)
+            st.session_state.asked_name = True
             if aiml_resp and not aiml_resp.startswith("__"):
                 # AIML trả về câu chào → nhắc nhập tên
                 add_message("assistant", f"{aiml_resp}\n\nVui lòng nhập **tên** của anh/chị nhé! 😊")
             else:
-                st.session_state.asked_name = True
                 add_message("assistant", (
                     "Cảm ơn anh/chị đã liên hệ! 😊\n\n"
                     "Vui lòng cho biết **tên** của anh/chị nhé.\n\n"
                     "**Ví dụ:** 'Cường, tôi muốn yêu cầu bồi thường bảo hiểm nhà ở combo 360'"
                 ))
+            st.rerun()
         elif not st.session_state.customer_name and st.session_state.asked_name:
             name = extract_name(user_input)
             if not name:
                 words = user_input.strip().split()
                 text_norm = normalize_text(user_input)
                 has_incident = any(normalize_text(k) in text_norm for k in INCIDENT_KEYWORDS)
-                if not has_incident and len(words) <= 4:
+                # Kiểm tra AIML — nếu là câu chào thì không dùng làm tên
+                aiml_resp = aiml_respond(user_input)
+                is_greeting = aiml_resp and not aiml_resp.startswith("__")
+                if not has_incident and len(words) <= 4 and not is_greeting:
                     name = user_input.strip()
             if name:
                 st.session_state.customer_name = name
@@ -519,6 +523,7 @@ if user_input:
                 st.session_state.customer_name = "Khách hàng"
                 st.session_state.waiting_for_text = True
                 add_message("assistant", "Không sao! 😊 Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới.")
+            st.rerun()
         else:
             st.session_state.waiting_for_text = True
 
