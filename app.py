@@ -118,6 +118,7 @@ PRODUCT_KEYWORDS = {
     "hoc_sinh_sinh_vien": ["hoc sinh", "sinh vien", "học sinh", "sinh viên", "bao hiem hoc sinh", "bao hiem sinh vien", "24/24 hoc sinh", "tai nan hoc sinh"],
     "du_lich_trong_nuoc": ["du lich", "du lich trong nuoc", "bao hiem du lich", "travel", "nghỉ mat", "tham quan"],
     "du_lich_quoc_te": ["du lich quoc te", "bao hiem du lich quoc te", "travel international", "quoc te", "nuoc ngoai"],
+    "cham_soc_suc_khoe_y_te": ["cham soc suc khoe", "ho tro y te", "suc khoe", "y te", "chăm sóc sức khỏe", "hỗ trợ y tế", "tai nan 383", "bao hiem tai nan"],
 }
 
 def detect_product_smart(text):
@@ -163,6 +164,7 @@ AGE_RANGES = {
     "hoc_sinh_sinh_vien": None,
     "du_lich_trong_nuoc": None,
     "du_lich_quoc_te": None,
+    "cham_soc_suc_khoe_y_te": None,
 }
 
 def check_age(answers, product_id):

@@ -1716,6 +1716,165 @@ PRODUCTS = [
             },
         ],
     },
+    # ================================================================
+    {
+        "id": "cham_soc_suc_khoe_y_te",
+        "name": "Bảo hiểm Chăm sóc Sức khỏe và Hỗ trợ Y tế",
+        "price": "Theo biểu phí PJICO",
+        "url": "https://www.pjico.com.vn",
+        "description": (
+            "Bảo hiểm tai nạn - chăm sóc sức khỏe và hỗ trợ y tế PJICO (QĐ 383/2025). "
+            "Bảo hiểm tử vong/thương tật vĩnh viãn do tai nạn, trợ cấp nghỉ điều trị, chi phí y tế. "
+            "Áp dụng từ 15 ngày tuổi đến 65 tuổi."
+        ),
+        "coverage": [
+            "Tử vong/thương tật vĩnh viãn do tai nạn (trong vòng 104 tuần kể từ ngày tai nạn)",
+            "Trợ cấp ngày nghỉ điều trị thương tật tạm thời",
+            "Chi phí y tế thực tế phát sinh do tai nạn (khám, điều trị, phẫu thuật, thuốc, vận chuyển cấp cứu)",
+        ],
+        "exclusions": [
+            "Cố ý gây thiệt hại của người được bảo hiểm hoặc người thừa kế",
+            "Cố ý vi phạm pháp luật, nội quy, quy định chính quyền",
+            "Thai sản, sinh đẻ, ốm đau, bệnh tật, bệnh nghề nghiệp",
+            "Thể thao chuyên nghiệp, thể thao nguy hiểm, lực lượng vũ trang",
+            "Điều khiển/thi hành công vụ trên máy bay (trừ hành khách có vé)",
+            "Chiến tranh, nội chiến, đình công, khủng bố",
+            "Rượu, bia, chất kích thích, ma túy, thuốc không bác sĩ kê",
+            "Nồng độ còn vượt mức khi điều khiển phương tiện",
+            "Hạt nhân, chất phóng xạ",
+            "Ẩu đả cố ý (trừ cứu người/bảo vệ tài sản/tự vệ)",
+            "Ăn/uống/hít hơi độc, khí độc, chất độc",
+            "Chi phí điều trị từ trước ngày hiệu lực hợp đồng",
+            "Thẩm mỹ, giải phẫu thẩm mỹ, tạo hình",
+            "Điều trị tại nhà, viện điều dưỡng, spa",
+            "Điều trị theo yêu cầu không liên quan điều trị bình thường",
+            "Bệnh nghề nghiệp (nếu không mua điều khoản mở rộng)",
+            "Thiết bị chỉnh hình, trợ thính/trị lực, nạng, xe lăn",
+            "Bộ phận giả (trừ cấy ghép duy trí sự sống)",
+            "Thực phẩm chức năng, mỹ phẩm",
+            "Điều trị thử nghiệm, không khoa học công nhận",
+        ],
+        "claim_questions": [
+            {
+                "id": "incident_type",
+                "question": "Sự cố tai nạn xảy ra dẫn đến tổn thương thân thể thuộc loại nào?",
+                "options": ["Tử vong do tai nạn", "Thương tật vĩnh viãn do tai nạn", "Thương tật tạm thời (nghỉ điều trị)", "Chi phí y tế do tai nạn", "Khác"],
+                "required": True,
+            },
+            {
+                "id": "incident_within_coverage",
+                "question": "Sự cố có thuộc phạm vi bảo hiểm đã ghi trong hợp đồng không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "within_policy_period",
+                "question": "Sự cố tai nạn xảy ra có nằm trong thời hạn bảo hiểm còn hiệu lực không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "within_104_weeks",
+                "question": "Tử vong/thương tật có xảy ra trong vòng 104 tuần kể từ ngày tai nạn không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "intentional_act",
+                "question": "Sự cố có phải do hành động cố ý gây thiệt hại của người được bảo hiểm hoặc người thừa kế không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "law_violation",
+                "question": "Người được bảo hiểm có cố ý vi phạm pháp luật, nội quy, quy định chính quyền tại thời điểm xảy ra sự cố không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "alcohol_drugs",
+                "question": "Người được bảo hiểm có bị tác động bởi rượu, bia, ma túy, chất kích thích, thuốc không bác sĩ kê là nguyên nhân gây tai nạn không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "alcohol_driving",
+                "question": "Người được bảo hiểm có điều khiển phương tiện giao thông với nồng độ còn vượt mức quy định của pháp luật không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "fighting",
+                "question": "Sự cố có do ẩu đả cố ý của người được bảo hiểm (trừ trường hợp cứu người, bảo vệ tài sản, tự vệ) không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "dangerous_sports",
+                "question": "Sự cố có xảy ra khi tham gia thể thao chuyên nghiệp, thể thao nguy hiểm, hoặc hoạt động của lực lượng vũ trang không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "poisoning",
+                "question": "Sự cố có do ăn/uống/hít phải hơi độc, khí độc, chất độc gây ra không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "war_terrorism",
+                "question": "Sự cố có do chiến tranh, nội chiến, đình công, khủng bố gây ra không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "nuclear_radiation",
+                "question": "Sự cố có do tác nhân hạt nhân hoặc nhiễm chất phóng xạ gây ra không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "pregnancy",
+                "question": "Sự cố có liên quan đến thai sản, sinh đẻ, ốm đau, bệnh tật (không phải do tai nạn) không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "cosmetic_treatment",
+                "question": "Chi phí y tế có liên quan đến thẩm mỹ, giải phẫu thẩm mỹ, tạo hình hoặc điều trị theo yêu cầu không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "notification_timely",
+                "question": "Anh/chị đã gửi hồ sơ yêu cầu bồi thường cho PJICO trong vòng 180 ngày kể từ ngày chấm dứt điều trị, ra viện hoặc tử vong không?",
+                "options": ["Có", "Không", "Chưa gửi"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "has_documents",
+                "question": "Anh/chị có đầy đủ giấy tờ, chứng từ hợp lệ (giấy yêu cầu bồi thường, giấy chứng thương/chứng tử, chứng từ y tế bản chính, toa thuốc, hóa đơn, biên bản tai nạn, giấy phép lái xe...) không?",
+                "options": ["Có", "Không", "Đang chuẩn bị"],
+                "required": True,
+                "fail_if": "Không",
+            },
+        ],
+    },
 ]
 
 
@@ -1748,6 +1907,7 @@ def get_product_by_keyword(text: str):
         "hoc_sinh_sinh_vien": ["học sinh", "hoc sinh", "sinh vien", "bảo hiểm học sinh", "bao hiem hoc sinh", "bảo hiểm sinh viên", "bao hiem sinh vien", "tai nạn học sinh", "tai nan hoc sinh", "24/24 học sinh"],
         "du_lich_trong_nuoc": ["du lịch trong nước", "du lich trong nuoc", "bảo hiểm du lịch", "bao hiem du lich", "du lịch", "du lich", "tham quan", "nghỉ mát", "nghi mat"],
         "du_lich_quoc_te": ["du lịch quốc tế", "du lich quoc te", "bảo hiểm du lịch quốc tế", "bao hiem du lich quoc te", "quốc tế", "quoc te", "nước ngoài", "nuoc ngoai"],
+        "cham_soc_suc_khoe_y_te": ["chăm sóc sức khỏe", "cham soc suc khoe", "hỗ trợ y tế", "ho tro y te", "sức khỏe", "suc khoe", "y tế", "y te", "tai nạn 383", "bao hiem tai nan 383"],
     }
     best_match = None
     best_score = 0
