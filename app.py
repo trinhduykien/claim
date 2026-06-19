@@ -480,12 +480,18 @@ if user_input:
                 f"Để đánh giá điều kiện tiếp nhận bồi thường, tôi sẽ hỏi một số câu hỏi. Vui lòng trả lời từng câu nhé!\n\n---\n"
             ))
         elif not st.session_state.customer_name and not st.session_state.asked_name:
-            st.session_state.asked_name = True
-            add_message("assistant", (
-                "Cảm ơn anh/chị đã liên hệ! 😊\n\n"
-                "Vui lòng cho biết **tên** và **loại bảo hiểm** anh/chị muốn yêu cầu bồi thường nhé.\n\n"
-                "**Ví dụ:** 'Cường, tôi muốn yêu cầu bồi thường bảo hiểm nhà ở combo 360'"
-            ))
+            # Kiểm tra AIML cho câu chào
+            aiml_resp = aiml_respond(user_input)
+            if aiml_resp and not aiml_resp.startswith("__"):
+                # AIML trả về câu chào → nhắc nhập tên
+                add_message("assistant", f"{aiml_resp}\n\nVui lòng nhập **tên** của anh/chị nhé! 😊")
+            else:
+                st.session_state.asked_name = True
+                add_message("assistant", (
+                    "Cảm ơn anh/chị đã liên hệ! 😊\n\n"
+                    "Vui lòng cho biết **tên** của anh/chị nhé.\n\n"
+                    "**Ví dụ:** 'Cường, tôi muốn yêu cầu bồi thường bảo hiểm nhà ở combo 360'"
+                ))
         elif not st.session_state.customer_name and st.session_state.asked_name:
             name = extract_name(user_input)
             if not name:
@@ -507,8 +513,12 @@ if user_input:
                     ))
                 else:
                     st.session_state.waiting_for_text = True
+                    add_message("assistant", f"Cảm ơn {name}! 😊 Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới.")
             else:
+                # Fallback: dùng "Khách hàng" và hiện selectbox
+                st.session_state.customer_name = "Khách hàng"
                 st.session_state.waiting_for_text = True
+                add_message("assistant", "Không sao! 😊 Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới.")
         else:
             st.session_state.waiting_for_text = True
 
