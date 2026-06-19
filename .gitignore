@@ -4,4 +4,3 @@ _add_*.py
 _fix_*.py
 _del_*.py
 claim_logs/
-.streamlit/
