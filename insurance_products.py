@@ -1875,6 +1875,145 @@ PRODUCTS = [
             },
         ],
     },
+    # ================================================================
+    {
+        "id": "care_plus",
+        "name": "Bảo hiểm Chăm sóc Sức khỏe Quốc tế (Care Plus)",
+        "price": "Theo biểu phí PJICO",
+        "url": "https://www.pjico.com.vn/san-pham/bao-hiem-cham-soc-suc-khoe-quoc-te-care-plus-2",
+        "description": (
+            "Bảo hiểm chăm sóc sức khỏe quốc tế Care Plus PJICO - quyền lợ tối đa lên 42 tỷ đồng/năm. "
+            "Bảo lãnh viện phí toàn thế giới, bảo hiểm bệnh bẩm sinh, bệnh có sẵn, thai sản, HIV/AIDS, nha khoa, nhãn khoa. "
+            "Áp dụng từ 15 ngày tuổi đến 80 tuổi."
+        ),
+        "coverage": [
+            "Chi phí điều trị nội trú/ngoại trú, phẫu thuật, viện phí tại bệnh viện quốc tế",
+            "Quyền lợ tối đa lên 42 tỷ đồng/năm, không giới hạn phụ",
+            "Bảo hiểm bệnh bẩm sinh và bệnh có sẵn",
+            "Bảo hiểm thai sản và chăm sóc trẻ mới sinh",
+            "Bảo hiểm HIV/AIDS",
+            "Chăm sóc nha khoa, nhãn khoa, kiểm tra sức khỏe, tiêm phòng",
+            "Dịch vụ vận chuyển y tế cấp cứu quốc tế và hồi dương 24/7",
+        ],
+        "exclusions": [
+            "Tình trạng có sẵn không được thông báo cho PJICO (trừ khi được chấp thuận)",
+            "Thẩm mỹ, giải phẫu thẩm mỹ",
+            "Rượu, bia, ma túy, chất kích thích",
+            "Cố ý gây thương tích, tự tử",
+            "Thể thao chuyên nghiệp, thể thao nguy hiểm",
+            "Chiến tranh, khủng bố",
+            "Hạt nhân, phóng xạ, hóa học, sinh học",
+            "Điều trị thử nghiệm, chưa kiểm định",
+            "Béo phì, giảm cân",
+            "Rối loạn học tập, hành vi, tự ký, ADHD",
+        ],
+        "claim_questions": [
+            {
+                "id": "incident_type",
+                "question": "Sự cố y tế phát sinh thuộc loại nào?",
+                "options": ["Điều trị nội trú/điều trị trong ngày", "Điều trị ngoại trú", "Phẫu thuật", "Thai sản", "Nha khoa/nhãn khoa", "Vận chuyển cấp cứu quốc tế", "Khác"],
+                "required": True,
+            },
+            {
+                "id": "incident_within_coverage",
+                "question": "Sự cố có thuộc phạm vi bảo hiểm đã ghi trong hợp đồng/GCNbh không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "within_policy_period",
+                "question": "Sự cố xảy ra có nằm trong thời hạn bảo hiểm còn hiệu lực (năm bảo hiểm) không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "premium_paid",
+                "question": "Phí bảo hiểm đã được thanh toán đầy đủ cho năm bảo hiểm hiện tại không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "pre_existing_declared",
+                "question": "Tình trạng y tế cần điều trị có phải là tình trạng có sẵn và đã được thông báo cho PJICO trước ngày hiệu lực (hoặc được PJICO chấp thuận) không?",
+                "options": ["Có, đã thông báo và được chấp thuận", "Có, chưa thông báo", "Không phải tình trạng có sẵn", "Không rõ"],
+                "required": True,
+                "fail_if": "Có, chưa thông báo",
+            },
+            {
+                "id": "intentional_act",
+                "question": "Sự cố có phải do cố ý gây thương tích hoặc tự tử của người được bảo hiểm không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "alcohol_drugs",
+                "question": "Sự cố có liên quan đến lạm dụng rượu, bia, ma túy, chất kích thích không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "dangerous_sports",
+                "question": "Sự cố có xảy ra khi tham gia thể thao chuyên nghiệp hoặc thể thao nguy hiểm (leo núi, lặn biển, nhảy dù...) không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "cosmetic_treatment",
+                "question": "Chi phí điều trị có liên quan đến thẩm mỹ, giải phẫu thẩm mỹ không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "war_terrorism",
+                "question": "Sự cố có do chiến tranh, khủng bố, xâm lược, nội chiến gây ra không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "nuclear_chemical",
+                "question": "Sự cố có liên quan đến ô nhiễm hạt nhân, hóa học, sinh học không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "experimental_treatment",
+                "question": "Điều trị có phải là điều trị thử nghiệm hoặc chưa được kiểm định khoa học không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Có",
+            },
+            {
+                "id": "within_geography",
+                "question": "Sự cố xảy ra có nằm trong phạm vi địa lý được bảo hiểm ghi trong hợp đồng không?",
+                "options": ["Có", "Không", "Không rõ"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "pre_approval",
+                "question": "Điều trị nội trú/điều trị trong ngày có được sự chấp thuận trướcc của PJICO không (trừ trường hợp cấp cứu)?",
+                "options": ["Có", "Không", "Cấp cứu - không cần chấp thuận trướcc"],
+                "required": True,
+                "fail_if": "Không",
+            },
+            {
+                "id": "has_documents",
+                "question": "Anh/chị có đầy đủ giấy tờ, chứng từ hợp lệ (giấy yêu cầu chi trả, GCNBH, hồ sơ bệnh án, hóa đơn, toa thuốc, chứng từ y tế...) không?",
+                "options": ["Có", "Không", "Đang chuẩn bị"],
+                "required": True,
+                "fail_if": "Không",
+            },
+        ],
+    },
 ]
 
 
@@ -1908,6 +2047,7 @@ def get_product_by_keyword(text: str):
         "du_lich_trong_nuoc": ["du lịch trong nước", "du lich trong nuoc", "bảo hiểm du lịch", "bao hiem du lich", "du lịch", "du lich", "tham quan", "nghỉ mát", "nghi mat"],
         "du_lich_quoc_te": ["du lịch quốc tế", "du lich quoc te", "bảo hiểm du lịch quốc tế", "bao hiem du lich quoc te", "quốc tế", "quoc te", "nước ngoài", "nuoc ngoai"],
         "cham_soc_suc_khoe_y_te": ["chăm sóc sức khỏe", "cham soc suc khoe", "hỗ trợ y tế", "ho tro y te", "sức khỏe", "suc khoe", "y tế", "y te", "tai nạn 383", "bao hiem tai nan 383"],
+        "care_plus": ["care plus", "careplus", "chăm sóc sức khỏe quốc tế", "cham soc suc khoe quoc te", "sức khỏe quốc tế", "suc khoe quoc te", "y tế quốc tế", "y te quoc te"],
     }
     best_match = None
     best_score = 0
