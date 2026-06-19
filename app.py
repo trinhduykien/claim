@@ -12,6 +12,12 @@ from collections import OrderedDict
 
 import streamlit as st
 
+try:
+    import aiml
+    AIML_AVAILABLE = True
+except ImportError:
+    AIML_AVAILABLE = False
+
 from insurance_products import PRODUCTS, get_product_by_id, get_product_by_keyword
 
 st.set_page_config(
@@ -150,6 +156,40 @@ def init_state():
         st.session_state.log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "claim_logs")
 
 init_state()
+
+# --- AIML Kernel ---
+_aiml_kernel = None
+
+def get_aiml_kernel():
+    global _aiml_kernel
+    if _aiml_kernel is not None:
+        return _aiml_kernel
+    if not AIML_AVAILABLE:
+        return None
+    kernel = aiml.Kernel()
+    kernel.setTextEncoding(None)
+    aiml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bot_aiml.xml")
+    if os.path.exists(aiml_path):
+        kernel.learn(aiml_path)
+        _aiml_kernel = kernel
+    return _aiml_kernel
+
+def normalize_text(text):
+    """Bỏ dấu tiếng Việt để match AIML pattern."""
+    if not text:
+        return ""
+    text = unicodedata.normalize('NFD', text)
+    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+    return text.upper().strip()
+
+def aiml_respond(user_input):
+    """Gửi input qua AIML kernel, trả về response."""
+    kernel = get_aiml_kernel()
+    if kernel is None:
+        return None
+    normalized = normalize_text(user_input)
+    response = kernel.respond(normalized)
+    return response if response else None
 
 def add_message(role, content):
     st.session_state.messages.append({"role": role, "content": content, "time": datetime.now().isoformat()})
@@ -481,8 +521,41 @@ if user_input:
         questions = product["claim_questions"]
         q = questions[st.session_state.q_index]
         raw_answer = user_input.strip()
-        # Chỉ xử lý qua chat_input cho câu hỏi KHÔNG có options (type=text)
-        if "options" not in q:
+
+        # Dùng AIML để match câu trả lời tự nhiên
+        aiml_response = aiml_respond(raw_answer)
+        matched_answer = None
+
+        if aiml_response:
+            if aiml_response.startswith("__ANSWER__:"):
+                matched_answer = aiml_response.replace("__ANSWER__:", "", 1).strip()
+            elif aiml_response == "__RESTART__":
+                st.session_state.current_product = None
+                st.session_state.q_index = 0
+                st.session_state.answers = OrderedDict()
+                st.session_state.finished = False
+                st.session_state.result = None
+                st.session_state.waiting_for_text = True
+                add_message("assistant", "🔄 Đã bắt đầu lại. Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới.")
+                st.rerun()
+
+        # Nếu câu có options, thử match với AIML trước, rồi fallback
+        if "options" in q:
+            if matched_answer and matched_answer in q["options"]:
+                st.session_state.answers[q["id"]] = matched_answer
+                add_message("user", raw_answer)
+                st.session_state.q_index += 1
+                if st.session_state.q_index >= len(questions):
+                    result = evaluate_claim(dict(st.session_state.answers), product)
+                    st.session_state.result = result
+                    st.session_state.finished = True
+                st.rerun()
+            else:
+                # AIML không match được, nhắc user chọn từ radio
+                add_message("assistant", "⚠️ Vui lòng chọn đáp án từ danh sách bên dưới rồi bấm **Xác nhận** nhé.")
+                st.rerun()
+        else:
+            # Câu hỏi type=text (như hỏi tuổi) — dùng raw_answer
             st.session_state.answers[q["id"]] = raw_answer
             add_message("user", raw_answer)
             st.session_state.q_index += 1
@@ -490,5 +563,4 @@ if user_input:
                 result = evaluate_claim(dict(st.session_state.answers), product)
                 st.session_state.result = result
                 st.session_state.finished = True
-
-    st.rerun()
+            st.rerun()

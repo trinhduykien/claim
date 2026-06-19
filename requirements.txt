@@ -1,1 +1,2 @@
 streamlit>=1.30
+python-aiml>=0.9.3

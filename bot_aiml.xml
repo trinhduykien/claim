@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="1.0">
+
+<!-- ============ KHỞI TẠO & CHÀO HỎI ============ -->
+
+<category>
+    <pattern>XIN CHAO</pattern>
+    <template>
+        Xin chào! 👋 Tôi là trợ lý đánh giá tiếp nhận bồi thường PJICO.
+        Vui lòng nhập <b>tên</b> của anh/chị.
+    </template>
+</category>
+
+<category>
+    <pattern>CHAO</pattern>
+    <template>
+        Xin chào! 👋 Tôi là trợ lý đánh giá tiếp nhận bồi thường PJICO.
+        Vui lòng nhập <b>tên</b> của anh/chị.
+    </template>
+</category>
+
+<category>
+    <pattern>HELLO</pattern>
+    <template>
+        Xin chào! 👋 Tôi là trợ lý đánh giá tiếp nhận bồi thường PJICO.
+        Vui lòng nhập <b>tên</b> của anh/chị.
+    </template>
+</category>
+
+<category>
+    <pattern>HI</pattern>
+    <template>
+        Xin chào! 👋 Tôi là trợ lý đánh giá tiếp nhận bồi thường PJICO.
+        Vui lòng nhập <b>tên</b> của anh/chị.
+    </template>
+</category>
+
+<!-- ============ CẢM ƠN ============ -->
+
+<category>
+    <pattern>CAM ON</pattern>
+    <template>Cảm ơn anh/chị đã sử dụng dịch vụ của PJICO! 😊</template>
+</category>
+
+<category>
+    <pattern>THANK YOU</pattern>
+    <template>Cảm ơn anh/chị đã sử dụng dịch vụ của PJICO! 😊</template>
+</category>
+
+<category>
+    <pattern>CAM ON NHIEU</pattern>
+    <template>Rất vui được hỗ trợ anh/chị! 😊</template>
+</category>
+
+<!-- ============ HỎI TÊN ============ -->
+
+<category>
+    <pattern>TOI TEN LA *</pattern>
+    <template>
+        <think><set name="customername"><star/></set></think>
+        Chào <get name="customername"/>! 😊 Rất vui được gặp anh/chị.
+        Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới rồi bấm <b>Xác nhận</b>.
+    </template>
+</category>
+
+<category>
+    <pattern>TEN TOI LA *</pattern>
+    <template>
+        <think><set name="customername"><star/></set></think>
+        Chào <get name="customername"/>! 😊 Rất vui được gặp anh/chị.
+        Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới rồi bấm <b>Xác nhận</b>.
+    </template>
+</category>
+
+<category>
+    <pattern>TOI LA *</pattern>
+    <template>
+        <think><set name="customername"><star/></set></think>
+        Chào <get name="customername"/>! 😊 Rất vui được gặp anh/chị.
+        Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới rồi bấm <b>Xác nhận</b>.
+    </template>
+</category>
+
+<!-- ============ SẢN PHẨM ============ -->
+
+<category>
+    <pattern>TOI MUON YEU CAU BOI THUONG *</pattern>
+    <template>
+        Đã ghi nhận yêu cầu. Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới rồi bấm <b>Xác nhận</b>.
+    </template>
+</category>
+
+<category>
+    <pattern>TOI MUON BOI THUONG *</pattern>
+    <template>
+        Đã ghi nhận yêu cầu. Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới rồi bấm <b>Xác nhận</b>.
+    </template>
+</category>
+
+<!-- ============ TRẢ LỜI CÂU HỎI ============ -->
+
+<!-- Có -->
+<category>
+    <pattern>CO</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<category>
+    <pattern>DA</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<category>
+    <pattern>UNG</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<category>
+    <pattern>YEAH</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<category>
+    <pattern>YES</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<!-- Không -->
+<category>
+    <pattern>KHONG</pattern>
+    <template>__ANSWER__:Không</template>
+</category>
+
+<category>
+    <pattern>KO</pattern>
+    <template>__ANSWER__:Không</template>
+</category>
+
+<category>
+    <pattern>NO</pattern>
+    <template>__ANSWER__:Không</template>
+</category>
+
+<category>
+    <pattern>NOPE</pattern>
+    <template>__ANSWER__:Không</template>
+</category>
+
+<!-- Không rõ -->
+<category>
+    <pattern>KHONG RO</pattern>
+    <template>__ANSWER__:Không rõ</template>
+</category>
+
+<category>
+    <pattern>KHONG BIET</pattern>
+    <template>__ANSWER__:Không rõ</template>
+</category>
+
+<category>
+    <pattern>KHONG CHAC</pattern>
+    <template>__ANSWER__:Không rõ</template>
+</category>
+
+<!-- Chưa thông báo -->
+<category>
+    <pattern>CHUA THONG BAO</pattern>
+    <template>__ANSWER__:Chưa thông báo</template>
+</category>
+
+<category>
+    <pattern>CHUA</pattern>
+    <template>__ANSWER__:Chưa thông báo</template>
+</category>
+
+<!-- Đang chuẩn bị -->
+<category>
+    <pattern>DANG CHUAN BI</pattern>
+    <template>__ANSWER__:Đang chuẩn bị</template>
+</category>
+
+<category>
+    <pattern>DANG XU LY</pattern>
+    <template>__ANSWER__:Đang chuẩn bị</template>
+</category>
+
+<!-- Việt Nam -->
+<category>
+    <pattern>VIET NAM</pattern>
+    <template>__ANSWER__:Việt Nam</template>
+</category>
+
+<category>
+    <pattern>NGUOI VIET NAM</pattern>
+    <template>__ANSWER__:Việt Nam</template>
+</category>
+
+<category>
+    <pattern>VIỆT NAM</pattern>
+    <template>__ANSWER__:Việt Nam</template>
+</category>
+
+<!-- Người nước ngoài -->
+<category>
+    <pattern>NGUOI NUOC NGOAI</pattern>
+    <template>__ANSWER__:Người nước ngoài định cư tại VN</template>
+</category>
+
+<category>
+    <pattern>NUOC NGOAI</pattern>
+    <template>__ANSWER__:Người nước ngoài định cư tại VN</template>
+</category>
+
+<!-- Khác -->
+<category>
+    <pattern>KHAC</pattern>
+    <template>__ANSWER__:Khác</template>
+</category>
+
+<!-- Đang chuẩn bị (gọn) -->
+<category>
+    <pattern>DANG</pattern>
+    <template>__ANSWER__:Đang chuẩn bị</template>
+</category>
+
+<!-- Chưa gửi -->
+<category>
+    <pattern>CHUA GUI</pattern>
+    <template>__ANSWER__:Chưa gửi</template>
+</category>
+
+<!-- Cấp cứu -->
+<category>
+    <pattern>CAP CUU</pattern>
+    <template>__ANSWER__:Cấp cứu - không cần chấp thuận trước</template>
+</category>
+
+<!-- ============ BẮT ĐẦU LẠI ============ -->
+
+<category>
+    <pattern>BAT DAU LAI</pattern>
+    <template>__RESTART__</template>
+</category>
+
+<category>
+    <pattern>RESET</pattern>
+    <template>__RESTART__</template>
+</category>
+
+<category>
+    <pattern>LAM LAI</pattern>
+    <template>__RESTART__</template>
+</category>
+
+<!-- ============ FLEXIBLE PATTERNS ============ -->
+
+<!-- Trả lời "có" với nhiều biến thể -->
+<category>
+    <pattern>* CO *</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<category>
+    <pattern>* KHONG *</pattern>
+    <template>__ANSWER__:Không</template>
+</category>
+
+<category>
+    <pattern>* KHONG RO *</pattern>
+    <template>__ANSWER__:Không rõ</template>
+</category>
+
+<!-- Số tuổi (pattern số) -->
+<category>
+    <pattern>#</pattern>
+    <template>__ANSWER__:<star/></template>
+</category>
+
+<!-- ============ FALLBACK ============ -->
+
+<category>
+    <pattern>*</pattern>
+    <template>
+        <random>
+            <li>Tôi chưa hiểu rõ ý anh/chị. Anh/chị có thể nói lại được không? 😊</li>
+            <li>Xin lỗi, tôi chưa rõ. Anh/chị vui lòng trả lời theo các lựa chọn được đề xuất nhé.</li>
+            <li>Tôi chưa hiểu. Anh/chị có thể chọn đáp án từ danh sách hoặc gõ rõ hơn được không?</li>
+            <li>⚠️ Tôi chưa xử lý được câu trả lời này. Vui lòng chọn đáp án từ danh sách nhé.</li>
+        </random>
+    </template>
+</category>
+
+</aiml>
