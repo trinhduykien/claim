@@ -315,6 +315,35 @@ elif current_product and st.session_state.finished and st.session_state.result:
         summary += "\nAnh/chị có muốn đánh giá sản phẩm khác không? Nhấn **🔄 Bắt đầu lại** ở sidebar."
         add_message("assistant", summary)
 
+        # Nút tải kết quả về máy user
+        import json as _json
+        log_data = {
+            "timestamp": datetime.now().isoformat(),
+            "customer_name": st.session_state.customer_name,
+            "product": {"id": product["id"], "name": product["name"]},
+            "answers": dict(st.session_state.answers),
+            "result": result,
+        }
+        log_json = _json.dumps(log_data, ensure_ascii=False, indent=2)
+        safe_name = re.sub(r'[^\w]', '_', st.session_state.customer_name or "khach_hang")
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"claim_{safe_name}_{product['id']}_{ts}.json"
+        st.download_button(
+            label="📥 Tải kết quả (JSON)",
+            data=log_json.encode("utf-8"),
+            file_name=filename,
+            mime="application/json",
+            use_container_width=True,
+        )
+        # Tải summary text
+        st.download_button(
+            label="📄 Tải kết quả (Text)",
+            data=summary.encode("utf-8"),
+            file_name=f"claim_{safe_name}_{product['id']}_{ts}.txt",
+            mime="text/plain",
+            use_container_width=True,
+        )
+
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
