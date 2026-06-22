@@ -57,7 +57,7 @@
 <category>
     <pattern>TOI TEN LA *</pattern>
     <template>
-        <think><set name="customername"><star/></set></think>
+        <set name="customername"><star/></set>
         Chào <get name="customername"/>! 😊 Rất vui được gặp anh/chị.
         Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới rồi bấm <b>Xác nhận</b>.
     </template>
@@ -66,7 +66,7 @@
 <category>
     <pattern>TEN TOI LA *</pattern>
     <template>
-        <think><set name="customername"><star/></set></think>
+        <set name="customername"><star/></set>
         Chào <get name="customername"/>! 😊 Rất vui được gặp anh/chị.
         Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới rồi bấm <b>Xác nhận</b>.
     </template>
@@ -75,7 +75,7 @@
 <category>
     <pattern>TOI LA *</pattern>
     <template>
-        <think><set name="customername"><star/></set></think>
+        <set name="customername"><star/></set>
         Chào <get name="customername"/>! 😊 Rất vui được gặp anh/chị.
         Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới rồi bấm <b>Xác nhận</b>.
     </template>
@@ -97,9 +97,8 @@
     </template>
 </category>
 
-<!-- ============ TRẢ LỜI CÂU HỎI ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — CÓ ============ -->
 
-<!-- Có -->
 <category>
     <pattern>CO</pattern>
     <template>__ANSWER__:Có</template>
@@ -125,7 +124,44 @@
     <template>__ANSWER__:Có</template>
 </category>
 
-<!-- Không -->
+<!-- Biến thể "có" mở rộng — dùng srai chuyển hướng -->
+<category>
+    <pattern>DUNG</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<category>
+    <pattern>DUNG ROI</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<category>
+    <pattern>PHAI</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<category>
+    <pattern>CHINH XAC</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<category>
+    <pattern>CHAC CHAN</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<category>
+    <pattern>DUOC</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<category>
+    <pattern>ROI</pattern>
+    <template>__ANSWER__:Có</template>
+</category>
+
+<!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG ============ -->
+
 <category>
     <pattern>KHONG</pattern>
     <template>__ANSWER__:Không</template>
@@ -146,7 +182,13 @@
     <template>__ANSWER__:Không</template>
 </category>
 
-<!-- Không rõ -->
+<category>
+    <pattern>CHUA</pattern>
+    <template>__ANSWER__:Chưa thông báo</template>
+</category>
+
+<!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG RÕ ============ -->
+
 <category>
     <pattern>KHONG RO</pattern>
     <template>__ANSWER__:Không rõ</template>
@@ -162,18 +204,15 @@
     <template>__ANSWER__:Không rõ</template>
 </category>
 
-<!-- Chưa thông báo -->
+<!-- ============ TRẢ LỜI CÂU HỎI — CHƯA THÔNG BÁO ============ -->
+
 <category>
     <pattern>CHUA THONG BAO</pattern>
     <template>__ANSWER__:Chưa thông báo</template>
 </category>
 
-<category>
-    <pattern>CHUA</pattern>
-    <template>__ANSWER__:Chưa thông báo</template>
-</category>
+<!-- ============ TRẢ LỜI CÂU HỎI — ĐANG CHUẨN BỊ ============ -->
 
-<!-- Đang chuẩn bị -->
 <category>
     <pattern>DANG CHUAN BI</pattern>
     <template>__ANSWER__:Đang chuẩn bị</template>
@@ -184,7 +223,20 @@
     <template>__ANSWER__:Đang chuẩn bị</template>
 </category>
 
-<!-- Việt Nam -->
+<category>
+    <pattern>DANG</pattern>
+    <template>__ANSWER__:Đang chuẩn bị</template>
+</category>
+
+<!-- ============ TRẢ LỜI CÂU HỎI — CHƯA GỬI ============ -->
+
+<category>
+    <pattern>CHUA GUI</pattern>
+    <template>__ANSWER__:Chưa gửi</template>
+</category>
+
+<!-- ============ TRẢ LỜI CÂU HỎI — VIỆT NAM ============ -->
+
 <category>
     <pattern>VIET NAM</pattern>
     <template>__ANSWER__:Việt Nam</template>
@@ -195,12 +247,8 @@
     <template>__ANSWER__:Việt Nam</template>
 </category>
 
-<category>
-    <pattern>VIỆT NAM</pattern>
-    <template>__ANSWER__:Việt Nam</template>
-</category>
+<!-- ============ TRẢ LỜI CÂU HỎI — NGƯỜI NƯỚC NGOÀI ============ -->
 
-<!-- Người nước ngoài -->
 <category>
     <pattern>NGUOI NUOC NGOAI</pattern>
     <template>__ANSWER__:Người nước ngoài định cư tại VN</template>
@@ -211,28 +259,71 @@
     <template>__ANSWER__:Người nước ngoài định cư tại VN</template>
 </category>
 
-<!-- Khác -->
+<!-- ============ TRẢ LỜI CÂU HỎI — KHÁC ============ -->
+
 <category>
     <pattern>KHAC</pattern>
     <template>__ANSWER__:Khác</template>
 </category>
 
-<!-- Đang chuẩn bị (gọn) -->
-<category>
-    <pattern>DANG</pattern>
-    <template>__ANSWER__:Đang chuẩn bị</template>
-</category>
+<!-- ============ TRẢ LỜI CÂU HỎI — CẤP CỨU ============ -->
 
-<!-- Chưa gửi -->
-<category>
-    <pattern>CHUA GUI</pattern>
-    <template>__ANSWER__:Chưa gửi</template>
-</category>
-
-<!-- Cấp cứu -->
 <category>
     <pattern>CAP CUU</pattern>
     <template>__ANSWER__:Cấp cứu - không cần chấp thuận trước</template>
+</category>
+
+<!-- ============ TRẢ LỜI CÂU HỎI — CÓ ĐÃ THÔNG BÁO VÀ ĐƯỢC CHẤP THUẬN ============ -->
+
+<category>
+    <pattern>CO DA THONG BAO VA DUOC CHAP THUAN</pattern>
+    <template>__ANSWER__:Có, đã thông báo và được chấp thuận</template>
+</category>
+
+<category>
+    <pattern>CO DA THONG BAO</pattern>
+    <template>__ANSWER__:Có, đã thông báo và được chấp thuận</template>
+</category>
+
+<category>
+    <pattern>DA THONG BAO DUOC CHAP THUAN</pattern>
+    <template>__ANSWER__:Có, đã thông báo và được chấp thuận</template>
+</category>
+
+<!-- ============ TRẢ LỜI CÂU HỎI — CHƯA THÔNG BÁO (chưa được chấp thuận) ============ -->
+
+<category>
+    <pattern>CO CHUA THONG BAO</pattern>
+    <template>__ANSWER__:Có, chưa thông báo</template>
+</category>
+
+<category>
+    <pattern>CHUA THONG BAO CHUA DUOC CHAP THUAN</pattern>
+    <template>__ANSWER__:Có, chưa thông báo</template>
+</category>
+
+<!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG PHẢI TÌNH TRẠNG CÓ SẴN ============ -->
+
+<category>
+    <pattern>KHONG PHAI TINH TRANG CO SAN</pattern>
+    <template>__ANSWER__:Không phải tình trạng có sẵn</template>
+</category>
+
+<category>
+    <pattern>KHONG PHAI BENH CO SAN</pattern>
+    <template>__ANSWER__:Không phải tình trạng có sẵn</template>
+</category>
+
+<!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG, CHƯA LÀM ============ -->
+
+<category>
+    <pattern>CHUA LAM</pattern>
+    <template>__ANSWER__:Không, chưa làm</template>
+</category>
+
+<category>
+    <pattern>CHUA</pattern>
+    <template>__ANSWER__:Chưa thông báo</template>
 </category>
 
 <!-- ============ BẮT ĐẦU LẠI ============ -->
@@ -250,30 +341,6 @@
 <category>
     <pattern>LAM LAI</pattern>
     <template>__RESTART__</template>
-</category>
-
-<!-- ============ FLEXIBLE PATTERNS ============ -->
-
-<!-- Trả lời "có" với nhiều biến thể -->
-<category>
-    <pattern>* CO *</pattern>
-    <template>__ANSWER__:Có</template>
-</category>
-
-<category>
-    <pattern>* KHONG *</pattern>
-    <template>__ANSWER__:Không</template>
-</category>
-
-<category>
-    <pattern>* KHONG RO *</pattern>
-    <template>__ANSWER__:Không rõ</template>
-</category>
-
-<!-- Số tuổi (pattern số) -->
-<category>
-    <pattern>#</pattern>
-    <template>__ANSWER__:<star/></template>
 </category>
 
 <!-- ============ FALLBACK ============ -->
