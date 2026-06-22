@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-PJICO Insurance - Đánh giá tiếp nhận bồi thường V.0.5
+PJICO Insurance - Đánh giá tiếp nhận bồi thường V.0.6
+- Bot chat tự nhiên như trợ lý ảo
+- Chỉ khi khách nhắc sự cố bảo hiểm → hỏi có muốn đánh giá tiếp nhận bồi thường
+- Khách đồng ý → mới vào luồng đánh giá
 """
 
 import json
@@ -21,7 +24,7 @@ except ImportError:
 from insurance_products import PRODUCTS, get_product_by_id, get_product_by_keyword
 
 st.set_page_config(
-    page_title="PJICO Đánh giá tiếp nhận bồi thường V.0.5",
+    page_title="PJICO Trợ lý ảo V.0.6",
     page_icon="🏠",
     layout="centered",
     initial_sidebar_state="expanded",
@@ -58,15 +61,27 @@ a { color: #f58220; }
 </style>
 """, unsafe_allow_html=True)
 
+# ============================================================
+# UTILITY FUNCTIONS
+# ============================================================
+
 def normalize_text(text):
+    """Bỏ dấu tiếng Việt, lowercase, strip."""
     if not text: return ""
     text = text.strip().lower()
     text = unicodedata.normalize('NFD', text)
     text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
     return text
 
-YES_WORDS = ["co", "duoc", "yes", "dung", "roi", "phai", "chinhxac", "dungroi", "chacchan"]
-NO_WORDS = ["khong", "chua", "no", "khong co", "chua co", "khong phai"]
+def normalize_aiml(text):
+    """Bỏ dấu tiếng Việt, UPPERCASE, strip — cho AIML pattern matching."""
+    if not text: return ""
+    text = unicodedata.normalize('NFD', text)
+    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+    return text.upper().strip()
+
+YES_WORDS = ["co", "duoc", "yes", "dung", "roi", "phai", "chinhxac", "dungroi", "chacchan", "ung", "yeah"]
+NO_WORDS = ["khong", "no", "nope", "khong co", "chua co", "khong phai"]
 
 def is_yes(text):
     t = normalize_text(text)
@@ -74,6 +89,8 @@ def is_yes(text):
 
 def is_no(text):
     t = normalize_text(text)
+    # "chưa" riêng → không phải "không" trong ngữ cảnh claim
+    if t == "chua" or t.startswith("chua "): return False
     return any(w == t or w in t for w in NO_WORDS)
 
 def match_answer(user_answer, expected):
@@ -84,6 +101,7 @@ def match_answer(user_answer, expected):
     if ex in ["khong", "no"]: return is_no(user_answer)
     return ex in ua
 
+# Từ khóa phát hiện sự cố bảo hiểm
 INCIDENT_KEYWORDS = [
     "chay", "no", "tai nan", "bao hiem", "nha", "xe", "bao",
     "lu", "trom", "cuop", "dong dat", "giong", "ngap",
@@ -92,12 +110,32 @@ INCIDENT_KEYWORDS = [
     "thuong tich", "tu vong", "thiet hai",
     "dot nhap", "bao lua", "loc", "set", "con nguoi", "than the",
     "ket hop", "cong nhan", "nha may", "ung thu", "hiem ngheo",
+    "bi thuong", "bi om", "nhap vien", "cap cuu", "dot quy",
+    "nhoi mau", "suy than", "beo ben", "chay nha", "ngap nuoc",
+    "bi cuop", "mat cua", "vo kin", "thiet hai nha",
+    "kiem tra boi thuong", "danh gia boi thuong",
+    "danh gia dieu kien", "tiep nhan boi thuong",
+    "yeu cau boi thuong", "ho so boi thuong",
+    "boi thuong bao hiem", "boi thuong nha",
+    "boi thuong xe", "boi thuong suc khoe",
+    "boi thuong tai nan", "boi thuong du lich",
+    "boi thuong ung thu", "boi thuong hiem ngheo",
+    "boi thuong lao dong", "boi thuong hoc sinh",
+    "boi thuong dien", "boi thuong phe gia",
+]
+
+# Từ khóa chỉ khách muốn đánh giá bồi thường trực tiếp
+CLAIM_REQUEST_KEYWORDS = [
+    "danh gia dieu kien", "danh gia boi thuong", "tiep nhan boi thuong",
+    "yeu cau boi thuong", "dang ky boi thuong", "ho so boi thuong",
+    "danh gia dieu kien tiep nhan", "danh gia dieu kien boi thuong",
+    "kiem tra boi thuong", "xu ly boi thuong",
 ]
 
 GREETING_WORDS = [
     "xin chao", "chao", "hello", "hi", "chao ban", "chao anh", "chao chi",
     "chao em", "xin chao ban", "xin chao anh", "xin chao chi", "xin chao em",
-    "hey", "halo", "toloi", "toi day",
+    "hey", "halo", "toloi", "toi day", "chao you",
 ]
 
 def is_greeting(text):
@@ -111,19 +149,35 @@ def is_greeting(text):
                 return True
     return False
 
+def has_incident(text):
+    """Kiểm tra xem input có nhắc đến sự cố bảo hiểm không."""
+    t = normalize_text(text)
+    return any(normalize_text(k) in t for k in INCIDENT_KEYWORDS)
+
+def has_claim_request(text):
+    """Kiểm tra xem user có trực tiếp yêu cầu đánh giá bồi thường không."""
+    t = normalize_text(text)
+    return any(normalize_text(k) in t for k in CLAIM_REQUEST_KEYWORDS)
+
 def extract_name(text):
-    # Kiểm tra câu chào trước — nếu là câu chào thuần thì không trả về name
+    """Trích xuất tên khách hàng từ input."""
     text_clean = text.strip()
     if is_greeting(text_clean):
         return ""
+    # "tôi tên là X", "mình tên là X", "em tên là X"...
     m = re.search(r'(?:t[oô]i|m[iì]nh|em|anh|ch[iị])\s+t[eê]n\s+(?:l[aà]\s+)?([A-ZÀ-Ỵa-zà-ỹ]+(?:\s+[A-ZÀ-Ỵa-zà-ỹ]+){0,3})', text, re.IGNORECASE)
     if m: return m.group(1).strip()
+    # "tên tôi là X", "tên em là X"...
+    m = re.search(r't[eê]n\s+(?:t[oô]i|m[iì]nh|em|anh|ch[iị])\s+(?:l[aà]\s+)?([A-ZÀ-Ỵa-zà-ỹ]+(?:\s+[A-ZÀ-Ỵa-zà-ỹ]+){0,3})', text, re.IGNORECASE)
+    if m: return m.group(1).strip()
+    # "tên là X"
     m = re.search(r't[eê]n\s+(?:l[aà]\s+)?([A-ZÀ-Ỵa-zà-ỹ]+(?:\s+[A-ZÀ-Ỵa-zà-ỹ]+){0,3})', text, re.IGNORECASE)
     if m: return m.group(1).strip()
+    # Nếu input ngắn (1-4 từ), không chứa sự cố → có thể là tên
     words = text_clean.split()
     text_norm = normalize_text(text_clean)
-    has_incident = any(normalize_text(k) in text_norm for k in INCIDENT_KEYWORDS)
-    if not has_incident and 1 <= len(words) <= 4: return text_clean
+    has_inc = any(normalize_text(k) in text_norm for k in INCIDENT_KEYWORDS)
+    if not has_inc and 1 <= len(words) <= 4: return text_clean
     return ""
 
 PRODUCT_KEYWORDS = {
@@ -161,6 +215,10 @@ def detect_product_smart(text):
         return get_product_by_id(max(scores, key=scores.get))
     return None
 
+# ============================================================
+# SESSION STATE
+# ============================================================
+
 def init_state():
     if "messages" not in st.session_state: st.session_state.messages = []
     if "current_product" not in st.session_state: st.session_state.current_product = None
@@ -172,12 +230,17 @@ def init_state():
     if "waiting_for_text" not in st.session_state: st.session_state.waiting_for_text = False
     if "customer_name" not in st.session_state: st.session_state.customer_name = ""
     if "asked_name" not in st.session_state: st.session_state.asked_name = False
+    if "asked_evaluate" not in st.session_state: st.session_state.asked_evaluate = False
+    if "chat_mode" not in st.session_state: st.session_state.chat_mode = True  # True = chat tự nhiên
     if "log_dir" not in st.session_state:
         st.session_state.log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "claim_logs")
 
 init_state()
 
-# --- AIML Kernel ---
+# ============================================================
+# AIML KERNEL
+# ============================================================
+
 _aiml_kernel = None
 
 def get_aiml_kernel():
@@ -194,25 +257,21 @@ def get_aiml_kernel():
         _aiml_kernel = kernel
     return _aiml_kernel
 
-def normalize_text(text):
-    """Bỏ dấu tiếng Việt để match AIML pattern."""
-    if not text:
-        return ""
-    text = unicodedata.normalize('NFD', text)
-    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
-    return text.upper().strip()
-
 def aiml_respond(user_input):
     """Gửi input qua AIML kernel, trả về response."""
     kernel = get_aiml_kernel()
     if kernel is None:
         return None
-    normalized = normalize_text(user_input)
+    normalized = normalize_aiml(user_input)
     response = kernel.respond(normalized)
     return response if response else None
 
 def add_message(role, content):
     st.session_state.messages.append({"role": role, "content": content, "time": datetime.now().isoformat()})
+
+# ============================================================
+# CLAIM EVALUATION
+# ============================================================
 
 AGE_RANGES = {
     "combo360_o_to": None, "combo360_xe_may": None, "phu_gia": None,
@@ -272,7 +331,6 @@ def save_claim_log(product, answers, result):
     os.makedirs(st.session_state.log_dir, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe = re.sub(r'[^\w]', '_', st.session_state.customer_name or "khach_hang")
-    # Lưu vào folder con theo kết quả
     if result.get("passed"):
         sub_dir = os.path.join(st.session_state.log_dir, "được_thông_qua")
     else:
@@ -287,6 +345,7 @@ def save_claim_log(product, answers, result):
     return fp
 
 def reset_session():
+    """Reset về trạng thái chat tự nhiên, giữ tên khách hàng."""
     st.session_state.messages = []
     st.session_state.current_product = None
     st.session_state.q_index = 0
@@ -295,15 +354,25 @@ def reset_session():
     st.session_state.result = None
     st.session_state.started = False
     st.session_state.waiting_for_text = False
+    st.session_state.asked_evaluate = False
+    st.session_state.chat_mode = True
+
+def full_reset():
+    """Reset hoàn toàn, xóa cả tên."""
+    reset_session()
     st.session_state.customer_name = ""
     st.session_state.asked_name = False
+
+# ============================================================
+# SIDEBAR
+# ============================================================
 
 with st.sidebar:
     _logo = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "pjico_logo.png")
     if os.path.exists(_logo):
         st.image(_logo, width=200)
-    st.markdown("## 🏠 PJICO Đánh giá tiếp nhận bồi thường")
-    st.markdown("### Version 0.5")
+    st.markdown("## 🏠 PJICO Trợ lý ảo")
+    st.markdown("### Version 0.6")
     st.markdown("---")
     st.markdown("### Sản phẩm bảo hiểm:")
     for p in PRODUCTS:
@@ -313,7 +382,7 @@ with st.sidebar:
         st.markdown("")
     st.markdown("---")
     if st.button("🔄 Bắt đầu lại"):
-        reset_session()
+        full_reset()
         st.rerun()
     st.markdown("---")
     st.markdown("### 📁 Thư mục log:")
@@ -326,14 +395,33 @@ with st.sidebar:
         st.metric("✅ Được thông qua", len(passed_files))
         st.metric("❌ Chưa được thông qua", len(failed_files))
 
+# ============================================================
+# HEADER
+# ============================================================
+
 _logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "pjico_logo.png")
 _logo_html = f'<img src="file/{_logo_path}" alt="PJICO">' if os.path.exists(_logo_path) else ''
-st.markdown(f'<div class="pjico-header">{_logo_html}<div><h1>BẢO HIỂM PJICO</h1><p>Tổng Công ty Cổ phần Bảo hiểm Petrolimex | Đánh giá điều kiện tiếp nhận bồi thường V.0.5</p></div></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="pjico-header">{_logo_html}<div><h1>BẢO HIỂM PJICO</h1><p>Tổng Công ty Cổ phần Bảo hiểm Petrolimex | Trợ lý ảo V.0.6</p></div></div>', unsafe_allow_html=True)
 st.markdown("---")
 
+# ============================================================
+# WELCOME MESSAGE
+# ============================================================
+
 if not st.session_state.started:
-    add_message("assistant", "Xin chào! 👋 Tôi là trợ lý đánh giá tiếp nhận bồi thường PJICO.\n\nVui lòng nhập **tên** của anh/chị.")
+    add_message("assistant", (
+        "Xin chào! 👋 Tôi là trợ lý ảo PJICO. 😊\n\n"
+        "Tôi có thể:\n"
+        "• Tư vấn các sản phẩm bảo hiểm\n"
+        "• Giải đáp thắc mắc về bồi thường\n"
+        "• Đánh giá điều kiện tiếp nhận bồi thường\n\n"
+        "Anh/chị cần hỗ trợ gì ạ?"
+    ))
     st.session_state.started = True
+
+# ============================================================
+# AUTO-RENDER QUESTIONS / RESULTS (khi đang trong claim flow)
+# ============================================================
 
 current_product = st.session_state.current_product
 q_index = st.session_state.q_index
@@ -381,7 +469,6 @@ elif current_product and st.session_state.finished and st.session_state.result:
         summary += "\nAnh/chị có muốn đánh giá sản phẩm khác không? Nhấn **🔄 Bắt đầu lại** ở sidebar."
         add_message("assistant", summary)
 
-        # Nút tải kết quả về máy user
         import json as _json
         log_data = {
             "timestamp": datetime.now().isoformat(),
@@ -401,7 +488,6 @@ elif current_product and st.session_state.finished and st.session_state.result:
             mime="application/json",
             use_container_width=True,
         )
-        # Tải summary text
         st.download_button(
             label="📄 Tải kết quả (Text)",
             data=summary.encode("utf-8"),
@@ -410,11 +496,18 @@ elif current_product and st.session_state.finished and st.session_state.result:
             use_container_width=True,
         )
 
+# ============================================================
+# RENDER CHAT MESSAGES
+# ============================================================
+
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# --- Radio button cho câu hỏi có options ---
+# ============================================================
+# RADIO BUTTONS FOR CLAIM QUESTIONS
+# ============================================================
+
 if current_product and not st.session_state.finished:
     questions = current_product["claim_questions"]
     if q_index < len(questions):
@@ -451,7 +544,10 @@ if current_product and not st.session_state.finished:
                     st.session_state.finished = True
                 st.rerun()
 
-# Selectbox chon san pham khi waiting_for_text
+# ============================================================
+# SELECTBOX CHO SẢN PHẨM (khi waiting_for_text)
+# ============================================================
+
 if st.session_state.current_product is None and st.session_state.waiting_for_text:
     st.markdown("**Vui lòng chọn loại bảo hiểm:**")
     product_options = [p["name"] for p in PRODUCTS]
@@ -470,6 +566,7 @@ if st.session_state.current_product is None and st.session_state.waiting_for_tex
                 add_message("user", selected_product)
                 st.session_state.current_product = product
                 st.session_state.waiting_for_text = False
+                st.session_state.chat_mode = False
                 add_message("assistant", (
                     f"Đã chọn: **{product['name']}** ✅\n\n"
                     f"Bắt đầu đánh giá điều kiện tiếp nhận bồi thường. Vui lòng trả lời từng câu nhé!\n\n---\n"
@@ -480,156 +577,23 @@ if st.session_state.current_product is None and st.session_state.waiting_for_tex
 else:
     user_input = st.chat_input("Nhập tin nhắn...")
 
+# ============================================================
+# MAIN MESSAGE HANDLER
+# ============================================================
+
 if user_input:
     add_message("user", user_input)
 
     # ============================================================
-    # CASE 1: Chưa chọn sản phẩm, chưa waiting_for_text
-    # → User gõ text lần đầu (hoặc chưa có tên)
+    # CASE 3: ĐANG TRONG CLAIM FLOW — trả lời câu hỏi
     # ============================================================
-    if st.session_state.current_product is None and not st.session_state.waiting_for_text:
-
-        # --- Nhánh 1a: Chưa có tên, chưa asked_name ---
-        if not st.session_state.customer_name and not st.session_state.asked_name:
-            # Kiểm tra AIML trước
-            aiml_resp = aiml_respond(user_input)
-            is_greeting_aiml = aiml_resp and not aiml_resp.startswith("__")
-
-            # Kiểm tra is_greeting (danh sách từ chào)
-            greeting = is_greeting(user_input)
-
-            # Thử extract_name
-            name = extract_name(user_input)
-
-            if greeting or is_greeting_aiml:
-                # Input là câu chào → chào lại + nhắc nhập tên + set asked_name
-                st.session_state.asked_name = True
-                if is_greeting_aiml:
-                    add_message("assistant", f"{aiml_resp}\n\nVui lòng nhập **tên** của anh/chị nhé! 😊")
-                else:
-                    add_message("assistant", (
-                        "Xin chào! 👋 Cảm ơn anh/chị đã liên hệ PJICO.\n\n"
-                        "Vui lòng nhập **tên** của anh/chị nhé! 😊"
-                    ))
-                st.rerun()
-            elif name:
-                # Có tên hợp lệ → set customer_name
-                st.session_state.customer_name = name
-                product = detect_product_smart(user_input)
-                if product:
-                    st.session_state.current_product = product
-                    add_message("assistant", (
-                        f"Cảm ơn {name}! 📝\n\n"
-                        f"Tôi đã xác nhận anh/chị muốn yêu cầu bồi thường sản phẩm:\n"
-                        f"**{product['name']}**\n\n"
-                        f"💰 Phí: {product['price']}\n"
-                        f"🔗 Chi tiết: {product['url']}\n\n"
-                        f"Để đánh giá điều kiện tiếp nhận bồi thường, tôi sẽ hỏi một số câu hỏi. Vui lòng trả lời từng câu nhé!\n\n---\n"
-                    ))
-                else:
-                    st.session_state.waiting_for_text = True
-                    add_message("assistant", f"Cảm ơn {name}! 😊 Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới.")
-                st.rerun()
-            else:
-                # Không phải câu chào, không extract được tên → nhắc nhập tên
-                st.session_state.asked_name = True
-                add_message("assistant", (
-                    "Cảm ơn anh/chị đã liên hệ! 😊\n\n"
-                    "Vui lòng cho biết **tên** của anh/chị nhé.\n\n"
-                    "**Ví dụ:** 'Cường, tôi muốn yêu cầu bồi thường bảo hiểm nhà ở combo 360'"
-                ))
-                st.rerun()
-
-        # --- Nhánh 1b: Chưa có tên, đã asked_name (user gõ lần 2) ---
-        elif not st.session_state.customer_name and st.session_state.asked_name:
-            # Kiểm tra AIML — nếu là câu chào thì không dùng làm tên
-            aiml_resp = aiml_respond(user_input)
-            is_greeting_aiml = aiml_resp and not aiml_resp.startswith("__")
-            greeting = is_greeting(user_input)
-
-            name = extract_name(user_input)
-
-            if greeting or is_greeting_aiml:
-                # User vẫn chào → set tên mặc định + hiện selectbox
-                st.session_state.customer_name = "Khách hàng"
-                st.session_state.waiting_for_text = True
-                product = detect_product_smart(user_input)
-                if product:
-                    st.session_state.current_product = product
-                    st.session_state.waiting_for_text = False
-                    add_message("assistant", (
-                        f"Xin chào! 👋 Cảm ơn anh/chị đã liên hệ PJICO.\n\n"
-                        f"Tôi đã xác nhận anh/chị muốn yêu cầu bồi thường sản phẩm:\n"
-                        f"**{product['name']}**\n\n"
-                        f"💰 Phí: {product['price']}\n"
-                        f"🔗 Chi tiết: {product['url']}\n\n"
-                        f"Để đánh giá điều kiện tiếp nhận bồi thường, tôi sẽ hỏi một số câu hỏi nhé!\n\n---\n"
-                    ))
-                else:
-                    add_message("assistant", (
-                        "Xin chào! 👋 Cảm ơn anh/chị đã liên hệ PJICO.\n\n"
-                        "Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới. 😊"
-                    ))
-                st.rerun()
-            elif name:
-                # Có tên → set customer_name
-                st.session_state.customer_name = name
-                product = detect_product_smart(user_input)
-                if product:
-                    st.session_state.current_product = product
-                    add_message("assistant", (
-                        f"Cảm ơn {name}! 📝\n\n"
-                        f"Sản phẩm: **{product['name']}**\n\n"
-                        f"💰 Phí: {product['price']}\n\n"
-                        f"Bắt đầu đánh giá điều kiện tiếp nhận bồi thường nhé!\n\n---\n"
-                    ))
-                else:
-                    st.session_state.waiting_for_text = True
-                    add_message("assistant", f"Cảm ơn {name}! 😊 Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới.")
-                st.rerun()
-            else:
-                # Fallback: dùng "Khách hàng" và hiện selectbox
-                st.session_state.customer_name = "Khách hàng"
-                st.session_state.waiting_for_text = True
-                add_message("assistant", "Không sao! 😊 Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới.")
-                st.rerun()
-
-        # --- Nhánh 1c: Đã có tên, chưa chọn sản phẩm ---
-        elif st.session_state.customer_name:
-            product = detect_product_smart(user_input)
-            if product:
-                st.session_state.current_product = product
-                name_display = st.session_state.customer_name
-                add_message("assistant", (
-                    f"Cảm ơn {name_display}! 📝\n\n"
-                    f"Tôi đã xác nhận anh/chị muốn yêu cầu bồi thường sản phẩm:\n"
-                    f"**{product['name']}**\n\n"
-                    f"💰 Phí: {product['price']}\n"
-                    f"🔗 Chi tiết: {product['url']}\n\n"
-                    f"Để đánh giá điều kiện tiếp nhận bồi thường, tôi sẽ hỏi một số câu hỏi. Vui lòng trả lời từng câu nhé!\n\n---\n"
-                ))
-            else:
-                st.session_state.waiting_for_text = True
-                add_message("assistant", f"Cảm ơn {st.session_state.customer_name}! 😊 Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới.")
-            st.rerun()
-
-    # ============================================================
-    # CASE 2: Chưa chọn sản phẩm, đang waiting_for_text
-    # → Selectbox xử lý, bỏ qua text input
-    # ============================================================
-    elif st.session_state.current_product is None and st.session_state.waiting_for_text:
-        pass
-
-    # ============================================================
-    # CASE 3: Đã chọn sản phẩm, đang trả lời câu hỏi
-    # ============================================================
-    elif st.session_state.current_product and not st.session_state.finished:
+    if st.session_state.current_product and not st.session_state.finished:
         product = st.session_state.current_product
         questions = product["claim_questions"]
         q = questions[st.session_state.q_index]
         raw_answer = user_input.strip()
 
-        # Dùng AIML để match câu trả lời tự nhiên
+        # Dùng AIML để match câu trả lời
         aiml_response = aiml_respond(raw_answer)
         matched_answer = None
 
@@ -637,16 +601,16 @@ if user_input:
             if aiml_response.startswith("__ANSWER__:"):
                 matched_answer = aiml_response.replace("__ANSWER__:", "", 1).strip()
             elif aiml_response == "__RESTART__":
-                st.session_state.current_product = None
-                st.session_state.q_index = 0
-                st.session_state.answers = OrderedDict()
-                st.session_state.finished = False
-                st.session_state.result = None
+                reset_session()
+                add_message("assistant", "🔄 Đã bắt đầu lại. Anh/chị cần hỗ trợ gì ạ? 😊")
+                st.rerun()
+            elif aiml_response.startswith("__CLAIM_REQUEST__"):
+                # Khách muốn đánh giá lại → chuyển sang chọn sản phẩm
                 st.session_state.waiting_for_text = True
-                add_message("assistant", "🔄 Đã bắt đầu lại. Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới.")
+                name_display = st.session_state.customer_name or "anh/chị"
+                add_message("assistant", f"Dạ {name_display}! Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới. 😊")
                 st.rerun()
 
-        # Nếu câu có options, thử match với AIML trước, rồi fallback
         if "options" in q:
             if matched_answer and matched_answer in q["options"]:
                 st.session_state.answers[q["id"]] = matched_answer
@@ -657,15 +621,333 @@ if user_input:
                     st.session_state.finished = True
                 st.rerun()
             else:
-                # AIML không match được, nhắc user chọn từ radio
-                add_message("assistant", "⚠️ Vui lòng chọn đáp án từ danh sách bên dưới rồi bấm **Xác nhận** nhé.")
-                st.rerun()
+                # AIML không match → kiểm tra raw_answer có match option không
+                raw_norm = normalize_text(raw_answer)
+                matched_opt = None
+                for opt in q["options"]:
+                    opt_norm = normalize_text(opt)
+                    if raw_norm == opt_norm or opt_norm in raw_norm:
+                        matched_opt = opt
+                        break
+                if matched_opt:
+                    st.session_state.answers[q["id"]] = matched_opt
+                    st.session_state.q_index += 1
+                    if st.session_state.q_index >= len(questions):
+                        result = evaluate_claim(dict(st.session_state.answers), product)
+                        st.session_state.result = result
+                        st.session_state.finished = True
+                    st.rerun()
+                else:
+                    add_message("assistant", "⚠️ Vui lòng chọn đáp án từ danh sách bên dưới rồi bấm **Xác nhận** nhé.")
+                    st.rerun()
         else:
-            # Câu hỏi type=text (như hỏi tuổi) — dùng raw_answer
+            # Câu hỏi type=text (như hỏi tuổi)
             st.session_state.answers[q["id"]] = raw_answer
             st.session_state.q_index += 1
             if st.session_state.q_index >= len(questions):
                 result = evaluate_claim(dict(st.session_state.answers), product)
                 st.session_state.result = result
                 st.session_state.finished = True
+            st.rerun()
+
+    # ============================================================
+    # CASE 2: Đang waiting_for_text (chọn sản phẩm)
+    # ============================================================
+    elif st.session_state.current_product is None and st.session_state.waiting_for_text:
+        # Cho phép user chat tự do, không chỉ chọn từ selectbox
+        # Kiểm tra AIML
+        aiml_resp = aiml_respond(user_input)
+
+        # Nếu AIML trả về __CLAIM_REQUEST__ → giữ nguyên selectbox
+        if aiml_resp and aiml_resp.startswith("__CLAIM_REQUEST__"):
+            pass  # Selectbox sẽ hiển thị
+        elif aiml_resp and not aiml_resp.startswith("__"):
+            # AIML có câu trả lời tự nhiên → hiển thị
+            add_message("assistant", aiml_resp)
+            st.rerun()
+        else:
+            # Kiểm tra có sự cố không
+            if has_incident(user_input) or has_claim_request(user_input):
+                product = detect_product_smart(user_input)
+                if product:
+                    st.session_state.current_product = product
+                    st.session_state.waiting_for_text = False
+                    st.session_state.chat_mode = False
+                    name_display = st.session_state.customer_name or "anh/chị"
+                    add_message("assistant", (
+                        f"Dạ {name_display}! 📝\n\n"
+                        f"Tôi đã xác nhận sản phẩm: **{product['name']}**\n\n"
+                        f"💰 Phí: {product['price']}\n"
+                        f"🔗 Chi tiết: {product['url']}\n\n"
+                        f"Bắt đầu đánh giá điều kiện tiếp nhận bồi thường nhé!\n\n---\n"
+                    ))
+                    st.rerun()
+                else:
+                    add_message("assistant", (
+                        "Tôi nhận thấy anh/chị đang nhắc đến sự cố bảo hiểm. 😊\n"
+                        "Tuy nhiên tôi chưa xác định được sản phẩm cụ thể.\n"
+                        "Vui lòng chọn sản phẩm từ danh sách bên dưới nhé!"
+                    ))
+                    st.rerun()
+            else:
+                # Chat tự nhiên
+                add_message("assistant", (
+                    "Anh/chị có thể chọn sản phẩm bảo hiểm từ danh sách bên dưới, "
+                    "hoặc hỏi tôi bất cứ điều gì về PJICO! 😊"
+                ))
+                st.rerun()
+
+    # ============================================================
+    # CASE 1: CHAT MODE TỰ NHIÊN (chưa trong claim flow)
+    # ============================================================
+    elif st.session_state.chat_mode and st.session_state.current_product is None and not st.session_state.waiting_for_text:
+
+        # --- 1a: Chưa có tên ---
+        if not st.session_state.customer_name:
+            aiml_resp = aiml_respond(user_input)
+            greeting = is_greeting(user_input)
+            name = extract_name(user_input)
+            incident = has_incident(user_input)
+            claim_req = has_claim_request(user_input)
+
+            if greeting or (aiml_resp and not aiml_resp.startswith("__") and not incident):
+                # Câu chào hoặc hội thoại tự nhiên
+                if not st.session_state.asked_name:
+                    # Lần đầu → hỏi tên
+                    st.session_state.asked_name = True
+                    if aiml_resp and not aiml_resp.startswith("__"):
+                        add_message("assistant", f"{aiml_resp}\n\nAnh/chị cho biết **tên** để tôi tiện hỗ trợ nhé! 😊")
+                    else:
+                        add_message("assistant", (
+                            "Xin chào! 👋 Cảm ơn anh/chị đã liên hệ PJICO.\n\n"
+                            "Anh/chị cho biết **tên** để tôi tiện hỗ trợ nhé! 😊"
+                        ))
+                else:
+                    # Đã hỏi tên rồi nhưng user vẫn chat tự nhiên
+                    if aiml_resp and not aiml_resp.startswith("__"):
+                        add_message("assistant", f"{aiml_resp}\n\nAnh/chị cho biết **tên** nhé! 😊")
+                    else:
+                        add_message("assistant", (
+                            "Cảm ơn anh/chị đã liên hệ! 😊\n\n"
+                            "Anh/chị cho biết **tên** nhé, hoặc mô tả sự cố "
+                            "nếu cần đánh giá bồi thường!"
+                        ))
+                st.rerun()
+
+            elif incident or claim_req:
+                # Phát hiện sự cố → hỏi tên + hỏi có muốn đánh giá
+                if name:
+                    st.session_state.customer_name = name
+                    st.session_state.asked_evaluate = True
+                    add_message("assistant", (
+                        f"Chào {name}! 😊 Tôi nghe thấy anh/chị đang gặp sự cố.\n\n"
+                        f"Anh/chị có cần tôi **đánh giá điều kiện tiếp nhận bồi thường** cho sự cố này không ạ?\n\n"
+                        f"• Gõ **có** để bắt đầu đánh giá\n"
+                        f"• Gõ **không** nếu chỉ muốn hỏi thêm"
+                    ))
+                else:
+                    st.session_state.asked_name = True
+                    st.session_state.asked_evaluate = True
+                    add_message("assistant", (
+                        "Tôi nghe thấy anh/chị đang gặp sự cố. 😟\n\n"
+                        "Anh/chị cho biết **tên** nhé, tôi sẽ hỗ trợ đánh giá điều kiện tiếp nhận bồi thường cho anh/chị!"
+                    ))
+                st.rerun()
+
+            elif name:
+                # Có tên → set, hỏi cần hỗ trợ gì
+                st.session_state.customer_name = name
+                add_message("assistant", (
+                    f"Chào {name}! 😊 Rất vui được gặp anh/chị.\n\n"
+                    f"Tôi có thể:\n"
+                    f"• Tư vấn sản phẩm bảo hiểm\n"
+                    f"• Giải đáp thắc mắc về bồi thường\n"
+                    f"• Đánh giá điều kiện tiếp nhận bồi thường\n\n"
+                    f"Anh/chị cần hỗ trợ gì ạ?"
+                ))
+                st.rerun()
+
+            else:
+                # Không phải chào, không có tên, không có sự cố
+                # → thử AIML, nếu không thì nhắc hỏi tên
+                if aiml_resp and not aiml_resp.startswith("__"):
+                    if not st.session_state.asked_name:
+                        st.session_state.asked_name = True
+                        add_message("assistant", f"{aiml_resp}\n\nAnh/chị cho biết **tên** nhé! 😊")
+                    else:
+                        add_message("assistant", f"{aiml_resp}\n\nAnh/chị cần hỗ trợ gì ạ? 😊")
+                else:
+                    if not st.session_state.asked_name:
+                        st.session_state.asked_name = True
+                        add_message("assistant", (
+                            "Cảm ơn anh/chị đã liên hệ PJICO! 😊\n\n"
+                            "Anh/chị cho biết **tên** nhé, hoặc mô tả sự cố "
+                            "nếu cần đánh giá bồi thường!"
+                        ))
+                    else:
+                        # Lần 2+ → set tên mặc định, chat tiếp
+                        st.session_state.customer_name = "Khách hàng"
+                        add_message("assistant", (
+                            "Không sao! 😊 Tôi có thể tư vấn bảo hiểm, "
+                            "giải đáp thắc mắc, hoặc đánh giá điều kiện bồi thường. "
+                            "Anh/chị cần gì ạ?"
+                        ))
+                st.rerun()
+
+        # --- 1b: Đã có tên, đang chat tự nhiên ---
+        else:
+            name_display = st.session_state.customer_name
+            aiml_resp = aiml_respond(user_input)
+            incident = has_incident(user_input)
+            claim_req = has_claim_request(user_input)
+
+            # Kiểm tra user có đồng ý đánh giá (sau khi bot hỏi "có muốn đánh giá không")
+            if st.session_state.asked_evaluate:
+                st.session_state.asked_evaluate = False
+                if is_yes(user_input):
+                    # Đồng ý → vào claim flow
+                    product = detect_product_smart(user_input)
+                    # Nếu không detect được product từ câu hiện tại, thử dùng lại input trước
+                    if not product:
+                        # Thử search trong các tin nhắn gần đây
+                        for msg in reversed(st.session_state.messages):
+                            if msg["role"] == "user":
+                                product = detect_product_smart(msg["content"])
+                                if product:
+                                    break
+                    if product:
+                        st.session_state.current_product = product
+                        st.session_state.chat_mode = False
+                        add_message("assistant", (
+                            f"Dạ {name_display}! 📝\n\n"
+                            f"Sản phẩm: **{product['name']}**\n\n"
+                            f"💰 Phí: {product['price']}\n"
+                            f"🔗 Chi tiết: {product['url']}\n\n"
+                            f"Bắt đầu đánh giá điều kiện tiếp nhận bồi thường nhé!\n\n---\n"
+                        ))
+                    else:
+                        # Không detect được product → hiện selectbox
+                        st.session_state.waiting_for_text = True
+                        add_message("assistant", (
+                            f"Dạ {name_display}! Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới. 😊"
+                        ))
+                    st.rerun()
+                elif is_no(user_input):
+                    # Không muốn đánh giá → quay lại chat
+                    add_message("assistant", (
+                        f"Dạ không sao {name_display}! 😊 "
+                        f"Tôi luôn sẵn sàng hỗ trợ khi anh/chị cần. "
+                        f"Anh/chị muốn hỏi gì khác không ạ?"
+                    ))
+                    st.rerun()
+                else:
+                    # Trả lời không rõ → hỏi lại
+                    add_message("assistant", (
+                        f"{name_display} ơi, anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ?\n\n"
+                        f"• Gõ **có** để bắt đầu\n"
+                        f"• Gõ **không** nếu chưa cần"
+                    ))
+                    st.session_state.asked_evaluate = True
+                    st.rerun()
+
+            # Phát hiện sự cố bảo hiểm → hỏi có muốn đánh giá
+            elif incident or claim_req:
+                st.session_state.asked_evaluate = True
+                product = detect_product_smart(user_input)
+                if product:
+                    add_message("assistant", (
+                        f"Tôi nghe thấy anh/chị đang gặp sự cố. 😟\n\n"
+                        f"Có vẻ như anh/chị đang liên quan đến sản phẩm: **{product['name']}**\n\n"
+                        f"Anh/chị có cần tôi **đánh giá điều kiện tiếp nhận bồi thường** không ạ?\n\n"
+                        f"• Gõ **có** để bắt đầu đánh giá\n"
+                        f"• Gõ **không** nếu chỉ muốn hỏi thêm"
+                    ))
+                else:
+                    add_message("assistant", (
+                        f"Tôi nghe thấy anh/chị đang gặp sự cố. 😟\n\n"
+                        f"Anh/chị có cần tôi **đánh giá điều kiện tiếp nhận bồi thường** không ạ?\n\n"
+                        f"• Gõ **có** để bắt đầu đánh giá\n"
+                        f"• Gõ **không** nếu chỉ muốn hỏi thêm"
+                    ))
+                st.rerun()
+
+            # AIML có câu trả lời tự nhiên
+            elif aiml_resp and not aiml_resp.startswith("__"):
+                add_message("assistant", aiml_resp)
+                st.rerun()
+
+            # AIML trả về __CLAIM_REQUEST__
+            elif aiml_resp and aiml_resp.startswith("__CLAIM_REQUEST__"):
+                st.session_state.asked_evaluate = True
+                add_message("assistant", (
+                    f"Dạ {name_display}! Anh/chị có muốn tôi **đánh giá điều kiện tiếp nhận bồi thường** không ạ?\n\n"
+                    f"• Gõ **có** để bắt đầu\n"
+                    f"• Gõ **không** nếu chưa cần"
+                ))
+                st.rerun()
+
+            # AIML trả về __RESTART__
+            elif aiml_resp and aiml_resp == "__RESTART__":
+                reset_session()
+                add_message("assistant", "🔄 Đã bắt đầu lại. Anh/chị cần hỗ trợ gì ạ? 😊")
+                st.rerun()
+
+            # Fallback — chat tự nhiên
+            else:
+                add_message("assistant", (
+                    f"{name_display} ơi, tôi chưa hiểu rõ ý anh/chị. 😊\n\n"
+                    f"Tôi có thể:\n"
+                    f"• Tư vấn sản phẩm bảo hiểm\n"
+                    f"• Giải đáp thắc mắc về bồi thường\n"
+                    f"• Đánh giá điều kiện tiếp nhận bồi thường\n\n"
+                    f"Anh/chị cần hỗ trợ gì ạ?"
+                ))
+                st.rerun()
+
+    # ============================================================
+    # CASE 4: Claim flow đã xong → quay lại chat
+    # ============================================================
+    elif st.session_state.current_product and st.session_state.finished:
+        # Cho phép user chat tiếp hoặc bắt đầu lại
+        aiml_resp = aiml_respond(user_input)
+
+        if aiml_resp and aiml_resp == "__RESTART__":
+            reset_session()
+            add_message("assistant", "🔄 Đã bắt đầu lại. Anh/chị cần hỗ trợ gì ạ? 😊")
+            st.rerun()
+        elif aiml_resp and aiml_resp.startswith("__CLAIM_REQUEST__"):
+            reset_session()
+            st.session_state.waiting_for_text = True
+            name_display = st.session_state.customer_name or "anh/chị"
+            add_message("assistant", f"Dạ {name_display}! Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới. 😊")
+            st.rerun()
+        elif aiml_resp and not aiml_resp.startswith("__"):
+            add_message("assistant", aiml_resp)
+            st.rerun()
+        elif has_incident(user_input) or has_claim_request(user_input):
+            # Quay lại đánh giá sản phẩm khác
+            st.session_state.asked_evaluate = True
+            product = detect_product_smart(user_input)
+            name_display = st.session_state.customer_name or "anh/chị"
+            if product:
+                add_message("assistant", (
+                    f"Dạ {name_display}! Có vẻ như anh/chị muốn đánh giá sản phẩm: **{product['name']}**\n\n"
+                    f"Anh/chị có muốn tôi **đánh giá điều kiện tiếp nhận bồi thường** không ạ?\n\n"
+                    f"• Gõ **có** để bắt đầu\n"
+                    f"• Gõ **không** nếu chưa cần"
+                ))
+            else:
+                add_message("assistant", (
+                    f"Anh/chị có muốn tôi **đánh giá điều kiện tiếp nhận bồi thường** không ạ?\n\n"
+                    f"• Gõ **có** để bắt đầu\n"
+                    f"• Gõ **không** nếu chỉ muốn hỏi thêm"
+                ))
+            st.rerun()
+        else:
+            # Chat tự nhiên sau khi xong claim
+            name_display = st.session_state.customer_name or "anh/chị"
+            add_message("assistant", (
+                f"Cảm ơn {name_display}! 😊 Anh/chị cần hỗ trợ gì thêm không ạ? "
+                f"Có thể nhấn **🔄 Bắt đầu lại** để đánh giá sản phẩm khác."
+            ))
             st.rerun()
