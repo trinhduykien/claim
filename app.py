@@ -165,19 +165,24 @@ def extract_name(text):
     if is_greeting(text_clean):
         return ""
     # "tôi tên là X", "mình tên là X", "em tên là X"...
-    m = re.search(r'(?:t[oô]i|m[iì]nh|em|anh|ch[iị])\s+t[eê]n\s+(?:l[aà]\s+)?([A-ZÀ-Ỵa-zà-ỹ]+(?:\s+[A-ZÀ-Ỵa-zà-ỹ]+){0,3})', text, re.IGNORECASE)
+    m = re.search(r'(?:t[oô]i|m[iì]nh|em|anh|ch[iị])\s+t[eê]n\s+(?:l[aà]\s+)?([A-Za-zÀ-ỹ]+(?:\s+[A-Za-zÀ-ỹ]+){0,3})', text, re.IGNORECASE)
     if m: return m.group(1).strip()
     # "tên tôi là X", "tên em là X"...
-    m = re.search(r't[eê]n\s+(?:t[oô]i|m[iì]nh|em|anh|ch[iị])\s+(?:l[aà]\s+)?([A-ZÀ-Ỵa-zà-ỹ]+(?:\s+[A-ZÀ-Ỵa-zà-ỹ]+){0,3})', text, re.IGNORECASE)
+    m = re.search(r't[eê]n\s+(?:t[oô]i|m[iì]nh|em|anh|ch[iị])\s+(?:l[aà]\s+)?([A-Za-zÀ-ỹ]+(?:\s+[A-Za-zÀ-ỹ]+){0,3})', text, re.IGNORECASE)
     if m: return m.group(1).strip()
     # "tên là X"
-    m = re.search(r't[eê]n\s+(?:l[aà]\s+)?([A-ZÀ-Ỵa-zà-ỹ]+(?:\s+[A-ZÀ-Ỵa-zà-ỹ]+){0,3})', text, re.IGNORECASE)
+    m = re.search(r't[eê]n\s+(?:l[aà]\s+)?([A-Za-zÀ-ỹ]+(?:\s+[A-Za-zÀ-ỹ]+){0,3})', text, re.IGNORECASE)
     if m: return m.group(1).strip()
-    # Nếu input ngắn (1-4 từ), không chứa sự cố → có thể là tên
+    # "tôi là X", "mình là X", "em là X"...
+    m = re.search(r'(?:t[oô]i|m[iì]nh|em)\s+l[aà]\s+([A-Za-zÀ-ỹ]+(?:\s+[A-Za-zÀ-ỹ]+){0,3})', text, re.IGNORECASE)
+    if m: return m.group(1).strip()
+    # Nếu input ngắn (1-4 từ), không chứa sự cố, không phải câu hỏi → có thể là tên
     words = text_clean.split()
     text_norm = normalize_text(text_clean)
     has_inc = any(normalize_text(k) in text_norm for k in INCIDENT_KEYWORDS)
-    if not has_inc and 1 <= len(words) <= 4: return text_clean
+    # Kiểm tra có phải câu hỏi không (có dấu ?)
+    is_question = '?' in text_clean
+    if not has_inc and not is_question and 1 <= len(words) <= 4: return text_clean
     return ""
 
 PRODUCT_KEYWORDS = {
@@ -710,37 +715,26 @@ if user_input:
             incident = has_incident(user_input)
             claim_req = has_claim_request(user_input)
 
-            if greeting or (aiml_resp and not aiml_resp.startswith("__") and not incident):
-                # Câu chào hoặc hội thoại tự nhiên
-                if not st.session_state.asked_name:
-                    # Lần đầu → hỏi tên
-                    st.session_state.asked_name = True
-                    if aiml_resp and not aiml_resp.startswith("__"):
-                        add_message("assistant", f"{aiml_resp}\n\nAnh/chị cho biết **tên** để tôi tiện hỗ trợ nhé! 😊")
-                    else:
-                        add_message("assistant", (
-                            "Xin chào! 👋 Cảm ơn anh/chị đã liên hệ PJICO.\n\n"
-                            "Anh/chị cho biết **tên** để tôi tiện hỗ trợ nhé! 😊"
-                        ))
-                else:
-                    # Đã hỏi tên rồi nhưng user vẫn chat tự nhiên
-                    if aiml_resp and not aiml_resp.startswith("__"):
-                        add_message("assistant", f"{aiml_resp}\n\nAnh/chị cho biết **tên** nhé! 😊")
-                    else:
-                        add_message("assistant", (
-                            "Cảm ơn anh/chị đã liên hệ! 😊\n\n"
-                            "Anh/chị cho biết **tên** nhé, hoặc mô tả sự cố "
-                            "nếu cần đánh giá bồi thường!"
-                        ))
-                st.rerun()
+            # Thử extract tên trước
+            name = extract_name(user_input)
 
-            elif incident or claim_req:
-                # Phát hiện sự cố → hỏi tên + hỏi có muốn đánh giá
+            # 1. Có sự cố → hỏi có muốn đánh giá (ưu tiên cao nhất)
+            if incident or claim_req:
                 if name:
                     st.session_state.customer_name = name
+                    st.session_state.asked_name = True
                     st.session_state.asked_evaluate = True
                     add_message("assistant", (
                         f"Chào {name}! 😊 Tôi nghe thấy anh/chị đang gặp sự cố.\n\n"
+                        f"Anh/chị có cần tôi **đánh giá điều kiện tiếp nhận bồi thường** cho sự cố này không ạ?\n\n"
+                        f"• Gõ **có** để bắt đầu đánh giá\n"
+                        f"• Gõ **không** nếu chỉ muốn hỏi thêm"
+                    ))
+                elif st.session_state.customer_name:
+                    # Đã có tên từ trước
+                    st.session_state.asked_evaluate = True
+                    add_message("assistant", (
+                        f"Tôi nghe thấy anh/chị đang gặp sự cố. 😟\n\n"
                         f"Anh/chị có cần tôi **đánh giá điều kiện tiếp nhận bồi thường** cho sự cố này không ạ?\n\n"
                         f"• Gõ **có** để bắt đầu đánh giá\n"
                         f"• Gõ **không** nếu chỉ muốn hỏi thêm"
@@ -754,9 +748,10 @@ if user_input:
                     ))
                 st.rerun()
 
-            elif name:
-                # Có tên → set, hỏi cần hỗ trợ gì
+            # 2. Có tên → set tên, chào hỏi
+            if name and not st.session_state.customer_name:
                 st.session_state.customer_name = name
+                st.session_state.asked_name = True
                 add_message("assistant", (
                     f"Chào {name}! 😊 Rất vui được gặp anh/chị.\n\n"
                     f"Tôi có thể:\n"
@@ -767,32 +762,75 @@ if user_input:
                 ))
                 st.rerun()
 
-            else:
-                # Không phải chào, không có tên, không có sự cố
-                # → thử AIML, nếu không thì nhắc hỏi tên
-                if aiml_resp and not aiml_resp.startswith("__"):
-                    if not st.session_state.asked_name:
-                        st.session_state.asked_name = True
-                        add_message("assistant", f"{aiml_resp}\n\nAnh/chị cho biết **tên** nhé! 😊")
-                    else:
-                        add_message("assistant", f"{aiml_resp}\n\nAnh/chị cần hỗ trợ gì ạ? 😊")
+            # 3. Câu chào → chào lại + hỏi tên (nếu chưa có)
+            if greeting:
+                if not st.session_state.asked_name:
+                    st.session_state.asked_name = True
+                    add_message("assistant", (
+                        "Xin chào! 👋 Cảm ơn anh/chị đã liên hệ PJICO.\n\n"
+                        "Anh/chị cho biết **tên** để tôi tiện hỗ trợ nhé! 😊"
+                    ))
                 else:
-                    if not st.session_state.asked_name:
-                        st.session_state.asked_name = True
-                        add_message("assistant", (
-                            "Cảm ơn anh/chị đã liên hệ PJICO! 😊\n\n"
-                            "Anh/chị cho biết **tên** nhé, hoặc mô tả sự cố "
-                            "nếu cần đánh giá bồi thường!"
-                        ))
-                    else:
-                        # Lần 2+ → set tên mặc định, chat tiếp
-                        st.session_state.customer_name = "Khách hàng"
-                        add_message("assistant", (
-                            "Không sao! 😊 Tôi có thể tư vấn bảo hiểm, "
-                            "giải đáp thắc mắc, hoặc đánh giá điều kiện bồi thường. "
-                            "Anh/chị cần gì ạ?"
-                        ))
+                    add_message("assistant", (
+                        "Xin chào! 👋 Cảm ơn anh/chị đã liên hệ PJICO.\n\n"
+                        "Anh/chị cho biết **tên** nhé, hoặc mô tả sự cố "
+                        "nếu cần đánh giá bồi thường!"
+                    ))
                 st.rerun()
+
+            # 4. AIML trả lời tự nhiên (không phải pattern đặc biệt)
+            if aiml_resp and not aiml_resp.startswith("__"):
+                # Nếu AIML đã set tên (TOI LA * / TOI TEN LA *) → lưu tên từ AIML predicate
+                if not st.session_state.customer_name:
+                    kernel = get_aiml_kernel()
+                    if kernel:
+                        aiml_name = kernel.getPredicate("customername")
+                        if aiml_name:
+                            st.session_state.customer_name = aiml_name
+                            st.session_state.asked_name = True
+                add_message("assistant", aiml_resp)
+                st.rerun()
+
+            # 5. AIML trả về __CLAIM_REQUEST__
+            if aiml_resp and aiml_resp.startswith("__CLAIM_REQUEST__"):
+                st.session_state.asked_evaluate = True
+                name_display = st.session_state.customer_name or "anh/chị"
+                add_message("assistant", (
+                    f"Dạ {name_display}! Anh/chị có muốn tôi **đánh giá điều kiện tiếp nhận bồi thường** không ạ?\n\n"
+                    f"• Gõ **có** để bắt đầu\n"
+                    f"• Gõ **không** nếu chưa cần"
+                ))
+                st.rerun()
+
+            # 6. AIML trả về __RESTART__
+            if aiml_resp and aiml_resp == "__RESTART__":
+                reset_session()
+                add_message("assistant", "🔄 Đã bắt đầu lại. Anh/chị cần hỗ trợ gì ạ? 😊")
+                st.rerun()
+
+            # 7. Fallback
+            if not st.session_state.asked_name:
+                st.session_state.asked_name = True
+                add_message("assistant", (
+                    "Cảm ơn anh/chị đã liên hệ PJICO! 😊\n\n"
+                    "Anh/chị cho biết **tên** nhé, hoặc mô tả sự cố "
+                    "nếu cần đánh giá bồi thường!"
+                ))
+            elif not st.session_state.customer_name:
+                # Lần 2+ → set tên mặc định
+                st.session_state.customer_name = "Khách hàng"
+                add_message("assistant", (
+                    "Không sao! 😊 Tôi có thể tư vấn bảo hiểm, "
+                    "giải đáp thắc mắc, hoặc đánh giá điều kiện bồi thường. "
+                    "Anh/chị cần gì ạ?"
+                ))
+            else:
+                name_display = st.session_state.customer_name
+                add_message("assistant", (
+                    f"{name_display} ơi, tôi chưa hiểu rõ. 😊\n"
+                    f"Anh/chị cần hỗ trợ gì ạ?"
+                ))
+            st.rerun()
 
         # --- 1b: Đã có tên, đang chat tự nhiên ---
         else:
