@@ -1536,6 +1536,16 @@ if st.session_state.waiting_for_continue_choice and not st.session_state.waiting
 
         else:
 
+            st.session_state.current_product = None
+
+            st.session_state.finished = False
+
+            st.session_state.result = None
+
+            st.session_state.q_index = 0
+
+            st.session_state.answers = OrderedDict()
+
             add_message("assistant", (
 
                 "Cảm ơn anh/chị đã sử dụng dịch vụ của PJICO! Chúc anh/chị một ngày tốt lành!"
