@@ -483,6 +483,8 @@ def init_state():
     if "waiting_for_welcome_choice" not in st.session_state: st.session_state.waiting_for_welcome_choice = False
     if "waiting_for_product_choice" not in st.session_state: st.session_state.waiting_for_product_choice = False
     if "waiting_for_faq_choice" not in st.session_state: st.session_state.waiting_for_faq_choice = False
+    st.session_state.waiting_for_continue_choice = False
+    if "waiting_for_continue_choice" not in st.session_state: st.session_state.waiting_for_continue_choice = False
 
 
 
@@ -1217,6 +1219,8 @@ if st.session_state.waiting_for_faq_choice and not st.session_state.current_prod
 
             ))
 
+            st.session_state.waiting_for_continue_choice = True
+
         st.rerun()
 
 
@@ -1308,6 +1312,60 @@ if st.session_state.waiting_for_product_choice and not st.session_state.current_
                 info += "\n"
 
             add_message("assistant", info)
+
+            st.session_state.waiting_for_continue_choice = True
+
+        st.rerun()
+
+
+
+# ============================================================
+
+# CONTINUE CHOICE RADIO BUTTONS — Anh/chị cần hỗ trợ gì thêm không?
+
+# ============================================================
+
+
+
+if st.session_state.waiting_for_continue_choice and not st.session_state.current_product and not st.session_state.waiting_for_text:
+
+    continue_options = ["Có", "Không"]
+
+    continue_selected = st.radio(
+
+        "Anh/chị cần hỗ trợ gì thêm không ạ?",
+
+        continue_options,
+
+        key="continue_radio",
+
+        label_visibility="visible",
+
+    )
+
+    if st.button(" Xác nhận", key="continue_confirm_btn", use_container_width=True):
+
+        st.session_state.waiting_for_continue_choice = False
+
+        add_message("user", continue_selected)
+
+        if continue_selected == "Có":
+
+            st.session_state.waiting_for_welcome_choice = True
+
+            add_message("assistant", (
+
+                "Dạ! Vui lòng **chọn nhu cầu hỗ trợ** bên dưới nhé!"
+
+            ))
+
+        else:
+
+            add_message("assistant", (
+
+                "Cảm ơn anh/chị đã sử dụng dịch vụ của PJICO! Chúc anh/chị một ngày tốt lành!"
+
+            ))
 
         st.rerun()
 
