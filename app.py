@@ -1100,6 +1100,8 @@ if st.session_state.waiting_for_welcome_choice and not st.session_state.current_
 
             ))
 
+        st.rerun()
+
 
 # ============================================================
 
