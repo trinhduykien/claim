@@ -947,9 +947,11 @@ elif current_product and st.session_state.finished and st.session_state.result:
 
         summary += f"\n Thông tin đã lưu: `{os.path.basename(log_path)}`\n"
 
-        summary += "\nAnh/chị có muốn đánh giá sản phẩm khác không? Nhấn ** Bắt đầu lại** ở sidebar."
+        summary += "\nAnh/chị cần hỗ trợ gì thêm không ạ?"
 
         add_message("assistant", summary)
+
+        st.session_state.waiting_for_continue_choice = True
 
 
 
@@ -1330,7 +1332,7 @@ if st.session_state.waiting_for_product_choice and not st.session_state.current_
 
 
 
-if st.session_state.waiting_for_continue_choice and not st.session_state.current_product and not st.session_state.waiting_for_text:
+if st.session_state.waiting_for_continue_choice and not st.session_state.waiting_for_text:
 
     continue_options = ["Có", "Không"]
 
@@ -1353,6 +1355,16 @@ if st.session_state.waiting_for_continue_choice and not st.session_state.current
         add_message("user", continue_selected)
 
         if continue_selected == "Có":
+
+            st.session_state.current_product = None
+
+            st.session_state.finished = False
+
+            st.session_state.result = None
+
+            st.session_state.q_index = 0
+
+            st.session_state.answers = OrderedDict()
 
             st.session_state.waiting_for_welcome_choice = True
 
