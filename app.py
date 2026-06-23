@@ -1124,19 +1124,43 @@ if st.session_state.waiting_for_faq_choice and not st.session_state.current_prod
 
         "Mức bồi thường, phí bảo hiểm",
 
+        "Hồ sơ bồi thường cần gì",
+
+        "Thời gian xử lý bồi thường",
+
+        "Đóng phí bảo hiểm ở đâu",
+
+        "Hướng dẫn khiếu nại",
+
+        "Nói chuyện với nhân viên",
+
+        "Khuyến mãi, ưu đãi",
+
+        "Hủy/đổi bảo hiểm",
+
+        "Cập nhật thông tin cá nhân",
+
     ]
 
-    faq_selected = st.radio(
+    col1, col2 = st.columns([3, 1])
 
-        "Chọn chủ đề:",
+    with col1:
 
-        faq_options,
+        faq_selected = st.selectbox(
 
-        key="faq_radio",
+            "Chọn chủ đề:",
 
-        label_visibility="collapsed",
+            faq_options,
 
-    )
+            key="faq_selectbox",
+
+            label_visibility="collapsed",
+
+        )
+
+    with col2:
+
+        st.write("")
 
     if st.button(" Xác nhận", key="faq_confirm_btn", use_container_width=True):
 
@@ -1219,6 +1243,142 @@ if st.session_state.waiting_for_faq_choice and not st.session_state.current_prod
                 "- Family Care: 2-11.2 triệu/năm\n"
 
                 "- Các sản phẩm khác: theo thỏa thuận/biểu phí\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        elif "Hồ sơ bồi thường" in faq_selected:
+
+            add_message("assistant", (
+
+                "Hồ sơ yêu cầu bồi thường thường gồm:\n\n"
+
+                "- Giấy yêu cầu bồi thường\n"
+
+                "- Giấy chứng nhận bảo hiểm/hợp đồng\n"
+
+                "- Giấy tờ thân nhân (CCCD/CMND)\n"
+
+                "- Biên bản sự cố (công an, chữa cháy, y tế...)\n"
+
+                "- Hồ sơ y tế, bệnh án, hóa đơn\n"
+
+                "- Ảnh thiệt hại (nếu có)\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        elif "Thời gian xử lý" in faq_selected:
+
+            add_message("assistant", (
+
+                "Thời gian xử lý bồi thường PJICO:\n\n"
+
+                "- Tiếp nhận hồ sơ: 1-3 ngày làm việc\n"
+
+                "- Thẩm định hồ sơ: 5-15 ngày làm việc (tùy độ phức tạp)\n"
+
+                "- Thanh toán bồi thường: trong vòng 15 ngày sau khi có kết luận thẩm định\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        elif "Đóng phí" in faq_selected:
+
+            add_message("assistant", (
+
+                "Đóng phí bảo hiểm PJICO:\n\n"
+
+                "- Qua ngân hàng (chuyển khoản)\n"
+
+                "- Qua ví điện tử (Momo, ZaloPay, VNPay...)\n"
+
+                "- Qua đại lý bảo hiểm PJICO\n"
+
+                "- Qua tổng đài 1900 54 54 55 để được hướng dẫn\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        elif "khiếu nại" in faq_selected.lower():
+
+            add_message("assistant", (
+
+                "Quy trình khiếu nại bồi thường PJICO:\n\n"
+
+                "1. Liên hệ PJICO để phản ánh kết quả thẩm định\n"
+
+                "2. PJICO sẽ xem xét lại hồ sơ trong vòng 15 ngày\n"
+
+                "3. Nếu không đồng ý, anh/chị có thể khiếu nại lên Cục Quản lý/Kiem soát bảo hiểm\n\n"
+
+                "Tổng đài hỗ trợ: 1900 54 54 55\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        elif "nhân viên" in faq_selected.lower():
+
+            add_message("assistant", (
+
+                "Để nói chuyện với nhân viên PJICO, anh/chị vui lòng:\n\n"
+
+                "- Gọi tổng đài: 1900 54 54 55\n"
+
+                "- Email: pjico@petrolimex.com.vn\n"
+
+                "- Chat trực tiếp tại website: https://www.pjico.com.vn\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        elif "Khuyến mãi" in faq_selected or "ưu đãi" in faq_selected.lower():
+
+            add_message("assistant", (
+
+                "Chương trình khuyến mãi hiện tại:\n\n"
+
+                "- PJICO thường có chương trình ưu đãi theo thời gian và đối tượng khách hàng\n\n"
+
+                "- Vui lòng liên hệ tổng đài 1900 54 54 55 hoặc xem website https://www.pjico.com.vn\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        elif "Hủy" in faq_selected or "đổi bảo hiểm" in faq_selected.lower():
+
+            add_message("assistant", (
+
+                "Hủy/đổi bảo hiểm:\n\n"
+
+                "- Anh/chị có thể liên hệ PJICO để hủy hoặc đổi sản phẩm bảo hiểm\n"
+
+                "- Tùy thuộc điều kiện hợp đồng, việc hủy có thể có phí tương ứng\n\n"
+
+                "- Tổng đài: 1900 54 54 55\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        elif "Cập nhật" in faq_selected:
+
+            add_message("assistant", (
+
+                "Cập nhật thông tin cá nhân:\n\n"
+
+                "- Anh/chị có thể liên hệ PJICO để cập nhật thông tin (chuyển nhà, đổi SĐT, đổi tên...)\n"
+
+                "- Tổng đài: 1900 54 54 55\n"
+
+                "- Email: pjico@petrolimex.com.vn\n\n"
 
                 "Anh/chị cần hỗ trợ gì thêm không ạ?"
 
