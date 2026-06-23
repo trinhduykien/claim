@@ -483,7 +483,6 @@ def init_state():
     if "waiting_for_welcome_choice" not in st.session_state: st.session_state.waiting_for_welcome_choice = False
     if "waiting_for_product_choice" not in st.session_state: st.session_state.waiting_for_product_choice = False
     if "waiting_for_faq_choice" not in st.session_state: st.session_state.waiting_for_faq_choice = False
-    st.session_state.waiting_for_continue_choice = False
     if "waiting_for_continue_choice" not in st.session_state: st.session_state.waiting_for_continue_choice = False
 
 
