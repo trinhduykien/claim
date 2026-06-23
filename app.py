@@ -1166,13 +1166,17 @@ if st.session_state.waiting_for_faq_choice and not st.session_state.current_prod
 
                 "Thông tin liên hệ PJICO:\n\n"
 
-                "Tổng đài: 1900 5555 58\n"
+                "Tổng Công ty Cổ phần Bảo hiểm Petrolimex\n"
 
-                "Website: https://www.pjico.com.vn\n"
+                "Trụ sở chính: Tầng 21-22, tòa nhà Mipec, 229 Tây Sơn, Phường Kim Liên, Hà Nội\n"
 
-                "Email: info@pjico.com.vn\n"
+                "Email: pjico@petrolimex.com.vn\n"
 
-                "Trụ sở chính: Tầng 8, tòa nhà VPI, 218 Nguyễn Trãi, Thanh Xuân, Hà Nội\n\n"
+                "Điện thoại: (024) 3776-0867\n"
+
+                "Tổng đài: 1900 54 54 55\n"
+
+                "Website: https://www.pjico.com.vn\n\n"
 
                 "Anh/chị cần hỗ trợ gì thêm không ạ?"
 
