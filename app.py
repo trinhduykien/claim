@@ -481,6 +481,8 @@ def init_state():
         st.session_state.log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "claim_logs")
 
     if "waiting_for_welcome_choice" not in st.session_state: st.session_state.waiting_for_welcome_choice = False
+    if "waiting_for_product_choice" not in st.session_state: st.session_state.waiting_for_product_choice = False
+    if "waiting_for_product_choice" not in st.session_state: st.session_state.waiting_for_product_choice = False
 
 
 
@@ -721,6 +723,8 @@ def reset_session():
     st.session_state.started = False
 
     st.session_state.waiting_for_text = False
+
+    st.session_state.waiting_for_product_choice = False
 
     st.session_state.asked_evaluate = False
 
@@ -1072,29 +1076,13 @@ if st.session_state.waiting_for_welcome_choice and not st.session_state.current_
 
         elif "Tư vấn" in welcome_selected:
 
+            st.session_state.waiting_for_product_choice = True
+
             add_message("assistant", (
 
-                "Dạ! Tôi có thể tư vấn về các sản phẩm bảo hiểm PJICO:\n\n"
+                "Dạ! Tôi có thể tư vấn về các sản phẩm bảo hiểm PJICO.\n\n"
 
-                " Bảo hiểm nhà ở (Combo 360, Phú Gia)\n"
-
-                " Bảo hiểm ô tô, xe máy (TNDS)\n"
-
-                " Bảo hiểm sức khỏe (Family Care, Care Plus)\n"
-
-                " Bảo hiểm tai nạn con người (24/24, mức cao)\n"
-
-                " Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)\n"
-
-                " Bảo hiểm học sinh, sinh viên\n"
-
-                " Bảo hiểm du lịch trong nước & quốc tế\n"
-
-                " Bảo hiểm tai nạn người sử dụng điện\n"
-
-                " Bảo hiểm trách nhiệm công cộng\n\n"
-
-                "Anh/chị quan tâm sản phẩm nào ạ?"
+                "Vui lòng **chọn sản phẩm** bên dưới để biết thêm chi tiết!"
 
             ))
 
@@ -1115,6 +1103,102 @@ if st.session_state.waiting_for_welcome_choice and not st.session_state.current_
                 "Anh/chị muốn hỏi gì ạ? "
 
             ))
+
+        st.rerun()
+
+
+
+# ============================================================
+
+# PRODUCT CHOICE RADIO BUTTONS — Chọn sản phẩm tư vấn
+
+# ============================================================
+
+
+
+if st.session_state.waiting_for_product_choice and not st.session_state.current_product and not st.session_state.waiting_for_text:
+
+    product_radio_options = [p["name"] for p in PRODUCTS]
+
+    product_selected = st.radio(
+
+        "Chọn sản phẩm bảo hiểm:",
+
+        product_radio_options,
+
+        key="product_tuvan_radio",
+
+        label_visibility="collapsed",
+
+    )
+
+    if st.button(" Xác nhận", key="product_tuvan_confirm_btn", use_container_width=True):
+
+        st.session_state.waiting_for_product_choice = False
+
+        add_message("user", product_selected)
+
+        # Find product info
+
+        selected_p = None
+
+        for p in PRODUCTS:
+
+            if p["name"] == product_selected:
+
+                selected_p = p
+
+                break
+
+        if selected_p:
+
+            info = (
+
+                f"**{selected_p['name']}**\n\n"
+
+                f"Phí: {selected_p['price']}\n\n"
+
+                f"Chi tiết: {selected_p['url']}\n\n"
+
+            )
+
+            if selected_p.get('description'):
+
+                info += f"Mô tả: {selected_p['description']}\n\n"
+
+            if selected_p.get('coverage'):
+
+                info += "Phạm vi bảo vệ:\n"
+
+                for c in selected_p['coverage']:
+
+                    info += f"- {c}\n"
+
+                info += "\n"
+
+            if selected_p.get('exclusions'):
+
+                info += "Loại trừ:\n"
+
+                for e in selected_p['exclusions']:
+
+                    info += f"- {e}\n"
+
+                info += "\n"
+
+            info += (
+
+                "Anh/chị có muốn **đánh giá điều kiện tiếp nhận bồi thường** cho sản phẩm này không?\n\n"
+
+                "- Gõ **có** để bắt đầu\n"
+
+                "- Gõ **không** nếu chỉ cần thông tin"
+
+            )
+
+            st.session_state.asked_evaluate = True
+
+            add_message("assistant", info)
 
         st.rerun()
 
