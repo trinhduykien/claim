@@ -1039,7 +1039,7 @@ if st.session_state.waiting_for_welcome_choice and not st.session_state.current_
 
         " Tư vấn các sản phẩm bảo hiểm",
 
-        " Giải đáp thắc mắc về bồi thường",
+        " Giải đáp thắc mắc thường gặp",
 
         " Đánh giá điều kiện tiếp nhận bồi thường",
 
@@ -2040,7 +2040,7 @@ if user_input:
 
                     f"• Tư vấn sản phẩm bảo hiểm\n"
 
-                    f"• Giải đáp thắc mắc về bồi thường\n"
+                    f"• Giải đáp thắc mắc thường gặp\n"
 
                     f"• Đánh giá điều kiện tiếp nhận bồi thường\n\n"
 
@@ -2400,7 +2400,7 @@ if user_input:
 
                     f"• Tư vấn sản phẩm bảo hiểm\n"
 
-                    f"• Giải đáp thắc mắc về bồi thường\n"
+                    f"• Giải đáp thắc mắc thường gặp\n"
 
                     f"• Đánh giá điều kiện tiếp nhận bồi thường\n\n"
 
