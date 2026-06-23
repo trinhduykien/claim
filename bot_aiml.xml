@@ -1840,4 +1840,548 @@
 
 
 
+<!-- ============================================================ -->
+<!-- PHẦN 4: CÁC CATEGORY MỚI - HỖ TRỢ CSKH (giống bot Shopee) -->
+<!-- ============================================================ -->
+
+<!-- ============ 4.1 HỖ TRỢ ĐỔI TRẢ / BẢO HÀNH (quy trình khiếu nại) ============ -->
+
+<category>
+    <pattern>TOI MUON KHIEU NAI</pattern>
+    <template>
+        Anh/chị cần khiếu nại về kết quả bồi thường, vui lòng làm theo các bước sau:
+
+        Buoc 1: Lien he bo phan Giai quyet Boi thuong PJICO qua tong dai 1900 54 54 55 de trinh bay noi dung khiếu nại.
+
+        Buoc 2: Cung cap cac thong tin: ho so boi thuong, ma ho so, ten nguoi duoc bao hiem, ngay gay ro va ly do khong dong y.
+
+        Buoc 3: Nhan vien tiep nhan se ghi nhan va chuyen den bo phon xu ly trong thoi gian 3-5 ngay lam viec.
+
+        Buoc 4: Anh/chị se nhan duoc phan hoi bang van ban hoac cuoc goi tu truong boi boi thuong.
+
+        Neu khong nhan duoc phan hoi, vui long lien he lai tong dai 1900 54 54 55 hoac gui email den pjico@petrolimex.com.vn.
+    </template>
+</category>
+
+<category>
+    <pattern>KHIEU NAI BOI THUONG</pattern>
+    <template>
+        <srai>TOI MUON KHIEU NAI</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TOI KHONG DONG Y VOI KET QUA BOI THUONG</pattern>
+    <template>
+        Neu anh/chị khong dong y voi ket qua boi thuong, vui long thuc hien theo quy trinh khieu nai sau day:
+
+        1. Lien he bo phan Giai quyet Boi thuong PJICO qua tong dai 1900 54 54 55.
+
+        2. Cung cap ma ho so, ket qua boi thuong hien tai va ly do khong dong y.
+
+        3. Ho so se duoc xem xet lai boi truong boi boi thuong trong thoi gian 5-7 ngay lam viec.
+
+        4. Ket qua xet xet lai se duoc thong bao cho anh/chị bang van ban.
+
+        Anh/chị cung co the gui email khieu nai den pjico@petrolimex.com.vn hoac den dia chi Tang 21-22, toa nha Mipec, 229 Tay Son, phuong Kim Lien, Ha Noi.
+    </template>
+</category>
+
+<category>
+    <pattern>DUNG KY HOP DONG</pattern>
+    <template>
+        De yeu cau dung ky hoac cham dut hop dong bao hiem, anh/chị vui long thuc hien:
+
+        1. Lien he tong dai PJICO 1900 54 54 55 hoac den truc tiep van phong PJICO gan nhat.
+
+        2. Dinh kem yeu cau ghi ro ly do dung ky hop dong.
+
+        3. PJICO se tien hanh hieu chinh hoac cham dut hop dong theo quy dinh tai san pham va luat bao hiem.
+
+        Luu y: viec dung ky hop dong co the phat sinh cac khoan phi theo quy dinh cua san pham va thoa thuan cung nhu boi thuong phi da dong. Vui long tham khao chi tiet hop dong hoac hoi nhan vien tu van.
+    </template>
+</category>
+
+<category>
+    <pattern>CHAM DUT HOP DONG</pattern>
+    <template>
+        <srai>DUNG KY HOP DONG</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>HUY HOP DONG BAO HIEM</pattern>
+    <template>
+        <srai>DUNG KY HOP DONG</srai>
+    </template>
+</category>
+
+<!-- ============ 4.2 HỖ TRỢ TÀI KHOẢN / KHÁCH HÀNG ============ -->
+
+<category>
+    <pattern>TOI QUEN MAT MA KHOA</pattern>
+    <template>
+        Khi anh/chị quen mat ma khoa tai khoan, vui long lien he tong dai PJICO 1900 54 54 55 de duoc ho tro reset ma khoa. Nhan vien se xac nhan thong tin ca nhan roi huong dan anh/chị thiet lap lai mat ma khoa moi.
+    </template>
+</category>
+
+<category>
+    <pattern>TOI MUON DOI THONG TIN</pattern>
+    <template>
+        De doi thong tin tai khoan hoac thong tin ca nhan, vui long lien he tong dai PJICO 1900 54 54 55. Nhan vien se xac nhan danh tinh va huong dan anh/chị cap nhat thong tin moi.
+    </template>
+</category>
+
+<category>
+    <pattern>TOI MUON DOI TEN</pattern>
+    <template>
+        Viec doi ten tren hop dong bao hiem can thuc hien qua tong dai PJICO 1900 54 54 55 hoac den truc tiep van phong PJICO. Anh/chị can mang theo giay to xac nhan danh tinh (CCCD/ho chieu) va giay to lien quan den hop dong bao hiem. Nhan vien se huong dan qua trinh cap nhat.
+    </template>
+</category>
+
+<category>
+    <pattern>DOI MAT KHAU</pattern>
+    <template>
+        De doi mat khau tai khoan, vui long lien he tong dai PJICO 1900 54 54 55. Nhan vien se xac nhan thong tin ca nhan roi huong dan anh/chị thiet lap mat khau moi.
+    </template>
+</category>
+
+<category>
+    <pattern>QUEN MAT KHAU</pattern>
+    <template>
+        <srai>DOI MAT KHAU</srai>
+    </template>
+</category>
+
+<!-- ============ 4.3 HỎI VỀ THỜI GIAN XỬ LÝ ============ -->
+
+<category>
+    <pattern>BOI THUONG MAT BAO LAU</pattern>
+    <template>
+        Thoi gian xu ly boi thuong phu thuoc vao tung loai bao hiem va tinh chat ho so:
+
+        - Boi thuong nho, don gian: 5-7 ngay lam viec ke tu ngay nhan du day du ho so.
+
+        - Boi thuong phuc tap, can tham dinh: 15-30 ngay lam viec.
+
+        - Truong hop can xac minh them: co the keo dai hon 30 ngay, nhung PJICO se thong bao cho anh/chị tien do xu ly.
+
+        De theo doi tien do ho so, anh/chị co the lien he tong dai 1900 54 54 55 hoac truy cap website https://www.pjico.com.vn.
+    </template>
+</category>
+
+<category>
+    <pattern>XU LY BOI THUONG MAT BAO LAU</pattern>
+    <template>
+        <srai>BOI THUONG MAT BAO LAU</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>KHI NAO NHAN DUOC TIEN BOI THUONG</pattern>
+    <template>
+        <srai>BOI THUONG MAT BAO LAU</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>THOI HAN XU LY BOI THUONG</pattern>
+    <template>
+        <srai>BOI THUONG MAT BAO LAU</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>BOI THUONG MAT MAY NGAY</pattern>
+    <template>
+        <srai>BOI THUONG MAT BAO LAU</srai>
+    </template>
+</category>
+
+<!-- ============ 4.4 HỎI VỀ HỒ SƠ / TÀI LIỆU ============ -->
+
+<category>
+    <pattern>HO SO BOI THUONG CAN GI</pattern>
+    <template>
+        De lam thu tuc boi thuong, anh/chị can chuan bi cac giay to sau:
+
+        1. Giay bao hiem hoac hop dong bao hiem (ban chinh hoac ban sao).
+
+        2. Giay to xac nhan danh tinh nguoi duoc bao hiem (CCCD/ho chieu).
+
+        3. Don yeu cau boi thuong (theo mau cua PJICO).
+
+        4. Giay to chung minh su co: benh an, giay ra vien, giay bao cong an (neu la tai nan), giay xac nhan thiet hai (neu la tai san).
+
+        5. Giay uy quyen (neu nguoi nhan boi thuong khong phai nguoi duoc bao hiem).
+
+        6. Cac giay to khac theo yeu cau cua tung loai bao hiem.
+
+        Anh/chị co the download mau don va danh sach chi tiet tai website https://www.pjico.com.vn hoac lien he tong dai 1900 54 54 55.
+    </template>
+</category>
+
+<category>
+    <pattern>CAN NHUNG GIAY TO GI</pattern>
+    <template>
+        <srai>HO SO BOI THUONG CAN GI</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>GIAY TO BOI THUONG</pattern>
+    <template>
+        <srai>HO SO BOI THUONG CAN GI</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>CAN NHUNG GIAY TO GI DE BOI THUONG</pattern>
+    <template>
+        <srai>HO SO BOI THUONG CAN GI</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TOI BI MAT GIAY TO</pattern>
+    <template>
+        Neu anh/chị da lam mat giay to lien quan den boi thuong, vui long lam theo huong dan sau:
+
+        1. Lien he ngay tong dai PJICO 1900 54 54 55 de bao cao tinh trang mat giay to.
+
+        2. Nhan vien se huong dan anh/chị thu tuc xin cap lai hoac xac nhan thay the giay to.
+
+        3. Trong mot so truong hop, anh/chị co the can den truc tiep van phong PJICO de xac nhan danh tinh va lam thu tuc bo sung.
+
+        Luu y: khong nen viec bo ho so neu thieu giay to, vi PJICO co the huong dan bo sung sau. Vui long lien he som nhat co the.
+    </template>
+</category>
+
+<category>
+    <pattern>BI MAT GIAY TO</pattern>
+    <template>
+        <srai>TOI BI MAT GIAY TO</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>KHONG CON GIAY TO BOI THUONG</pattern>
+    <template>
+        <srai>TOI BI MAT GIAY TO</srai>
+    </template>
+</category>
+
+<!-- ============ 4.5 HỎI VỀ PHÍ BẢO HIỂM / ĐÓNG PHÍ ============ -->
+
+<category>
+    <pattern>DONG PHI BAO HIEM O DAU</pattern>
+    <template>
+        Anh/chị co the dong phi bao hiem theo cac cach sau:
+
+        1. Chuyen khoan ngan hang: Chuyen den tai khoan cua PJICO theo thong tin tren hoa don hoac thong bao dong phi.
+
+        2. Thu tien tai nha: PJICO co dich vu thu tien tai nha (ap dung mot so khu vuc, lien he tong dai de xac nhan).
+
+        3. Dien thoai qua cong truc tiep: Truc tiep den cac van phong PJICO tren toan quoc.
+
+        4. Cong thuc qua cong (neu co): Anh/chị co the tham khao website https://www.pjico.com.vn de biet them chi tiet.
+
+        Vui long lien he tong dai 1900 54 54 55 neu can ho tro.
+    </template>
+</category>
+
+<category>
+    <pattern>TOI MUON DONG PHI</pattern>
+    <template>
+        <srai>DONG PHI BAO HIEM O DAU</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>DONG PHI NHU THE NAO</pattern>
+    <template>
+        <srai>DONG PHI BAO HIEM O DAU</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>PHI BAO HIEM CO THE THANH TOAN GOI LAI KHONG</pattern>
+    <template>
+        Co, anh/chị co the thanh toan phi bao hiem gop lai (dong gop). Tuy nhien, viec dong gop phu thuoc vao san pham bao hiem va quy cua cong ty bao hiem. De biet chi tiet viec dong gop ap dung cho hop dong cua anh/chị, vui long lien he tong dai 1900 54 54 55 hoac xem quy dinh trong hop dong bao hiem.
+    </template>
+</category>
+
+<category>
+    <pattern>THANH TOAN GOI PHI</pattern>
+    <template>
+        <srai>PHI BAO HIEM CO THE THANH TOAN GOI LAI KHONG</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>DONG PHI GOI DUOC KHONG</pattern>
+    <template>
+        <srai>PHI BAO HIEM CO THE THANH TOAN GOI LAI KHONG</srai>
+    </template>
+</category>
+
+<!-- ============ 4.6 HỖ TRỢ KHI CẦN NGƯỜI THẬT ============ -->
+
+<category>
+    <pattern>TOI MUON NOI CHUYEN VOI NGUOI</pattern>
+    <template>
+        De duoc noi chuyen voi tu van vien that, vui long goi tong dai PJICO 1900 54 54 55. Thoi gian lam viec tu 8:00 den 17:00, tu Thu 2 den Thu 6. Ngoai gio lam viec, anh/chị co the gui email den pjico@petrolimex.com.vn, chung toi se lien he lai trong gio lam viec gan nhat.
+    </template>
+</category>
+
+<category>
+    <pattern>CHO TOI NOI CHUYEN VOI NHAN VIEN</pattern>
+    <template>
+        <srai>TOI MUON NOI CHUYEN VOI NGUOI</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TOI CAN TU VAN VIEN</pattern>
+    <template>
+        <srai>TOI MUON NOI CHUYEN VOI NGUOI</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>GOI TONG DAI</pattern>
+    <template>
+        Tong dai cham soc khach hang PJICO: 1900 54 54 55
+        Thoi gian lam viec: 8:00 - 17:00, Thu 2 - Thu 6.
+        Email: pjico@petrolimex.com.vn
+        Website: https://www.pjico.com.vn
+        Dia chi: Tang 21-22, toa nha Mipec, 229 Tay Son, phuong Kim Lien, Ha Noi.
+    </template>
+</category>
+
+<category>
+    <pattern>LIEN HE NHAN VIEN</pattern>
+    <template>
+        <srai>TOI MUON NOI CHUYEN VOI NGUOI</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TOI CAN NOI CHUYEN VOI NGUOI THAT</pattern>
+    <template>
+        <srai>TOI MUON NOI CHUYEN VOI NGUOI</srai>
+    </template>
+</category>
+
+<!-- ============ 4.7 CÂU HỎI THƯỜNG GẶP KHÁC ============ -->
+
+<category>
+    <pattern>TOI CO THE HUY BAO HIEM KHONG</pattern>
+    <template>
+        Co, anh/chị co the huy bao hiem theo quy dinh cua hop dong va Luat Kinh doanh Bao hiem. Tuy nhien:
+
+        - Neu huy trong thoi gian duoc huy (thuong 15-30 ngay dau ke tu ngay ky), anh/chị se duoc hoan tra toan bo phi da dong (tru phi quan ly neu co).
+
+        - Neu huy sau thoi gian duoc huy, anh/chị se duoc hoan tra phi theo bang gia tri hien tai cua hop dong (co the thap hon phi da dong).
+
+        De huy bao hiem, vui long lien he tong dai 1900 54 54 55 hoac gui don huy hop dong den van phong PJICO.
+    </template>
+</category>
+
+<category>
+    <pattern>BAO HIEM CO DUOC CHUYEN NHUONG KHONG</pattern>
+    <template>
+        Viec chuyen nhuong hop dong bao hiem phu thuoc vao loai bao hiem va quy dinh cua tung san pham:
+
+        - Bao hiem nhan tho: Co the duoc chuyen nhuong trong mot so truong hop theo quy dinh cua Luat Kinh doanh Bao hiem.
+
+        - Bao hiem phi nhan tho: Khong duoc chuyen nhuong.
+
+        - Bao hiem tai san: Phu thuoc vao quy dinh cua hop dong.
+
+        De biet chi tiet ap dung cho hop dong cua anh/chị, vui long lien he tong dai 1900 54 54 55 hoac tham khao hop dong bao hiem.
+    </template>
+</category>
+
+<category>
+    <pattern>TOI MUON DOI SAN PHAM</pattern>
+    <template>
+        Hien tai, PJICO khong ho tro doi san pham bao hiem sau khi da ky hop dong. Tuy nhien, anh/chị co the:
+
+        1. Huy hop dong hien tai (xem quy dinh huy huy hop dong).
+
+        2. Ky hop dong moi voi san pham phu hop hon.
+
+        Vui long lien he tong dai 1900 54 54 55 de duoc tu van chi tiet ve cac san pham phu hop voi nhu cau cua anh/chị.
+    </template>
+</category>
+
+<category>
+    <pattern>BAO HIEM CO HIEN LUC BAO LAU</pattern>
+    <template>
+        Thoi han bao hiem phu thuoc vao tung loai san pham va hop dong cu the. Anh/chị dang tham khao loai bao hiem nao?
+
+        - Bao hiem nhan tho: thoi han co the la 5, 10, 15, 20 nam hoac den mot tuoi nhat dinh.
+
+        - Bao hiem tai nan: thong thuong 1 nam, gia han nam.
+
+        - Bao hiem suc khoe: thong thuong 1 nam, gia han nam.
+
+        - Bao hiem tai san: theo thoi han thoa thuan trong hop dong.
+
+        Vui long cung cap ten san pham hoac lien he tong dai 1900 54 54 55 de duoc huong dan chi tiet.
+    </template>
+</category>
+
+<category>
+    <pattern>TOI CHUA NHAN DUOC GIAY CHUNG NHAN</pattern>
+    <template>
+        Neu anh/chị chua nhan duoc giay chung nhan bao hiem, vui long lam theo huong dan sau:
+
+        1. Kiem tra thoi gian: Giay chung nhan thuong duoc cap trong 5-10 ngay lam viec ke tu ngay ky hop dong.
+
+        2. Lien he tong dai PJICO 1900 54 54 55 de kiem tra trang thai cap giay chung nhan.
+
+        3. Neu giay chung nhan da duoc gui, anh/chị se duoc cung cap so van don hoac thoi gian du kien nhan duoc.
+
+        4. Anh/chị cung co the den truc tiep van phong PJICO de nhan giay chung nhan neu can gap.
+    </template>
+</category>
+
+<category>
+    <pattern>CHUA NHAN DUOC GIAY CHUNG NHAN BAO HIEM</pattern>
+    <template>
+        <srai>TOI CHUA NHAN DUOC GIAY CHUNG NHAN</srai>
+    </template>
+</category>
+
+<!-- ============ 4.8 XỬ LÝ KHIẾU NẠI DỊCH VỤ ============ -->
+
+<category>
+    <pattern>TOI KHONG HAI LONG VOI DICH VU</pattern>
+    <template>
+        PJICO rat xin loi vi trai nghiem khong phu y cua anh/chị. Chung toi luon lang nghe va cau thien de cai thien dich vu.
+
+        De chung toi co the xu ly, vui long cung cap:
+
+        1. Thoi diem va dia diem xay ra su co.
+
+        2. Noi dung khong hai long cu the.
+
+        3. Thong tin lien he cua anh/chị.
+
+        Anh/chị co the goi tong dai 1900 54 54 55 hoac gui email den pjico@petrolimex.com.vn. Chung toi se phan hoi trong thoi gian 3-5 ngay lam viec.
+    </template>
+</category>
+
+<category>
+    <pattern>DICH VU CUA BAN LAM</pattern>
+    <template>
+        PJICO thanh that xin loi vi su chua phu hop cua chung toi. Anh/chị vui long chia se noi dung khong hai long de chung toi kip thua nhan va cai thien. Xin vui long goi 1900 54 54 55 hoac gui email pjico@petrolimex.com.vn de cung cap gap y. Chung toi se phan hoi ket qua xu ly trong 3-5 ngay lam viec.
+    </template>
+</category>
+
+<category>
+    <pattern>PHAN HOI KHONG TOT</pattern>
+    <template>
+        <srai>TOI KHONG HAI LONG VOI DICH VU</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>DICH VU KEM</pattern>
+    <template>
+        <srai>TOI KHONG HAI LONG VOI DICH VU</srai>
+    </template>
+</category>
+
+<!-- ============ 4.9 CẬP NHẬT THÔNG TIN ============ -->
+
+<category>
+    <pattern>TOI CHUYEN NHA</pattern>
+    <template>
+        Khi anh/chị chuyen nha, vui long cap nhat lai dia chi de nhan duoc cac thong bao va giay to lien quan den hop dong bao hiem:
+
+        1. Lien he tong dai PJICO 1900 54 54 55 de thong bao dia chi moi.
+
+        2. Nhan vien se xac nhan danh tinh va cap nhat thong tin tren he thong.
+
+        3. Anh/chị cung co the gui email den pjico@petrolimex.com.vn voi noi dung: ho ten, ma hop dong, dia chi cu, dia chi moi.
+
+        4. Neu anh/chị den truc tiep, vui long mang theo CCCD/ho chieu va hop dong bao hiem.
+    </template>
+</category>
+
+<category>
+    <pattern>TOI DOI SO DIEN THOAI</pattern>
+    <template>
+        De cap nhat so dien thoai moi, vui long thuc hien:
+
+        1. Lien he tong dai PJICO 1900 54 54 55, nhan vien se xac nhan danh tinh va cap nhat so dien thoai moi.
+
+        2. Hoac gui email den pjico@petrolimex.com.vn voi thong tin: ho ten, ma hop dong, so dien thoai cu, so dien thoai moi.
+
+        3. Anh/chị cung co the den truc tiep van phong PJICO voi giay to xac nhan danh tinh.
+    </template>
+</category>
+
+<category>
+    <pattern>TOI MUON CAP NHAT THONG TIN</pattern>
+    <template>
+        <srai>TOI DOI SO DIEN THOAI</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>CAP NHAT THONG TIN CA NHAN</pattern>
+    <template>
+        <srai>TOI MUON CAP NHAT THONG TIN</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>DOI DIA CHI</pattern>
+    <template>
+        <srai>TOI CHUYEN NHA</srai>
+    </template>
+</category>
+
+<!-- ============ 4.10 HỎI VỀ KHUYẾN MÃI / ƯU ĐÃI ============ -->
+
+<category>
+    <pattern>CO KHUYEN MAI KHONG</pattern>
+    <template>
+        Cac chuong trinh khuyen mai va uu dai cua PJICO duoc cap nhat lien tuc. De biet thong tin khuyen mai hien tai, vui long:
+
+        1. Truy cap website https://www.pjico.com.vn de xem cac chuong trinh dang ap dung.
+
+        2. Lien he tong dai 1900 54 54 55 de duoc nhan vien tu van ve cac uu dai hien hanh.
+
+        3. Theo doi trang mang xa hoi cua PJICO de nhan thong bao khuyen mai som nhat.
+
+        Luu y: cac chuong trinh khuyen mai co the thay doi theo thoi gian va doi tuong khach hang.
+    </template>
+</category>
+
+<category>
+    <pattern>CO UU DAI KHONG</pattern>
+    <template>
+        <srai>CO KHUYEN MAI KHONG</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>CO GIAM GIA KHONG</pattern>
+    <template>
+        <srai>CO KHUYEN MAI KHONG</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>CO CHUONG TRINH KHUYEN MAI GI</pattern>
+    <template>
+        <srai>CO KHUYEN MAI KHONG</srai>
+    </template>
+</category>
+
 </aiml>
