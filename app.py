@@ -1186,18 +1186,6 @@ if st.session_state.waiting_for_product_choice and not st.session_state.current_
 
                 info += "\n"
 
-            info += (
-
-                "Anh/chị có muốn **đánh giá điều kiện tiếp nhận bồi thường** cho sản phẩm này không?\n\n"
-
-                "- Gõ **có** để bắt đầu\n"
-
-                "- Gõ **không** nếu chỉ cần thông tin"
-
-            )
-
-            st.session_state.asked_evaluate = True
-
             add_message("assistant", info)
 
         st.rerun()
