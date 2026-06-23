@@ -239,6 +239,7 @@ def init_state():
     if "chat_mode" not in st.session_state: st.session_state.chat_mode = True  # True = chat tự nhiên
     if "log_dir" not in st.session_state:
         st.session_state.log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "claim_logs")
+    if "waiting_for_welcome_choice" not in st.session_state: st.session_state.waiting_for_welcome_choice = False
 
 init_state()
 
@@ -416,13 +417,11 @@ st.markdown("---")
 if not st.session_state.started:
     add_message("assistant", (
         "Xin chào! 👋 Tôi là trợ lý ảo PJICO. 😊\n\n"
-        "Tôi có thể:\n"
-        "• Tư vấn các sản phẩm bảo hiểm\n"
-        "• Giải đáp thắc mắc về bồi thường\n"
-        "• Đánh giá điều kiện tiếp nhận bồi thường\n\n"
-        "Anh/chị cần hỗ trợ gì ạ?"
+        "Tôi có thể hỗ trợ anh/chị các nhu cầu sau.\n"
+        "Vui lòng **chọn một lựa chọn** bên dưới nhé! 👇"
     ))
     st.session_state.started = True
+    st.session_state.waiting_for_welcome_choice = True
 
 # ============================================================
 # AUTO-RENDER QUESTIONS / RESULTS (khi đang trong claim flow)
@@ -508,6 +507,57 @@ elif current_product and st.session_state.finished and st.session_state.result:
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
+
+# ============================================================
+# WELCOME RADIO BUTTONS — Chọn nhu cầu hỗ trợ
+# ============================================================
+
+if st.session_state.waiting_for_welcome_choice and not st.session_state.current_product and not st.session_state.waiting_for_text:
+    welcome_options = [
+        "💼 Tư vấn các sản phẩm bảo hiểm",
+        "❓ Giải đáp thắc mắc về bồi thường",
+        "📋 Đánh giá điều kiện tiếp nhận bồi thường",
+    ]
+    welcome_selected = st.radio(
+        "Chọn nhu cầu hỗ trợ:",
+        welcome_options,
+        key="welcome_radio",
+        label_visibility="collapsed",
+    )
+    if st.button("✅ Xác nhận", key="welcome_confirm_btn", use_container_width=True):
+        st.session_state.waiting_for_welcome_choice = False
+        add_message("user", welcome_selected)
+        if "Đánh giá điều kiện tiếp nhận" in welcome_selected:
+            st.session_state.asked_evaluate = True
+            st.session_state.waiting_for_text = True
+            add_message("assistant", (
+                "Dạ! Anh/chị muốn **đánh giá điều kiện tiếp nhận bồi thường**. 😊\n\n"
+                "Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới nhé!"
+            ))
+        elif "Tư vấn" in welcome_selected:
+            add_message("assistant", (
+                "Dạ! Tôi có thể tư vấn về các sản phẩm bảo hiểm PJICO:\n\n"
+                "🏠 Bảo hiểm nhà ở (Combo 360, Phú Gia)\n"
+                "🚗 Bảo hiểm ô tô, xe máy (TNDS)\n"
+                "💊 Bảo hiểm sức khỏe (Family Care, Care Plus)\n"
+                "👤 Bảo hiểm tai nạn con người (24/24, mức cao)\n"
+                "🏢 Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)\n"
+                "🎒 Bảo hiểm học sinh, sinh viên\n"
+                "✈️ Bảo hiểm du lịch trong nước & quốc tế\n"
+                "⚡ Bảo hiểm tai nạn người sử dụng điện\n"
+                "🛡️ Bảo hiểm trách nhiệm công cộng\n\n"
+                "Anh/chị quan tâm sản phẩm nào ạ?"
+            ))
+        elif "Giải đáp" in welcome_selected:
+            add_message("assistant", (
+                "Dạ! Tôi có thể giải đáp thắc mắc về:\n\n"
+                "📋 Quy trình bồi thường PJICO\n"
+                "📞 Thông tin liên hệ\n"
+                "🕐 Giờ làm việc\n"
+                "💰 Mức bồi thường, phí bảo hiểm\n\n"
+                "Anh/chị muốn hỏi gì ạ? 😊"
+            ))
+        st.rerun()
 
 # ============================================================
 # RADIO BUTTONS FOR CLAIM QUESTIONS

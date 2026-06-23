@@ -819,4 +819,104 @@
     </template>
 </category>
 
+<!-- ============================================================ -->
+<!-- PHẦN 3: CATEGORY MỚI — WELCOME RADIO BUTTON OPTIONS        -->
+<!-- (Thêm mới, không ghi đè category cũ)                         -->
+<!-- ============================================================ -->
+
+<!-- ============ TƯ VẤN SẢN PHẨM ============ -->
+
+<category>
+    <pattern>TU VAN SAN PHAM BAO HIEM</pattern>
+    <template>
+        Dạ! Tôi có thể tư vấn về các sản phẩm bảo hiểm PJICO:
+        🏠 Bảo hiểm nhà ở (Combo 360, Phú Gia)
+        🚗 Bảo hiểm ô tô, xe máy (TNDS)
+        💊 Bảo hiểm sức khỏe (Family Care, Care Plus)
+        👤 Bảo hiểm tai nạn con người (24/24, mức cao)
+        🏢 Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
+        🎒 Bảo hiểm học sinh, sinh viên
+        ✈️ Bảo hiểm du lịch trong nước &amp; quốc tế
+        ⚡ Bảo hiểm tai nạn người sử dụng điện
+        🛡️ Bảo hiểm trách nhiệm công cộng
+
+        Anh/chị quan tâm sản phẩm nào ạ?
+    </template>
+</category>
+
+<category>
+    <pattern>TU VAN CAC SAN PHAM BAO HIEM</pattern>
+    <template>
+        <srai>TU VAN SAN PHAM BAO HIEM</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TOI CAN TU VAN SAN PHAM</pattern>
+    <template>
+        <srai>TU VAN SAN PHAM BAO HIEM</srai>
+    </template>
+</category>
+
+<!-- ============ GIẢI ĐÁP THẮC MẮC ============ -->
+
+<category>
+    <pattern>GIAI DAP THAC MAC</pattern>
+    <template>
+        Dạ! Tôi có thể giải đáp thắc mắc về:
+        📋 Quy trình bồi thường PJICO
+        📞 Thông tin liên hệ
+        🕐 Giờ làm việc
+        💰 Mức bồi thường, phí bảo hiểm
+
+        Anh/chị muốn hỏi gì ạ? 😊
+    </template>
+</category>
+
+<category>
+    <pattern>GIAI DAP THAC MAC VE BOI THUONG</pattern>
+    <template>
+        <srai>GIAI DAP THAC MAC</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TOI MUON HOI VE BOI THUONG</pattern>
+    <template>
+        <srai>GIAI DAP THAC MAC</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>HOI VE BOI THUONG</pattern>
+    <template>
+        <srai>GIAI DAP THAC MAC</srai>
+    </template>
+</category>
+
+<!-- ============ ĐÁNH GIÁ ĐIỀU KIỆN (redirect via srai) ============ -->
+
+<category>
+    <pattern>DANH GIA DIEU KIEN TIEP NHAN BOI THUONG</pattern>
+    <template>
+        <srai>DANH GIA BOI THUONG</srai>
+    </template>
+</category>
+
+<!-- ============ CHUYỂN HƯỚNG TỪ WELCOME OPTIONS ============ -->
+
+<category>
+    <pattern>TU VAN CAC SAN PHAM</pattern>
+    <template>
+        <srai>TU VAN SAN PHAM BAO HIEM</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>GIAI DAP</pattern>
+    <template>
+        <srai>GIAI DAP THAC MAC</srai>
+    </template>
+</category>
+
 </aiml>
