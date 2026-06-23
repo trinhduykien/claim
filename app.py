@@ -1218,7 +1218,7 @@ if st.session_state.waiting_for_faq_choice and not st.session_state.current_prod
 
             ))
 
-            st.session_state.waiting_for_continue_choice = True
+        st.session_state.waiting_for_continue_choice = True
 
         st.rerun()
 
