@@ -482,6 +482,8 @@ def init_state():
 
     if "waiting_for_welcome_choice" not in st.session_state: st.session_state.waiting_for_welcome_choice = False
     if "waiting_for_product_choice" not in st.session_state: st.session_state.waiting_for_product_choice = False
+    st.session_state.waiting_for_faq_choice = False
+    if "waiting_for_faq_choice" not in st.session_state: st.session_state.waiting_for_faq_choice = False
     if "waiting_for_product_choice" not in st.session_state: st.session_state.waiting_for_product_choice = False
 
 
@@ -1088,19 +1090,130 @@ if st.session_state.waiting_for_welcome_choice and not st.session_state.current_
 
         elif "Giải đáp" in welcome_selected:
 
+            st.session_state.waiting_for_faq_choice = True
+
             add_message("assistant", (
 
-                "Dạ! Tôi có thể giải đáp thắc mắc về:\n\n"
+                "Dạ! Tôi có thể giải đáp thắc mắc của anh/chị.\n\n"
 
-                " Quy trình bồi thường PJICO\n"
+                "Vui lòng **chọn chủ đề** bên dưới để biết thêm chi tiết!"
 
-                " Thông tin liên hệ\n"
+            ))
 
-                " Giờ làm việc\n"
 
-                " Mức bồi thường, phí bảo hiểm\n\n"
+# ============================================================
 
-                "Anh/chị muốn hỏi gì ạ? "
+# FAQ CHOICE RADIO BUTTONS — Chọn chủ đề giải đáp
+
+# ============================================================
+
+
+
+if st.session_state.waiting_for_faq_choice and not st.session_state.current_product and not st.session_state.waiting_for_text and not st.session_state.waiting_for_product_choice:
+
+    faq_options = [
+
+        "Quy trình bồi thường PJICO",
+
+        "Thông tin liên hệ",
+
+        "Giờ làm việc",
+
+        "Mức bồi thường, phí bảo hiểm",
+
+    ]
+
+    faq_selected = st.radio(
+
+        "Chọn chủ đề:",
+
+        faq_options,
+
+        key="faq_radio",
+
+        label_visibility="collapsed",
+
+    )
+
+    if st.button(" Xác nhận", key="faq_confirm_btn", use_container_width=True):
+
+        st.session_state.waiting_for_faq_choice = False
+
+        add_message("user", faq_selected)
+
+        if "Quy trình" in faq_selected:
+
+            add_message("assistant", (
+
+                "Quy trình bồi thường PJICO:\n\n"
+
+                "1. Thông báo sự cố cho PJICO (trong thời hạn quy định)\n"
+
+                "2. Chuẩn bị hồ sơ yêu cầu bồi thường\n"
+
+                "3. PJICO tiếp nhận và thẩm định hồ sơ\n"
+
+                "4. Thanh toán bồi thường\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        elif "Thông tin liên hệ" in faq_selected:
+
+            add_message("assistant", (
+
+                "Thông tin liên hệ PJICO:\n\n"
+
+                "Tổng đài: 1900 5555 58\n"
+
+                "Website: https://www.pjico.com.vn\n"
+
+                "Email: info@pjico.com.vn\n"
+
+                "Trụ sở chính: Tầng 8, tòa nhà VPI, 218 Nguyễn Trãi, Thanh Xuân, Hà Nội\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        elif "Giờ làm việc" in faq_selected:
+
+            add_message("assistant", (
+
+                "Giờ làm việc của PJICO:\n\n"
+
+                "Thứ 2 - Thứ 6: 8:00 - 17:00\n"
+
+                "Thứ 7: 8:00 - 12:00\n"
+
+                "Chủ nhật: Nghỉ\n\n"
+
+                "Tuy nhiên, trợ lý ảo sẵn sàng hỗ trợ anh/chị 24/7!\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        elif "Mức bồi thường" in faq_selected:
+
+            add_message("assistant", (
+
+                "Mức bồi thường và phí bảo hiểm:\n\n"
+
+                "Mức bồi thường phụ thuộc vào sản phẩm và số tiền bảo hiểm ghi trong hợp đồng.\n\n"
+
+                "Phi bảo hiểm tham khảo:\n"
+
+                "- Combo 360 ô tô: 599.000đ/năm\n"
+
+                "- Combo 360 xe máy: 199.000đ/năm\n"
+
+                "- Family Care: 2-11.2 triệu/năm\n"
+
+                "- Các sản phẩm khác: theo thỏa thuận/biểu phí\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
 
             ))
 
