@@ -1,922 +1,1843 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <aiml version="1.0">
 
+
+
 <!-- ============================================================ -->
-<!-- PHẦN 1: CÁC CATEGORY CŨ (giữ nguyên, đã sửa lỗi cú pháp)     -->
+
+<!-- PHẦN 1: CÁC CATEGORY CŨ (giữ nguyên, đã sửa lỗi cú pháp) -->
+
 <!-- ============================================================ -->
+
+
 
 <!-- ============ KHOI TAO & CHAO HOI ============ -->
 
+
+
 <category>
+
     <pattern>XIN CHAO</pattern>
+
     <template>
-        Xin chào! 👋 Tôi là trợ lý ảo PJICO.
+
+        Xin chào! Tôi là trợ lý ảo PJICO.
+
         Tôi có thể hỗ trợ anh/chị đánh giá điều kiện tiếp nhận bồi thường bảo hiểm.
-        Anh/chị cần hỗ trợ gì ạ? 😊
+
+        Anh/chị cần hỗ trợ gì ạ? 
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>CHAO</pattern>
+
     <template>
-        Xin chào! 👋 Tôi là trợ lý ảo PJICO.
+
+        Xin chào! Tôi là trợ lý ảo PJICO.
+
         Tôi có thể hỗ trợ anh/chị đánh giá điều kiện tiếp nhận bồi thường bảo hiểm.
-        Anh/chị cần hỗ trợ gì ạ? 😊
+
+        Anh/chị cần hỗ trợ gì ạ? 
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>HELLO</pattern>
+
     <template>
-        Xin chào! 👋 Tôi là trợ lý ảo PJICO.
+
+        Xin chào! Tôi là trợ lý ảo PJICO.
+
         Tôi có thể hỗ trợ anh/chị đánh giá điều kiện tiếp nhận bồi thường bảo hiểm.
-        Anh/chị cần hỗ trợ gì ạ? 😊
+
+        Anh/chị cần hỗ trợ gì ạ? 
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>HI</pattern>
+
     <template>
-        Xin chào! 👋 Tôi là trợ lý ảo PJICO.
+
+        Xin chào! Tôi là trợ lý ảo PJICO.
+
         Tôi có thể hỗ trợ anh/chị đánh giá điều kiện tiếp nhận bồi thường bảo hiểm.
-        Anh/chị cần hỗ trợ gì ạ? 😊
+
+        Anh/chị cần hỗ trợ gì ạ? 
+
     </template>
+
 </category>
+
+
 
 <!-- ============ CẢM ƠN ============ -->
 
+
+
 <category>
+
     <pattern>CAM ON</pattern>
-    <template>Cảm ơn anh/chị đã sử dụng dịch vụ của PJICO! 😊</template>
+
+    <template>Cảm ơn anh/chị đã sử dụng dịch vụ của PJICO! </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>THANK YOU</pattern>
-    <template>Cảm ơn anh/chị đã sử dụng dịch vụ của PJICO! 😊</template>
+
+    <template>Cảm ơn anh/chị đã sử dụng dịch vụ của PJICO! </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>CAM ON NHIEU</pattern>
-    <template>Rất vui được hỗ trợ anh/chị! 😊</template>
+
+    <template>Rất vui được hỗ trợ anh/chị! </template>
+
 </category>
+
+
 
 <!-- ============ HỎI TÊN ============ -->
 
+
+
 <category>
+
     <pattern>TOI TEN LA *</pattern>
+
     <template>
+
         <set name="customername"><star/></set>
-        Chào <get name="customername"/>! 😊 Rất vui được gặp anh/chị.
+
+        Chào <get name="customername"/>! Rất vui được gặp anh/chị.
+
         Anh/chị cần hỗ trợ gì ạ? Tôi có thể đánh giá điều kiện tiếp nhận bồi thường bảo hiểm cho anh/chị.
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>TEN TOI LA *</pattern>
+
     <template>
+
         <set name="customername"><star/></set>
-        Chào <get name="customername"/>! 😊 Rất vui được gặp anh/chị.
+
+        Chào <get name="customername"/>! Rất vui được gặp anh/chị.
+
         Anh/chị cần hỗ trợ gì ạ?
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>TOI LA *</pattern>
+
     <template>
+
         <set name="customername"><star/></set>
-        Chào <get name="customername"/>! 😊 Rất vui được gặp anh/chị.
+
+        Chào <get name="customername"/>! Rất vui được gặp anh/chị.
+
         Anh/chị cần hỗ trợ gì ạ?
+
     </template>
+
 </category>
+
+
 
 <!-- ============ SẢN PHẨM ============ -->
 
-<category>
-    <pattern>TOI MUON YEU CAU BOI THUONG *</pattern>
-    <template>
-        __CLAIM_REQUEST__
-    </template>
-</category>
+
 
 <category>
-    <pattern>TOI MUON BOI THUONG *</pattern>
+
+    <pattern>TOI MUON YEU CAU BOI THUONG *</pattern>
+
     <template>
+
         __CLAIM_REQUEST__
+
     </template>
+
 </category>
+
+
+
+<category>
+
+    <pattern>TOI MUON BOI THUONG *</pattern>
+
+    <template>
+
+        __CLAIM_REQUEST__
+
+    </template>
+
+</category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — CÓ ============ -->
 
+
+
 <category>
+
     <pattern>CO</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DA</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>UNG</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>YEAH</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>YES</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DUNG</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DUNG ROI</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>PHAI</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>CHINH XAC</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>CHAC CHAN</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DUOC</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>ROI</pattern>
+
     <template>__ANSWER__:Có</template>
+
 </category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG ============ -->
 
+
+
 <category>
+
     <pattern>KHONG</pattern>
+
     <template>__ANSWER__:Không</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>KO</pattern>
+
     <template>__ANSWER__:Không</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>NO</pattern>
+
     <template>__ANSWER__:Không</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>NOPE</pattern>
+
     <template>__ANSWER__:Không</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>CHUA</pattern>
+
     <template>__ANSWER__:Chưa thông báo</template>
+
 </category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG RÕ ============ -->
 
+
+
 <category>
+
     <pattern>KHONG RO</pattern>
+
     <template>__ANSWER__:Không rõ</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>KHONG BIET</pattern>
+
     <template>__ANSWER__:Không rõ</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>KHONG CHAC</pattern>
+
     <template>__ANSWER__:Không rõ</template>
+
 </category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — CHƯA THÔNG BÁO ============ -->
 
+
+
 <category>
+
     <pattern>CHUA THONG BAO</pattern>
+
     <template>__ANSWER__:Chưa thông báo</template>
+
 </category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — ĐANG CHUẨN BỊ ============ -->
 
+
+
 <category>
+
     <pattern>DANG CHUAN BI</pattern>
+
     <template>__ANSWER__:Đang chuẩn bị</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DANG XU LY</pattern>
+
     <template>__ANSWER__:Đang chuẩn bị</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DANG</pattern>
+
     <template>__ANSWER__:Đang chuẩn bị</template>
+
 </category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — CHƯA GỬI ============ -->
 
+
+
 <category>
+
     <pattern>CHUA GUI</pattern>
+
     <template>__ANSWER__:Chưa gửi</template>
+
 </category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — VIỆT NAM ============ -->
 
-<category>
-    <pattern>VIET NAM</pattern>
-    <template>__ANSWER__:Việt Nam</template>
-</category>
+
 
 <category>
-    <pattern>NGUOI VIET NAM</pattern>
+
+    <pattern>VIET NAM</pattern>
+
     <template>__ANSWER__:Việt Nam</template>
+
 </category>
+
+
+
+<category>
+
+    <pattern>NGUOI VIET NAM</pattern>
+
+    <template>__ANSWER__:Việt Nam</template>
+
+</category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — NGƯỜI NƯỚC NGOÀI ============ -->
 
-<category>
-    <pattern>NGUOI NUOC NGOAI</pattern>
-    <template>__ANSWER__:Người nước ngoài định cư tại VN</template>
-</category>
+
 
 <category>
-    <pattern>NUOC NGOAI</pattern>
+
+    <pattern>NGUOI NUOC NGOAI</pattern>
+
     <template>__ANSWER__:Người nước ngoài định cư tại VN</template>
+
 </category>
+
+
+
+<category>
+
+    <pattern>NUOC NGOAI</pattern>
+
+    <template>__ANSWER__:Người nước ngoài định cư tại VN</template>
+
+</category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — KHÁC ============ -->
 
+
+
 <category>
+
     <pattern>KHAC</pattern>
+
     <template>__ANSWER__:Khác</template>
+
 </category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — CẤP CỨU ============ -->
 
+
+
 <category>
+
     <pattern>CAP CUU</pattern>
+
     <template>__ANSWER__:Cấp cứu - không cần chấp thuận trước</template>
+
 </category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — CÓ ĐÃ THÔNG BÁO ============ -->
 
+
+
 <category>
+
     <pattern>CO DA THONG BAO VA DUOC CHAP THUAN</pattern>
+
     <template>__ANSWER__:Có, đã thông báo và được chấp thuận</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>CO DA THONG BAO</pattern>
+
     <template>__ANSWER__:Có, đã thông báo và được chấp thuận</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DA THONG BAO DUOC CHAP THUAN</pattern>
+
     <template>__ANSWER__:Có, đã thông báo và được chấp thuận</template>
+
 </category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — CHƯA THÔNG BÁO (chưa chấp thuận) ============ -->
 
-<category>
-    <pattern>CO CHUA THONG BAO</pattern>
-    <template>__ANSWER__:Có, chưa thông báo</template>
-</category>
+
 
 <category>
-    <pattern>CHUA THONG BAO CHUA DUOC CHAP THUAN</pattern>
+
+    <pattern>CO CHUA THONG BAO</pattern>
+
     <template>__ANSWER__:Có, chưa thông báo</template>
+
 </category>
+
+
+
+<category>
+
+    <pattern>CHUA THONG BAO CHUA DUOC CHAP THUAN</pattern>
+
+    <template>__ANSWER__:Có, chưa thông báo</template>
+
+</category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG PHẢI TÌNH TRẠNG CÓ SẴN ============ -->
 
-<category>
-    <pattern>KHONG PHAI TINH TRANG CO SAN</pattern>
-    <template>__ANSWER__:Không phải tình trạng có sẵn</template>
-</category>
+
 
 <category>
-    <pattern>KHONG PHAI BENH CO SAN</pattern>
+
+    <pattern>KHONG PHAI TINH TRANG CO SAN</pattern>
+
     <template>__ANSWER__:Không phải tình trạng có sẵn</template>
+
 </category>
+
+
+
+<category>
+
+    <pattern>KHONG PHAI BENH CO SAN</pattern>
+
+    <template>__ANSWER__:Không phải tình trạng có sẵn</template>
+
+</category>
+
+
 
 <!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG, CHƯA LÀM ============ -->
 
+
+
 <category>
+
     <pattern>CHUA LAM</pattern>
+
     <template>__ANSWER__:Không, chưa làm</template>
+
 </category>
+
+
 
 <!-- ============ BẮT ĐẦU LẠI ============ -->
 
+
+
 <category>
+
     <pattern>BAT DAU LAI</pattern>
+
     <template>__RESTART__</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>RESET</pattern>
+
     <template>__RESTART__</template>
+
 </category>
+
+
 
 <category>
+
     <pattern>LAM LAI</pattern>
+
     <template>__RESTART__</template>
+
 </category>
 
+
+
 <!-- ============================================================ -->
-<!-- PHẦN 2: CATEGORY MỚI — HỘI THOẠI TỰ NHIÊN                    -->
+
+<!-- PHẦN 2: CATEGORY MỚI — HỘI THOẠI TỰ NHIÊN -->
+
 <!-- ============================================================ -->
+
+
 
 <!-- ============ HỎI THÔNG TIN PJICO ============ -->
 
+
+
 <category>
+
     <pattern>PJICO LA GI</pattern>
+
     <template>
-        PJICO (Tổng Công ty Cổ phần Bảo hiểm Petrolimex) là doanh nghiệp bảo hiểm phi nhân thọ hàng đầu tại Việt Nam, trực thuộc Tập đoàn Xăng dầu Việt Nam. 🏢
+
+        PJICO (Tổng Công ty Cổ phần Bảo hiểm Petrolimex) là doanh nghiệp bảo hiểm phi nhân thọ hàng đầu tại Việt Nam, trực thuộc Tập đoàn Xăng dầu Việt Nam. 
+
         Anh/chị cần hỗ trợ gì thêm không ạ?
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>BAO HIEM PJICO LA GI</pattern>
+
     <template>
-        PJICO (Tổng Công ty Cổ phần Bảo hiểm Petrolimex) là doanh nghiệp bảo hiểm phi nhân thọ hàng đầu tại Việt Nam, trực thuộc Tập đoàn Xăng dầu Việt Nam. 🏢
+
+        PJICO (Tổng Công ty Cổ phần Bảo hiểm Petrolimex) là doanh nghiệp bảo hiểm phi nhân thọ hàng đầu tại Việt Nam, trực thuộc Tập đoàn Xăng dầu Việt Nam. 
+
         Anh/chị cần hỗ trợ gì thêm không ạ?
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>BAN LA AI</pattern>
+
     <template>
-        Tôi là trợ lý ảo của PJICO! 🤖 Tôi có thể hỗ trợ anh/chị:
+
+        Tôi là trợ lý ảo của PJICO! Tôi có thể hỗ trợ anh/chị:
+
         • Đánh giá điều kiện tiếp nhận bồi thường bảo hiểm
+
         • Tư vấn các sản phẩm bảo hiểm của PJICO
+
         • Giải đáp thắc mắc về quy trình bồi thường
 
-        Anh/chị cần hỗ trợ gì ạ? 😊
+
+
+        Anh/chị cần hỗ trợ gì ạ? 
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>BAN CO THE LAM GI</pattern>
+
     <template>
+
         Tôi có thể hỗ trợ anh/chị:
+
         • Đánh giá điều kiện tiếp nhận bồi thường bảo hiểm
+
         • Tư vấn các sản phẩm bảo hiểm PJICO
+
         • Giải đáp thắc mắc về quy trình bồi thường
 
-        Anh/chị cần hỗ trợ gì ạ? 😊
+
+
+        Anh/chị cần hỗ trợ gì ạ? 
+
     </template>
+
 </category>
+
+
 
 <category>
+
     <pattern>BAN GIUP DUOC GI</pattern>
+
     <template>
+
         Tôi có thể hỗ trợ anh/chị:
+
         • Đánh giá điều kiện tiếp nhận bồi thường bảo hiểm
+
         • Tư vấn các sản phẩm bảo hiểm PJICO
+
         • Giải đáp thắc mắc về quy trình bồi thường
 
-        Anh/chị cần hỗ trợ gì ạ? 😊
+
+
+        Anh/chị cần hỗ trợ gì ạ? 
+
     </template>
+
 </category>
+
+
 
 <!-- ============ HỎI LIÊN HỆ ============ -->
 
+
+
 <category>
+
     <pattern>LIEN HE PJICO</pattern>
+
     <template>
-        📞 Tổng đài PJICO: 1900 5555 58
-        🌐 Website: https://www.pjico.com.vn
-        📧 Email: info@pjico.com.vn
+
+         Tổng đài PJICO: 1900 5555 58
+
+         Website: https://www.pjico.com.vn
+
+         Email: info@pjico.com.vn
+
+
 
         Anh/chị cần hỗ trợ gì thêm không ạ?
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>SO DIEN THOAI PJICO</pattern>
+
     <template>
-        📞 Tổng đài PJICO: 1900 5555 58
+
+         Tổng đài PJICO: 1900 5555 58
+
         Anh/chị cần hỗ trợ gì thêm không ạ?
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DIA CHI PJICO</pattern>
+
     <template>
-        🏢 Trụ sở chính: Tầng 8, tòa nhà VPI, 218 Nguyễn Trãi, Thanh Xuân, Hà Nội
-        🌐 Website: https://www.pjico.com.vn
+
+         Trụ sở chính: Tầng 8, tòa nhà VPI, 218 Nguyễn Trãi, Thanh Xuân, Hà Nội
+
+         Website: https://www.pjico.com.vn
+
         Anh/chị cần hỗ trợ gì thêm không ạ?
+
     </template>
+
 </category>
+
+
 
 <!-- ============ HỎI GIỜ LÀM VIỆC ============ -->
 
+
+
 <category>
+
     <pattern>GIO LAM VIEC</pattern>
+
     <template>
-        🕐 Giờ làm việc của PJICO:
+
+         Giờ làm việc của PJICO:
+
         • Thứ 2 - Thứ 6: 8:00 - 17:00
+
         • Thứ 7: 8:00 - 12:00
+
         • Chủ nhật: Nghỉ
 
-        Tuy nhiên, tôi luôn sẵn sàng hỗ trợ anh/chị 24/7! 😊
+
+
+        Tuy nhiên, tôi luôn sẵn sàng hỗ trợ anh/chị 24/7! 
+
     </template>
+
 </category>
+
+
 
 <category>
+
     <pattern>GIỜ LÀM VIỆC</pattern>
+
     <template>
-        🕐 Giờ làm việc của PJICO:
+
+         Giờ làm việc của PJICO:
+
         • Thứ 2 - Thứ 6: 8:00 - 17:00
+
         • Thứ 7: 8:00 - 12:00
+
         • Chủ nhật: Nghỉ
 
-        Tuy nhiên, tôi luôn sẵn sàng hỗ trợ anh/chị 24/7! 😊
+
+
+        Tuy nhiên, tôi luôn sẵn sàng hỗ trợ anh/chị 24/7! 
+
     </template>
+
 </category>
+
+
 
 <!-- ============ HỎI QUY TRÌNH BỒI THƯỜNG ============ -->
 
+
+
 <category>
+
     <pattern>QUY TRINH BOI THUONG</pattern>
+
     <template>
-        📋 Quy trình bồi thường PJICO:
+
+         Quy trình bồi thường PJICO:
+
         1. Thông báo sự cố cho PJICO (trong thời hạn quy định)
+
         2. Chuẩn bị hồ sơ yêu cầu bồi thường
+
         3. PJICO tiếp nhận và thẩm định hồ sơ
+
         4. Thanh toán bồi thường
 
-        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 😊
+
+
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>QUY TRINH BOI THUONG NHU THE NAO</pattern>
+
     <template>
-        📋 Quy trình bồi thường PJICO:
+
+         Quy trình bồi thường PJICO:
+
         1. Thông báo sự cố cho PJICO (trong thời hạn quy định)
+
         2. Chuẩn bị hồ sơ yêu cầu bồi thường
+
         3. PJICO tiếp nhận và thẩm định hồ sơ
+
         4. Thanh toán bồi thường
 
-        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 😊
+
+
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 
+
     </template>
+
 </category>
+
+
 
 <category>
+
     <pattern>CACH BOI THUONG</pattern>
+
     <template>
-        📋 Quy trình bồi thường PJICO:
+
+         Quy trình bồi thường PJICO:
+
         1. Thông báo sự cố cho PJICO (trong thời hạn quy định)
+
         2. Chuẩn bị hồ sơ yêu cầu bồi thường
+
         3. PJICO tiếp nhận và thẩm định hồ sơ
+
         4. Thanh toán bồi thường
 
-        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 😊
+
+
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 
+
     </template>
+
 </category>
+
+
 
 <!-- ============ HỎI SẢN PHẨM ============ -->
 
+
+
 <category>
+
     <pattern>PJICO CO SAN PHAM NAO</pattern>
+
     <template>
+
         PJICO cung cấp nhiều sản phẩm bảo hiểm phi nhân thọ, bao gồm:
-        🏠 Bảo hiểm nhà ở (Combo 360, Phú Gia)
-        🚗 Bảo hiểm ô tô, xe máy (TNDS)
-        💊 Bảo hiểm sức khỏe (Family Care, Care Plus)
-        👤 Bảo hiểm tai nạn con người (24/24, mức cao)
-        🏢 Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
-        🎒 Bảo hiểm học sinh, sinh viên
-        ✈️ Bảo hiểm du lịch trong nước &amp; quốc tế
-        ⚡ Bảo hiểm tai nạn người sử dụng điện
-        🛡️ Bảo hiểm trách nhiệm công cộng
+
+         Bảo hiểm nhà ở (Combo 360, Phú Gia)
+
+         Bảo hiểm ô tô, xe máy (TNDS)
+
+         Bảo hiểm sức khỏe (Family Care, Care Plus)
+
+         Bảo hiểm tai nạn con người (24/24, mức cao)
+
+         Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
+
+         Bảo hiểm học sinh, sinh viên
+
+         Bảo hiểm du lịch trong nước &amp; quốc tế
+
+         Bảo hiểm tai nạn người sử dụng điện
+
+         Bảo hiểm trách nhiệm công cộng
+
+
 
         Anh/chị quan tâm sản phẩm nào ạ?
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>CAC SAN PHAM BAO HIEM</pattern>
+
     <template>
+
         PJICO cung cấp nhiều sản phẩm bảo hiểm phi nhân thọ, bao gồm:
-        🏠 Bảo hiểm nhà ở (Combo 360, Phú Gia)
-        🚗 Bảo hiểm ô tô, xe máy (TNDS)
-        💊 Bảo hiểm sức khỏe (Family Care, Care Plus)
-        👤 Bảo hiểm tai nạn con người (24/24, mức cao)
-        🏢 Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
-        🎒 Bảo hiểm học sinh, sinh viên
-        ✈️ Bảo hiểm du lịch trong nước &amp; quốc tế
-        ⚡ Bảo hiểm tai nạn người sử dụng điện
-        🛡️ Bảo hiểm trách nhiệm công cộng
+
+         Bảo hiểm nhà ở (Combo 360, Phú Gia)
+
+         Bảo hiểm ô tô, xe máy (TNDS)
+
+         Bảo hiểm sức khỏe (Family Care, Care Plus)
+
+         Bảo hiểm tai nạn con người (24/24, mức cao)
+
+         Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
+
+         Bảo hiểm học sinh, sinh viên
+
+         Bảo hiểm du lịch trong nước &amp; quốc tế
+
+         Bảo hiểm tai nạn người sử dụng điện
+
+         Bảo hiểm trách nhiệm công cộng
+
+
 
         Anh/chị quan tâm sản phẩm nào ạ?
+
     </template>
+
 </category>
+
+
 
 <category>
+
     <pattern>SAN PHAM NAO</pattern>
+
     <template>
+
         PJICO cung cấp nhiều sản phẩm bảo hiểm phi nhân thọ, bao gồm:
-        🏠 Bảo hiểm nhà ở (Combo 360, Phú Gia)
-        🚗 Bảo hiểm ô tô, xe máy (TNDS)
-        💊 Bảo hiểm sức khỏe (Family Care, Care Plus)
-        👤 Bảo hiểm tai nạn con người (24/24, mức cao)
-        🏢 Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
-        🎒 Bảo hiểm học sinh, sinh viên
-        ✈️ Bảo hiểm du lịch trong nước &amp; quốc tế
-        ⚡ Bảo hiểm tai nạn người sử dụng điện
-        🛡️ Bảo hiểm trách nhiệm công cộng
+
+         Bảo hiểm nhà ở (Combo 360, Phú Gia)
+
+         Bảo hiểm ô tô, xe máy (TNDS)
+
+         Bảo hiểm sức khỏe (Family Care, Care Plus)
+
+         Bảo hiểm tai nạn con người (24/24, mức cao)
+
+         Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
+
+         Bảo hiểm học sinh, sinh viên
+
+         Bảo hiểm du lịch trong nước &amp; quốc tế
+
+         Bảo hiểm tai nạn người sử dụng điện
+
+         Bảo hiểm trách nhiệm công cộng
+
+
 
         Anh/chị quan tâm sản phẩm nào ạ?
+
     </template>
+
 </category>
+
+
 
 <!-- ============ HỎI THÔNG TIN SẢN PHẨM CỤ THỂ ============ -->
 
+
+
 <category>
+
     <pattern>BAO HIEM NHA O</pattern>
+
     <template>
-        🏠 PJICO có 2 sản phẩm bảo hiểm nhà ở chính:
+
+         PJICO có 2 sản phẩm bảo hiểm nhà ở chính:
+
         • Combo 360° Bảo Vệ Nhà – Gia Đình (ô tô: 599k/năm, xe máy: 199k/năm)
+
         • Bảo hiểm Cháy Nổ Toàn Diện Nhà Ở PJICO Phú Gia (theo Nghị định 105/106)
 
+
+
         Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ?
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>BAO HIEM SUC KHOE</pattern>
+
     <template>
-        💊 PJICO có các sản phẩm bảo hiểm sức khỏe:
+
+         PJICO có các sản phẩm bảo hiểm sức khỏe:
+
         • Family Care (2-11.2 triệu/năm) - bảo vệ gia đình
+
         • Care Plus - chăm sóc sức khỏe quốc tế, quyền lợi lên 42 tỷ/năm
+
         • Chăm sóc Sức khỏe &amp; Hỗ trợ Y tế (QĐ 383/2025)
 
+
+
         Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ?
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>BAO HIEM TAI NAN</pattern>
+
     <template>
-        👤 PJICO có các sản phẩm bảo hiểm tai nạn:
+
+         PJICO có các sản phẩm bảo hiểm tai nạn:
+
         • Tai nạn Con người 24/24 (16-70 tuổi)
+
         • Tai nạn Mức Trách Nhiệm Cao (18-65 tuổi)
+
         • Tai nạn Người sử dụng Điện
+
         • Tai nạn Học sinh, Sinh viên 24/24
+
         • Chăm sóc Sức khỏe &amp; Hỗ trợ Y tế (tai nạn 383)
 
+
+
         Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ?
+
     </template>
+
 </category>
+
+
 
 <category>
+
     <pattern>BAO HIEM DU LICH</pattern>
+
     <template>
-        ✈️ PJICO có 2 sản phẩm bảo hiểm du lịch:
+
+         PJICO có 2 sản phẩm bảo hiểm du lịch:
+
         • Du lịch trong nước (1-70 tuổi)
+
         • Du lịch quốc tế (6 tuần - 80 tuổi) - bảo lãnh viện phí toàn thế giới
 
+
+
         Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ?
+
     </template>
+
 </category>
+
+
 
 <!-- ============ TƯ VẤN ============ -->
 
+
+
 <category>
+
     <pattern>TOI CAN TU VAN</pattern>
+
     <template>
-        Dạ, tôi sẵn sàng tư vấn! 😊 Anh/chị đang quan tâm đến loại bảo hiểm nào ạ?
+
+        Dạ, tôi sẵn sàng tư vấn! Anh/chị đang quan tâm đến loại bảo hiểm nào ạ?
+
         Tôi có thể tư vấn về:
+
         • Bảo hiểm nhà ở, tài sản
+
         • Bảo hiểm sức khỏe
+
         • Bảo hiểm tai nạn
+
         • Bảo hiểm du lịch
+
         • Bảo hiểm doanh nghiệp
 
+
+
         Hoặc nếu anh/chị gặp sự cố và muốn đánh giá điều kiện bồi thường, tôi cũng có thể hỗ trợ!
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>TOI MUON TU VAN</pattern>
+
     <template>
-        Dạ, tôi sẵn sàng tư vấn! 😊 Anh/chị đang quan tâm đến loại bảo hiểm nào ạ?
+
+        Dạ, tôi sẵn sàng tư vấn! Anh/chị đang quan tâm đến loại bảo hiểm nào ạ?
+
         Tôi có thể tư vấn về bảo hiểm nhà ở, sức khỏe, tai nạn, du lịch, hoặc doanh nghiệp.
+
         Nếu anh/chị gặp sự cố, tôi cũng có thể đánh giá điều kiện tiếp nhận bồi thường!
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>TU VAN GIUP TOI</pattern>
+
     <template>
-        Dạ, tôi sẵn sàng tư vấn! 😊 Anh/chị đang quan tâm đến loại bảo hiểm nào ạ?
+
+        Dạ, tôi sẵn sàng tư vấn! Anh/chị đang quan tâm đến loại bảo hiểm nào ạ?
+
     </template>
+
 </category>
+
+
 
 <!-- ============ HỎI GIÁ ============ -->
 
+
+
 <category>
+
     <pattern>BAO HIEM GIA BAO NHIEU</pattern>
+
     <template>
+
         Phí bảo hiểm phụ thuộc vào sản phẩm anh/chị chọn:
+
         • Combo 360 ô tô: 599.000đ/năm
+
         • Combo 360 xe máy: 199.000đ/năm
+
         • Family Care: 2-11.2 triệu/năm
+
         • Các sản phẩm khác: theo thỏa thuận/biểu phí
 
+
+
         Anh/chị quan tâm sản phẩm nào ạ?
+
     </template>
+
 </category>
+
+
 
 <category>
+
     <pattern>GIA BAO HIEM</pattern>
+
     <template>
+
         Phí bảo hiểm phụ thuộc vào sản phẩm anh/chị chọn:
+
         • Combo 360 ô tô: 599.000đ/năm
+
         • Combo 360 xe máy: 199.000đ/năm
+
         • Family Care: 2-11.2 triệu/năm
+
         • Các sản phẩm khác: theo thỏa thuận/biểu phí
 
+
+
         Anh/chị quan tâm sản phẩm nào ạ?
+
     </template>
+
 </category>
+
+
 
 <!-- ============ HỎI BỒI THƯỜNG ============ -->
 
+
+
 <category>
+
     <pattern>BOI THUONG BAO NHIEU</pattern>
+
     <template>
+
         Mức bồi thường phụ thuộc vào sản phẩm và số tiền bảo hiểm ghi trong hợp đồng của anh/chị. 
 
+
+
         Để tôi đánh giá chính xác điều kiện tiếp nhận bồi thường, anh/chị có thể mô tả sự cố đã xảy ra nhé!
+
     </template>
+
 </category>
+
+
 
 <category>
+
     <pattern>BOI THUONG NHU THE NAO</pattern>
+
     <template>
-        📋 Quy trình bồi thường PJICO:
+
+         Quy trình bồi thường PJICO:
+
         1. Thông báo sự cố cho PJICO (trong thời hạn quy định)
+
         2. Chuẩn bị hồ sơ yêu cầu bồi thường
+
         3. PJICO tiếp nhận và thẩm định hồ sơ
+
         4. Thanh toán bồi thường
 
-        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 😊
+
+
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 
+
     </template>
+
 </category>
+
+
 
 <!-- ============ MẤT HỢP ĐỒNG ============ -->
 
+
+
 <category>
+
     <pattern>TOI MAT HOP DONG</pattern>
+
     <template>
-        😟 Đừng lo lắng! Anh/chị có thể liên hệ PJICO để được cấp lại hợp đồng/sổ bảo hiểm:
-        📞 Tổng đài: 1900 5555 58
-        🌐 Website: https://www.pjico.com.vn
+
+         Đừng lo lắng! Anh/chị có thể liên hệ PJICO để được cấp lại hợp đồng/sổ bảo hiểm:
+
+         Tổng đài: 1900 5555 58
+
+         Website: https://www.pjico.com.vn
+
+
 
         Anh/chị cần hỗ trợ gì khác không ạ?
+
     </template>
+
 </category>
+
+
 
 <!-- ============ TẠM BIỆT ============ -->
 
+
+
 <category>
+
     <pattern>TAM BIET</pattern>
+
     <template>
-        Tạm biệt anh/chị! 👋 Cảm ơn đã liên hệ PJICO. Chúc anh/chị một ngày tốt lành! 😊
+
+        Tạm biệt anh/chị! Cảm ơn đã liên hệ PJICO. Chúc anh/chị một ngày tốt lành! 
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>BAY</pattern>
+
     <template>
-        Tạm biệt anh/chị! 👋 Cảm ơn đã liên hệ PJICO. Chúc anh/chị một ngày tốt lành! 😊
+
+        Tạm biệt anh/chị! Cảm ơn đã liên hệ PJICO. Chúc anh/chị một ngày tốt lành! 
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>BYE</pattern>
+
     <template>
-        Tạm biệt anh/chị! 👋 Cảm ơn đã liên hệ PJICO. Chúc anh/chị một ngày tốt lành! 😊
+
+        Tạm biệt anh/chị! Cảm ơn đã liên hệ PJICO. Chúc anh/chị một ngày tốt lành! 
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>GOODBYE</pattern>
+
     <template>
-        Tạm biệt anh/chị! 👋 Cảm ơn đã liên hệ PJICO. Chúc anh/chị một ngày tốt lành! 😊
+
+        Tạm biệt anh/chị! Cảm ơn đã liên hệ PJICO. Chúc anh/chị một ngày tốt lành! 
+
     </template>
+
 </category>
+
+
 
 <!-- ============ CÁC CÂU HỎI THƯỜNG GẶP ============ -->
 
-<category>
-    <pattern>BAN CO Biet Tieng Viet Khong</pattern>
-    <template>
-        Dạ có, tôi hỗ trợ tiếng Việt! 😊 Anh/chị cần hỗ trợ gì ạ?
-    </template>
-</category>
+
 
 <category>
-    <pattern>BAN LA NGUOI HAY MAY</pattern>
+
+    <pattern>BAN CO Biet Tieng Viet Khong</pattern>
+
     <template>
-        Tôi là trợ lý ảo của PJICO! 🤖 Dù là máy nhưng tôi luôn sẵn sàng hỗ trợ anh/chị như một người bạn!
-        Anh/chị cần giúp gì ạ?
+
+        Dạ có, tôi hỗ trợ tiếng Việt! Anh/chị cần hỗ trợ gì ạ?
+
     </template>
+
 </category>
+
+
+
+<category>
+
+    <pattern>BAN LA NGUOI HAY MAY</pattern>
+
+    <template>
+
+        Tôi là trợ lý ảo của PJICO! Dù là máy nhưng tôi luôn sẵn sàng hỗ trợ anh/chị như một người bạn!
+
+        Anh/chị cần giúp gì ạ?
+
+    </template>
+
+</category>
+
+
 
 <!-- ============ CHUYỂN HƯỚNG SRAI ============ -->
 
+
+
 <category>
+
     <pattern>CHO TOI HOI</pattern>
-    <template>__CHAT__:Anh/chị muốn hỏi gì ạ? Tôi sẵn sàng hỗ trợ! 😊</template>
+
+    <template>__CHAT__:Anh/chị muốn hỏi gì ạ? Tôi sẵn sàng hỗ trợ! </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>CHO EM HOI</pattern>
-    <template>__CHAT__:Anh/chị muốn hỏi gì ạ? Tôi sẵn sàng hỗ trợ! 😊</template>
+
+    <template>__CHAT__:Anh/chị muốn hỏi gì ạ? Tôi sẵn sàng hỗ trợ! </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>XIN HOI</pattern>
-    <template>__CHAT__:Anh/chị muốn hỏi gì ạ? Tôi sẵn sàng hỗ trợ! 😊</template>
+
+    <template>__CHAT__:Anh/chị muốn hỏi gì ạ? Tôi sẵn sàng hỗ trợ! </template>
+
 </category>
+
+
 
 <!-- ============ HỎI CÓ MUỐN ĐÁNH GIÁ ============ -->
 
+
+
 <category>
+
     <pattern>CO DANG KY BOI THUONG</pattern>
+
     <template>__CLAIM_REQUEST__</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>TOI MUON DANG KY BOI THUONG</pattern>
+
     <template>__CLAIM_REQUEST__</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DANH GIA BOI THUONG</pattern>
+
     <template>__CLAIM_REQUEST__</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DANH GIA DIEU KIEN</pattern>
+
     <template>__CLAIM_REQUEST__</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DANH GIA DIEU KIEN BOI THUONG</pattern>
+
     <template>__CLAIM_REQUEST__</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DANH GIA DIEU KIEN TIEP NHAN</pattern>
+
     <template>__CLAIM_REQUEST__</template>
+
 </category>
 
+
+
 <category>
+
     <pattern>DANH GIA DIEU KIEN TIEP NHAN BOI THUONG</pattern>
+
     <template>__CLAIM_REQUEST__</template>
+
 </category>
+
+
 
 <!-- ============ FALLBACK ============ -->
 
+
+
 <category>
+
     <pattern>*</pattern>
+
     <template>
+
         <random>
-            <li>Tôi chưa hiểu rõ ý anh/chị. Anh/chị có thể nói lại được không? 😊</li>
+
+            <li>Tôi chưa hiểu rõ ý anh/chị. Anh/chị có thể nói lại được không? </li>
+
             <li>Xin lỗi, tôi chưa rõ. Anh/chị vui lòng trả lời theo các lựa chọn được đề xuất nhé.</li>
+
             <li>Tôi chưa hiểu. Anh/chị có thể chọn đáp án từ danh sách hoặc gõ rõ hơn được không?</li>
-            <li>⚠️ Tôi chưa xử lý được câu trả lời này. Vui lòng chọn đáp án từ danh sách nhé.</li>
+
+            <li> Tôi chưa xử lý được câu trả lời này. Vui lòng chọn đáp án từ danh sách nhé.</li>
+
         </random>
+
     </template>
+
 </category>
 
+
+
 <!-- ============================================================ -->
-<!-- PHẦN 3: CATEGORY MỚI — WELCOME RADIO BUTTON OPTIONS        -->
-<!-- (Thêm mới, không ghi đè category cũ)                         -->
+
+<!-- PHẦN 3: CATEGORY MỚI — WELCOME RADIO BUTTON OPTIONS -->
+
+<!-- (Thêm mới, không ghi đè category cũ) -->
+
 <!-- ============================================================ -->
+
+
 
 <!-- ============ TƯ VẤN SẢN PHẨM ============ -->
 
+
+
 <category>
+
     <pattern>TU VAN SAN PHAM BAO HIEM</pattern>
+
     <template>
+
         Dạ! Tôi có thể tư vấn về các sản phẩm bảo hiểm PJICO:
-        🏠 Bảo hiểm nhà ở (Combo 360, Phú Gia)
-        🚗 Bảo hiểm ô tô, xe máy (TNDS)
-        💊 Bảo hiểm sức khỏe (Family Care, Care Plus)
-        👤 Bảo hiểm tai nạn con người (24/24, mức cao)
-        🏢 Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
-        🎒 Bảo hiểm học sinh, sinh viên
-        ✈️ Bảo hiểm du lịch trong nước &amp; quốc tế
-        ⚡ Bảo hiểm tai nạn người sử dụng điện
-        🛡️ Bảo hiểm trách nhiệm công cộng
+
+         Bảo hiểm nhà ở (Combo 360, Phú Gia)
+
+         Bảo hiểm ô tô, xe máy (TNDS)
+
+         Bảo hiểm sức khỏe (Family Care, Care Plus)
+
+         Bảo hiểm tai nạn con người (24/24, mức cao)
+
+         Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
+
+         Bảo hiểm học sinh, sinh viên
+
+         Bảo hiểm du lịch trong nước &amp; quốc tế
+
+         Bảo hiểm tai nạn người sử dụng điện
+
+         Bảo hiểm trách nhiệm công cộng
+
+
 
         Anh/chị quan tâm sản phẩm nào ạ?
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>TU VAN CAC SAN PHAM BAO HIEM</pattern>
+
     <template>
+
         <srai>TU VAN SAN PHAM BAO HIEM</srai>
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>TOI CAN TU VAN SAN PHAM</pattern>
+
     <template>
+
         <srai>TU VAN SAN PHAM BAO HIEM</srai>
+
     </template>
+
 </category>
+
+
 
 <!-- ============ GIẢI ĐÁP THẮC MẮC ============ -->
 
+
+
 <category>
+
     <pattern>GIAI DAP THAC MAC</pattern>
+
     <template>
+
         Dạ! Tôi có thể giải đáp thắc mắc về:
-        📋 Quy trình bồi thường PJICO
-        📞 Thông tin liên hệ
-        🕐 Giờ làm việc
-        💰 Mức bồi thường, phí bảo hiểm
 
-        Anh/chị muốn hỏi gì ạ? 😊
+         Quy trình bồi thường PJICO
+
+         Thông tin liên hệ
+
+         Giờ làm việc
+
+         Mức bồi thường, phí bảo hiểm
+
+
+
+        Anh/chị muốn hỏi gì ạ? 
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>GIAI DAP THAC MAC VE BOI THUONG</pattern>
+
     <template>
+
         <srai>GIAI DAP THAC MAC</srai>
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>TOI MUON HOI VE BOI THUONG</pattern>
+
     <template>
+
         <srai>GIAI DAP THAC MAC</srai>
+
     </template>
+
 </category>
 
+
+
 <category>
+
     <pattern>HOI VE BOI THUONG</pattern>
+
     <template>
+
         <srai>GIAI DAP THAC MAC</srai>
+
     </template>
+
 </category>
+
+
 
 <!-- ============ ĐÁNH GIÁ ĐIỀU KIỆN (redirect via srai) ============ -->
 
+
+
 <category>
+
     <pattern>DANH GIA DIEU KIEN TIEP NHAN BOI THUONG</pattern>
+
     <template>
+
         <srai>DANH GIA BOI THUONG</srai>
+
     </template>
+
 </category>
+
+
 
 <!-- ============ CHUYỂN HƯỚNG TỪ WELCOME OPTIONS ============ -->
 
-<category>
-    <pattern>TU VAN CAC SAN PHAM</pattern>
-    <template>
-        <srai>TU VAN SAN PHAM BAO HIEM</srai>
-    </template>
-</category>
+
 
 <category>
-    <pattern>GIAI DAP</pattern>
+
+    <pattern>TU VAN CAC SAN PHAM</pattern>
+
     <template>
-        <srai>GIAI DAP THAC MAC</srai>
+
+        <srai>TU VAN SAN PHAM BAO HIEM</srai>
+
     </template>
+
 </category>
+
+
+
+<category>
+
+    <pattern>GIAI DAP</pattern>
+
+    <template>
+
+        <srai>GIAI DAP THAC MAC</srai>
+
+    </template>
+
+</category>
+
+
 
 </aiml>
