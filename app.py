@@ -1118,19 +1118,27 @@ if st.session_state.waiting_for_welcome_choice and not st.session_state.current_
 
 if st.session_state.waiting_for_product_choice and not st.session_state.current_product and not st.session_state.waiting_for_text:
 
-    product_radio_options = [p["name"] for p in PRODUCTS]
+    product_options = [p["name"] for p in PRODUCTS]
 
-    product_selected = st.radio(
+    col1, col2 = st.columns([3, 1])
 
-        "Chọn sản phẩm bảo hiểm:",
+    with col1:
 
-        product_radio_options,
+        product_selected = st.selectbox(
 
-        key="product_tuvan_radio",
+            "Chọn sản phẩm bảo hiểm:",
 
-        label_visibility="collapsed",
+            product_options,
 
-    )
+            key="product_tuvan_select",
+
+            label_visibility="collapsed",
+
+        )
+
+    with col2:
+
+        st.write("")
 
     if st.button(" Xác nhận", key="product_tuvan_confirm_btn", use_container_width=True):
 
