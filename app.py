@@ -484,6 +484,8 @@ def init_state():
     if "waiting_for_product_choice" not in st.session_state: st.session_state.waiting_for_product_choice = False
     if "waiting_for_faq_choice" not in st.session_state: st.session_state.waiting_for_faq_choice = False
     if "waiting_for_continue_choice" not in st.session_state: st.session_state.waiting_for_continue_choice = False
+    if "show_rating_widget" not in st.session_state: st.session_state.show_rating_widget = False
+    if "show_quick_replies" not in st.session_state: st.session_state.show_quick_replies = False
 
 
 
@@ -789,6 +791,12 @@ with st.sidebar:
 
     st.markdown("---")
 
+    st.markdown("### 🌐 Ngôn ngữ / Language:")
+
+    st.caption("Tiếng Việt (mặc định) | English via hotline 1900 54 54 55")
+
+    st.markdown("---")
+
     st.markdown("### Thư mục log:")
 
     st.code(st.session_state.log_dir)
@@ -1027,6 +1035,153 @@ for msg in st.session_state.messages:
 
 # ============================================================
 
+# QUICK REPLY BAR — Câu gợi ý nhanh sau mỗi tin nhắn trợ lý
+
+# ============================================================
+
+if st.session_state.messages and not st.session_state.current_product and not st.session_state.finished:
+
+    if st.session_state.waiting_for_welcome_choice or st.session_state.waiting_for_continue_choice:
+
+        last_msg = st.session_state.messages[-1] if st.session_state.messages else None
+
+        if last_msg and last_msg["role"] == "assistant":
+
+            st.markdown("**Câu gợi ý nhanh:**")
+
+            qr_col1, qr_col2, qr_col3, qr_col4 = st.columns(4)
+
+            quick_labels = ["Tư vấn sản phẩm", "Giải đáp thắc mắc", "Đánh giá bồi thường", "Tra cứu hồ sơ"]
+
+            quick_patterns = ["TU VAN SAN PHAM BAO HIEM", "GIAI DAP THAC MAC", "DANH GIA BOI THUONG", "TRA CUU HO SO"]
+
+            with qr_col1:
+
+                if st.button(quick_labels[0], key=f"qr_{len(st.session_state.messages)}_0"):
+
+                    add_message("user", quick_labels[0])
+
+                    st.session_state.waiting_for_welcome_choice = False
+
+                    st.session_state.waiting_for_continue_choice = False
+
+                    st.session_state.waiting_for_product_choice = True
+
+                    add_message("assistant", "Dạ! Vui lòng **chọn sản phẩm** bên dưới để biết thêm chi tiết!")
+
+                    st.rerun()
+
+            with qr_col2:
+
+                if st.button(quick_labels[1], key=f"qr_{len(st.session_state.messages)}_1"):
+
+                    add_message("user", quick_labels[1])
+
+                    st.session_state.waiting_for_welcome_choice = False
+
+                    st.session_state.waiting_for_continue_choice = False
+
+                    st.session_state.waiting_for_faq_choice = True
+
+                    add_message("assistant", "Dạ! Vui lòng **chọn chủ đề** bên dưới để biết thêm chi tiết!")
+
+                    st.rerun()
+
+            with qr_col3:
+
+                if st.button(quick_labels[2], key=f"qr_{len(st.session_state.messages)}_2"):
+
+                    add_message("user", quick_labels[2])
+
+                    st.session_state.waiting_for_welcome_choice = False
+
+                    st.session_state.waiting_for_continue_choice = False
+
+                    st.session_state.asked_evaluate = True
+
+                    st.session_state.waiting_for_text = True
+
+                    add_message("assistant", "Dạ! Vui lòng chọn loại bảo hiểm ở thanh cuộn bên dưới nhé!")
+
+                    st.rerun()
+
+            with qr_col4:
+
+                if st.button(quick_labels[3], key=f"qr_{len(st.session_state.messages)}_3"):
+
+                    add_message("user", quick_labels[3])
+
+                    st.session_state.waiting_for_welcome_choice = False
+
+                    st.session_state.waiting_for_continue_choice = False
+
+                    add_message("assistant", (
+
+                        "Dạ! Anh/chị có thể tra cứu trạng thái hồ sơ bồi thường:\n\n"
+
+                        "1. Website: https://www.pjico.com.vn → \"Tra cứu hồ sơ\"\n"
+
+                        "2. Tổng đài: 1900 54 54 55\n\n"
+
+                        "Anh/chị có mã hồ sơ không ạ?"
+
+                    ))
+
+                    st.session_state.waiting_for_continue_choice = True
+
+                    st.rerun()
+
+
+
+# ============================================================
+
+# RATING WIDGET — Đánh giá trải nghiệm (khi user chọn Đánh giá trải nghiệm)
+
+# ============================================================
+
+if st.session_state.get("show_rating_widget", False) and st.session_state.waiting_for_continue_choice:
+
+    st.markdown("**Đánh giá trải nghiệm với trợ lý ảo PJICO:**")
+
+    rating = st.slider("Chọn số sao (1-5)", min_value=1, max_value=5, value=5, key="rating_slider")
+
+    if st.button(" Gửi đánh giá", key="submit_rating_btn", use_container_width=True):
+
+        st.session_state.show_rating_widget = False
+
+        add_message("user", f"Đánh giá: {rating} sao")
+
+        if rating >= 4:
+
+            add_message("assistant", (
+                f"Cảm ơn anh/chị đã đánh giá {rating} sao! Rất vui vì mang lại trải nghiệm tốt. "
+
+                "PJICO luôn sẵn sàng hỗ trợ anh/chị!"
+
+            ))
+
+        elif rating == 3:
+
+            add_message("assistant", (
+                f"Cảm ơn anh/chị đã đánh giá {rating} sao! Chúng tôi sẽ cố gắng cải thiện để mang lại trải nghiệm tốt hơn."
+
+            ))
+
+        else:
+
+            add_message("assistant", (
+                f"Cảm ơn anh/chị đã đánh giá {rating} sao! Chúng tôi rất tiếc vì trải nghiệm chưa tốt. "
+
+                "Anh/chị có thể liên hệ tổng đài 1900 54 54 55 để được hỗ trợ trực tiếp."
+
+            ))
+
+        st.rerun()
+
+
+
+# ============================================================
+
 # WELCOME RADIO BUTTONS — Chọn nhu cầu hỗ trợ
 
 # ============================================================
@@ -1042,6 +1197,12 @@ if st.session_state.waiting_for_welcome_choice and not st.session_state.current_
         " Giải đáp thắc mắc thường gặp",
 
         " Đánh giá điều kiện tiếp nhận bồi thường",
+
+        " Tra cứu trạng thái hồ sơ bồi thường",
+
+        " Tìm đại lý/văn phòng PJICO gần nhất",
+
+        " Đánh giá trải nghiệm với trợ lý ảo",
 
     ]
 
@@ -1100,6 +1261,56 @@ if st.session_state.waiting_for_welcome_choice and not st.session_state.current_
                 "Vui lòng **chọn chủ đề** bên dưới để biết thêm chi tiết!"
 
             ))
+
+        elif "Tra cứu trạng thái" in welcome_selected:
+
+            add_message("assistant", (
+
+                "Dạ! Anh/chị muốn **tra cứu trạng thái hồ sơ bồi thường**.\n\n"
+
+                "Anh/chị có thể:\n"
+
+                "1. Truy cập website https://www.pjico.com.vn, mục \"Tra cứu hồ sơ\"\n"
+
+                "2. Gọi tổng đài 1900 54 54 55 để được nhân viên tra cứu\n\n"
+
+                "Anh/chị có mã hồ sơ bồi thường không ạ? Vui lòng cung cấp mã hồ sơ để tôi hỗ trợ!"
+
+            ))
+
+            st.session_state.waiting_for_continue_choice = True
+
+        elif "Tìm đại lý" in welcome_selected or "văn phòng" in welcome_selected.lower():
+
+            add_message("assistant", (
+
+                "Dạ! Để tìm đại lý/văn phòng PJICO gần nhất, anh/chị có thể:\n\n"
+
+                "1. Truy cập website https://www.pjico.com.vn, mục \"Mạng lưới\"\n"
+
+                "2. Gọi tổng đài 1900 54 54 55 để định vị văn phòng gần nhất\n"
+
+                "3. Tìm kiếm \"PJICO + tên tỉnh/thành phố\" trên Google Maps\n\n"
+
+                "PJICO có văn phòng trên toàn bộ 63 tỉnh thành. Anh/chị đang ở tỉnh/thành phố nào ạ?"
+
+            ))
+
+            st.session_state.waiting_for_continue_choice = True
+
+        elif "Đánh giá trải nghiệm" in welcome_selected:
+
+            add_message("assistant", (
+
+                "Dạ! Anh/chị muốn **đánh giá trải nghiệm** với trợ lý ảo PJICO.\n\n"
+
+                "Vui lòng chọn mức đánh giá bên dưới nhé!"
+
+            ))
+
+            st.session_state.show_rating_widget = True
+
+            st.session_state.waiting_for_continue_choice = True
 
         st.rerun()
 

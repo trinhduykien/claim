@@ -2384,4 +2384,528 @@
     </template>
 </category>
 
+<!-- ============================================================ -->
+<!-- PHẦN 5: TRA CỨU TRẠNG THÁI HỒ SƠ (giống MB Bank/Grab tracking) -->
+<!-- ============================================================ -->
+
+<category>
+    <pattern>TRA CUU HO SO</pattern>
+    <template>
+        Dạ! Anh/chị có thể tra cứu trạng thái hồ sơ bồi thường theo các cách sau:
+
+        1. Truy cập website https://www.pjico.com.vn, chọn mục "Tra cứu hồ sơ bồi thường".
+
+        2. Nhập mã hồ sơ bồi thường (được cấp khi nộp hồ sơ) và số điện thoại đăng ký.
+
+        3. Hệ thống sẽ hiển thị trạng thái hiện tại: Đang tiếp nhận → Đang thẩm định → Đã kết luận → Đã thanh toán.
+
+        4. Anh/chị cũng có thể gọi tổng đài 1900 54 54 55 để được nhân viên tra cứu trực tiếp.
+
+        Anh/chị có mã hồ sơ bồi thường không ạ? Vui lòng cung cấp mã hồ sơ để tôi hỗ trợ tra cứu!
+    </template>
+</category>
+
+<category>
+    <pattern>TRANG THAI HO SO</pattern>
+    <template>
+        <srai>TRA CUU HO SO</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>KIEM TRA HO SO</pattern>
+    <template>
+        <srai>TRA CUU HO SO</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TRA CUU TRANG THAI BOI THUONG</pattern>
+    <template>
+        <srai>TRA CUU HO SO</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TRANG THAI BOI THUONG</pattern>
+    <template>
+        <srai>TRA CUU HO SO</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>MA HO SO LA *</pattern>
+    <template>
+        Dạ, anh/chị vui lòng truy cập website https://www.pjico.com.vn, mục "Tra cứu hồ sơ bồi thường" và nhập mã hồ sơ: <star/> cùng số điện thoại đăng ký để xem trạng thái chi tiết.
+
+        Hoặc anh/chị có thể gọi tổng đài 1900 54 54 55, cung cấp mã hồ sơ <star/> để nhân viên tra cứu trực tiếp.
+
+        Anh/chị cần hỗ trợ gì thêm không ạ?
+    </template>
+</category>
+
+<category>
+    <pattern>XEM HO SO BOI THUONG</pattern>
+    <template>
+        <srai>TRA CUU HO SO</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>KIEM TRA TRANG THAI</pattern>
+    <template>
+        <srai>TRA CUU HO SO</srai>
+    </template>
+</category>
+
+<!-- ============================================================ -->
+<!-- PHẦN 6: ĐÁNH GIÁ TRẢI NGHIỆM (giống Shopee/Grab rating) -->
+<!-- ============================================================ -->
+
+<category>
+    <pattern>DANH GIA TRAI NGHIEM</pattern>
+    <template>
+        Dạ! Anh/chị vui lòng đánh giá trải nghiệm với trợ lý ảo PJICO bằng cách chọn mức điểm từ 1 đến 5 sao:
+
+        ⭐ - Rất không hài lòng
+        ⭐⭐ - Không hài lòng
+        ⭐⭐⭐ - Bình thường
+        ⭐⭐⭐⭐ - Hài lòng
+        ⭐⭐⭐⭐⭐ - Rất hài lòng
+
+        Anh/chị có thể gõ "1 SAO", "2 SAO", "3 SAO", "4 SAO", hoặc "5 SAO" để đánh giá nhé!
+    </template>
+</category>
+
+<category>
+    <pattern>DANH GIA BOT</pattern>
+    <template>
+        <srai>DANH GIA TRAI NGHIEM</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>RATE</pattern>
+    <template>
+        <srai>DANH GIA TRAI NGHIEM</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>DANH GIA</pattern>
+    <template>
+        <srai>DANH GIA TRAI NGHIEM</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>1 SAO</pattern>
+    <template>
+        Cảm ơn anh/chị đã đánh giá 1 sao! Chúng tôi rất tiếc vì trải nghiệm chưa tốt. Anh/chị có thể chia sẻ thêm điều gì khiến chưa hài lòng để PJICO cải thiện không ạ?
+    </template>
+</category>
+
+<category>
+    <pattern>2 SAO</pattern>
+    <template>
+        Cảm ơn anh/chị đã đánh giá 2 sao! Chúng tôi xin lỗi vì chưa đáp ứng tốt. Anh/chị có góp ý gì để chúng tôi cải thiện không ạ?
+    </template>
+</category>
+
+<category>
+    <pattern>3 SAO</pattern>
+    <template>
+        Cảm ơn anh/chị đã đánh giá 3 sao! Chúng tôi sẽ cố gắng cải thiện để mang lại trải nghiệm tốt hơn cho anh/chị.
+    </template>
+</category>
+
+<category>
+    <pattern>4 SAO</pattern>
+    <template>
+        Cảm ơn anh/chị đã đánh giá 4 sao! Rất vui vì anh/chị hài lòng. Chúng tôi sẽ tiếp tục cải thiện dịch vụ!
+    </template>
+</category>
+
+<category>
+    <pattern>5 SAO</pattern>
+    <template>
+        Cảm ơn anh/chị đã đánh giá 5 sao! Rất vui vì mang lại trải nghiệm tuyệt vời cho anh/chị. PJICO luôn sẵn sàng hỗ trợ anh/chị!
+    </template>
+</category>
+
+<category>
+    <pattern>HAI LONG</pattern>
+    <template>
+        Cảm ơn anh/chị đã phản hồi! Rất vui vì anh/chị hài lòng với dịch vụ của PJICO. Chúng tôi luôn sẵn sàng hỗ trợ anh/chị!
+    </template>
+</category>
+
+<category>
+    <pattern>KHONG HAI LONG</pattern>
+    <template>
+        PJICO thành thật xin lỗi vì anh/chị chưa hài lòng. Anh/chị có thể chia sẻ thêm để chúng tôi cải thiện không ạ? Hoặc liên hệ tổng đài 1900 54 54 55 để được hỗ trợ trực tiếp.
+    </template>
+</category>
+
+<category>
+    <pattern>RAT HAI LONG</pattern>
+    <template>
+        <srai>HAI LONG</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>RAT KHONG HAI LONG</pattern>
+    <template>
+        <srai>KHONG HAI LONG</srai>
+    </template>
+</category>
+
+<!-- ============================================================ -->
+<!-- PHẦN 7: TÌM ĐẠI LÝ/VĂN PHÒNG GẦN NHẤT (giống Grab/MB locator) -->
+<!-- ============================================================ -->
+
+<category>
+    <pattern>TIM DAI LY</pattern>
+    <template>
+        Dạ! Để tìm đại lý/văn phòng PJICO gần nhất, anh/chị có thể:
+
+        1. Truy cập website https://www.pjico.com.vn, chọn mục "Mạng lưới" → nhập tỉnh/thành phố của anh/chị.
+
+        2. Gọi tổng đài 1900 54 54 55, nhân viên sẽ định vị văn phòng gần nhất.
+
+        3. Tìm kiếm "PJICO + tên tỉnh/thành phố" trên Google Maps.
+
+        PJICO có mạng lưới văn phòng trên toàn bộ 63 tỉnh thành trên cả nước. Anh/chị đang ở tỉnh/thành phố nào ạ?
+    </template>
+</category>
+
+<category>
+    <pattern>DAI LY GAN NHAT</pattern>
+    <template>
+        <srai>TIM DAI LY</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>VAN PHONG GAN NHAT</pattern>
+    <template>
+        <srai>TIM DAI LY</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>VAN PHONG PJICO O DAU</pattern>
+    <template>
+        <srai>TIM DAI LY</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>DAI LY PJICO</pattern>
+    <template>
+        <srai>TIM DAI LY</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>DIA CHI VAN PHONG *</pattern>
+    <template>
+        Dạ! PJICO có văn phòng trên toàn bộ 63 tỉnh thành. Anh/chị cung cấp địa chỉ: <star/>
+
+        Vui lòng truy cập website https://www.pjico.com.vn, mục "Mạng lưới" và chọn tỉnh/thành phố tương ứng để xem danh sách văn phòng gần nhất.
+
+        Hoặc gọi tổng đài 1900 54 54 55 để được hướng dẫn chi tiết.
+    </template>
+</category>
+
+<category>
+    <pattern>TIM VAN PHONG</pattern>
+    <template>
+        <srai>TIM DAI LY</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>CHO TOI DIA CHI VAN PHONG</pattern>
+    <template>
+        <srai>TIM DAI LY</srai>
+    </template>
+</category>
+
+<!-- ============================================================ -->
+<!-- PHẦN 8: NHẮC NHỞ GIA HẠN (giống Shopee/ShopeePay reminders) -->
+<!-- ============================================================ -->
+
+<category>
+    <pattern>NHAC NHAN GIA HAN</pattern>
+    <template>
+        Dạ! Anh/chị có thể thiết lập nhắc nhở gia hạn bảo hiểm PJICO theo các cách sau:
+
+        1. Đăng ký SMS thông báo hết hạn: Liên hệ tổng đài 1900 54 54 55 để đăng ký dịch vụ.
+
+        2. Nhắc nhở qua email: Cung cấp email cho nhân viên PJICO để nhận thông báo gia hạn tự động.
+
+        3. Kiểm tra ngày hết hạn trên hợp đồng bảo hiểm hoặc giấy chứng nhận bảo hiểm.
+
+        4. Truy cập website https://www.pjico.com.vn để tra cứu thông tin hợp đồng.
+
+        Anh/chị nên gia hạn trước khi hết hạn 15-30 ngày để đảm bảo quyền lợi liên tục!
+    </template>
+</category>
+
+<category>
+    <pattern>GIA HAN BAO HIEM</pattern>
+    <template>
+        <srai>NHAC NHAN GIA HAN</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>NHAC NHAN</pattern>
+    <template>
+        <srai>NHAC NHAN GIA HAN</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>KHI NAO HET HAN</pattern>
+    <template>
+        Dạ! Ngày hết hạn bảo hiểm được ghi rõ trong hợp đồng bảo hiểm hoặc giấy chứng nhận bảo hiểm của anh/chị.
+
+        Để kiểm tra ngày hết hạn, anh/chị có thể:
+
+        1. Xem lại hợp đồng/giấy chứng nhận bảo hiểm.
+
+        2. Gọi tổng đài PJICO 1900 54 54 55, cung cấp số hợp đồng để tra cứu.
+
+        3. Truy cập website https://www.pjico.com.vn và tra cứu thông tin hợp đồng.
+
+        Anh/chị nên ghi nhớ ngày hết hạn để gia hạn sớm, đảm bảo quyền lợi bảo hiểm liên tục!
+    </template>
+</category>
+
+<category>
+    <pattern>HET HAN BAO HIEM</pattern>
+    <template>
+        <srai>KHI NAO HET HAN</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>KIEM TRA HET HAN</pattern>
+    <template>
+        <srai>KHI NAO HET HAN</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>BAO HIEM HET HAN</pattern>
+    <template>
+        <srai>KHI NAO HET HAN</srai>
+    </template>
+</category>
+
+<!-- ============================================================ -->
+<!-- PHẦN 9: ĐA NGÔN NGỮ (giống Grab EN/VN toggle) -->
+<!-- ============================================================ -->
+
+<category>
+    <pattern>ENGLISH</pattern>
+    <template>
+        Hello! Currently, I primarily support Vietnamese. However, PJICO has English-speaking staff available.
+
+        Please contact our hotline at 1900 54 54 55 for English support, or visit https://www.pjico.com.vn for more information.
+
+        Thank you for choosing PJICO!
+    </template>
+</category>
+
+<category>
+    <pattern>TIENG ANH</pattern>
+    <template>
+        Hiện tại, tôi chủ yếu hỗ trợ tiếng Việt. Tuy nhiên, PJICO có nhân viên hỗ trợ tiếng Anh.
+
+        Anh/chị có thể gọi tổng đài 1900 54 54 55 để được hỗ trợ bằng tiếng Anh, hoặc truy cập website https://www.pjico.com.vn.
+
+        Cảm ơn anh/chị đã chọn PJICO!
+    </template>
+</category>
+
+<category>
+    <pattern>SWITCH LANGUAGE</pattern>
+    <template>
+        Hiện tại tôi hỗ trợ chính bằng tiếng Việt. Anh/chị có thể:
+
+        - Gõ "TIENG ANH" hoặc "ENGLISH" để tôi hướng dẫn bằng tiếng Anh.
+
+        - Gọi tổng đài 1900 54 54 55 để hỗ trợ đa ngôn ngữ.
+
+        - Truy cập website https://www.pjico.com.vn để xem thông tin đa ngôn ngữ.
+    </template>
+</category>
+
+<category>
+    <pattern>MULTI LANGUAGE</pattern>
+    <template>
+        <srai>SWITCH LANGUAGE</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>DA NGON NGU</pattern>
+    <template>
+        <srai>SWITCH LANGUAGE</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>DOI NGON NGU</pattern>
+    <template>
+        <srai>SWITCH LANGUAGE</srai>
+    </template>
+</category>
+
+<!-- ============================================================ -->
+<!-- PHẦN 10: GÓP Ý SẢN PHẨM (giống Shopee feedback) -->
+<!-- ============================================================ -->
+
+<category>
+    <pattern>GOP Y SAN PHAM</pattern>
+    <template>
+        Dạ! PJICO rất trân trọng góp ý của anh/chị. Anh/chị có thể đóng góp ý kiến về sản phẩm/dịch vụ theo các cách sau:
+
+        1. Gửi góp ý trực tiếp cho tôi: gõ "PHAN HOI" kèm nội dung góp ý.
+
+        2. Gọi tổng đài 1900 54 54 55 để chia sẻ góp ý trực tiếp với nhân viên.
+
+        3. Gửi email đến pjico@petrolimex.com.vn với tiêu đề "Góp ý sản phẩm".
+
+        4. Điền form góp ý tại các văn phòng PJICO.
+
+        Mọi góp ý của anh/chị đều được PJICO tiếp nhận và xem xét cải thiện. Anh/chị có muốn góp ý gì cụ thể không ạ?
+    </template>
+</category>
+
+<category>
+    <pattern>GOPI</pattern>
+    <template>
+        <srai>GOP Y SAN PHAM</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>DONG GOP Y KIEN</pattern>
+    <template>
+        <srai>GOP Y SAN PHAM</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>PHAN HOI</pattern>
+    <template>
+        <srai>GOP Y SAN PHAM</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>FEEDBACK</pattern>
+    <template>
+        <srai>GOP Y SAN PHAM</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>GOP Y</pattern>
+    <template>
+        <srai>GOP Y SAN PHAM</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>Y KIEN DONG GOP</pattern>
+    <template>
+        <srai>GOP Y SAN PHAM</srai>
+    </template>
+</category>
+
+<!-- ============================================================ -->
+<!-- PHẦN 11: QUICK REPLY SUGGESTIONS / CÂU GỢI Ý NHANH -->
+<!-- ============================================================ -->
+
+<category>
+    <pattern>HELP</pattern>
+    <template>
+        Dạ! Tôi có thể hỗ trợ anh/chị các nhu cầu sau:
+
+        1. Tư vấn sản phẩm bảo hiểm — gõ "TU VAN"
+        2. Giải đáp thắc mắc — gõ "GIAI DAP"
+        3. Đánh giá điều kiện bồi thường — gõ "DANH GIA BOI THUONG"
+        4. Tra cứu trạng thái hồ sơ — gõ "TRA CUU HO SO"
+        5. Tìm đại lý gần nhất — gõ "TIM DAI LY"
+        6. Nhắc nhở gia hạn — gõ "NHAC NHAN GIA HAN"
+        7. Đánh giá trải nghiệm — gõ "DANH GIA TRAI NGHIEM"
+        8. Góp ý sản phẩm — gõ "GOP Y SAN PHAM"
+        9. Nói chuyện với nhân viên — gõ "TOI MUON NOI CHUYEN VOI NGUOI"
+
+        Anh/chị cần hỗ trợ gì ạ?
+    </template>
+</category>
+
+<category>
+    <pattern>MENU</pattern>
+    <template>
+        <srai>HELP</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TRO GIUP</pattern>
+    <template>
+        <srai>HELP</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>GIUP TOI</pattern>
+    <template>
+        <srai>HELP</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TONG QUAT</pattern>
+    <template>
+        <srai>HELP</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TAT CA</pattern>
+    <template>
+        <srai>HELP</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>HOTRO</pattern>
+    <template>
+        <srai>HELP</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>SUPPORT</pattern>
+    <template>
+        <srai>HELP</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>TU VAN</pattern>
+    <template>
+        <srai>TU VAN SAN PHAM BAO HIEM</srai>
+    </template>
+</category>
+
 </aiml>
