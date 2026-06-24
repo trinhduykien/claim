@@ -45,6 +45,7 @@ except ImportError:
 
 
 from insurance_products import PRODUCTS, get_product_by_id, get_product_by_keyword
+from pjico_offices import get_offices_by_city, get_all_cities
 
 
 
@@ -484,6 +485,7 @@ def init_state():
     if "waiting_for_product_choice" not in st.session_state: st.session_state.waiting_for_product_choice = False
     if "waiting_for_faq_choice" not in st.session_state: st.session_state.waiting_for_faq_choice = False
     if "waiting_for_continue_choice" not in st.session_state: st.session_state.waiting_for_continue_choice = False
+    if "waiting_for_city_choice" not in st.session_state: st.session_state.waiting_for_city_choice = False
     if "show_rating_widget" not in st.session_state: st.session_state.show_rating_widget = False
     if "show_quick_replies" not in st.session_state: st.session_state.show_quick_replies = False
 
@@ -728,7 +730,7 @@ def reset_session():
     st.session_state.waiting_for_text = False
 
     st.session_state.waiting_for_product_choice = False
-
+    st.session_state.waiting_for_city_choice = False
     st.session_state.asked_evaluate = False
 
     st.session_state.chat_mode = True
@@ -1295,9 +1297,8 @@ if st.session_state.waiting_for_welcome_choice and not st.session_state.current_
                 "PJICO có văn phòng trên toàn bộ 63 tỉnh thành. Anh/chị đang ở tỉnh/thành phố nào ạ?"
 
             ))
-
-            st.session_state.waiting_for_continue_choice = True
-
+            st.session_state.waiting_for_city_choice = True
+            st.rerun()
         elif "Đánh giá trải nghiệm" in welcome_selected:
 
             add_message("assistant", (
@@ -1590,6 +1591,82 @@ if st.session_state.waiting_for_faq_choice and not st.session_state.current_prod
                 "- Tổng đài: 1900 54 54 55\n"
 
                 "- Email: pjico@petrolimex.com.vn\n\n"
+
+                "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            ))
+
+        st.session_state.waiting_for_continue_choice = True
+
+        st.rerun()
+
+
+
+# ============================================================
+
+# CITY CHOICE SELECTBOX — Chọn tỉnh/thành phố để tìm văn phòng PJICO
+
+# ============================================================
+
+
+
+if st.session_state.waiting_for_city_choice and not st.session_state.current_product and not st.session_state.waiting_for_text:
+
+    city_options = get_all_cities()
+
+    col1, col2 = st.columns([3, 1])
+
+    with col1:
+
+        city_selected = st.selectbox(
+
+            "Chọn tỉnh/thành phố:",
+
+            city_options,
+
+            key="city_selectbox",
+
+            label_visibility="collapsed",
+
+        )
+
+    with col2:
+
+        st.write("")
+
+    if st.button(" Xác nhận", key="city_confirm_btn", use_container_width=True):
+
+        st.session_state.waiting_for_city_choice = False
+
+        add_message("user", city_selected)
+
+        offices = get_offices_by_city(city_selected)
+
+        if offices:
+
+            office_text = f"Dạ! Đây là danh sách văn phòng PJICO tại **{city_selected}**:\n\n"
+
+            for i, office in enumerate(offices, 1):
+
+                office_text += f"**{i}. {office['name']}**\n"
+
+                office_text += f"   Địa chỉ: {office['address']}\n"
+
+                office_text += f"   Điện thoại: {office['phone']}\n\n"
+
+            office_text += "Anh/chị có thể liên hệ trực tiếp hoặc gọi tổng đài **1900 54 54 55** để được hỗ trợ.\n\n"
+
+            office_text += "Anh/chị cần hỗ trợ gì thêm không ạ?"
+
+            add_message("assistant", office_text)
+
+        else:
+
+            add_message("assistant", (
+
+                f"Xin lỗi, tôi chưa tìm thấy văn phòng PJICO tại **{city_selected}**.\n\n"
+
+                "Anh/chị có thể gọi tổng đài 1900 54 54 55 để được định vị văn phòng gần nhất.\n\n"
 
                 "Anh/chị cần hỗ trợ gì thêm không ạ?"
 
@@ -2162,6 +2239,44 @@ if user_input:
     elif st.session_state.chat_mode and st.session_state.current_product is None and not st.session_state.waiting_for_text:
 
 
+
+        # --- 1city: Intercept city name when waiting_for_city_choice ---
+        if st.session_state.waiting_for_city_choice:
+            offices = get_offices_by_city(user_input)
+            if offices:
+                st.session_state.waiting_for_city_choice = False
+                matched_city = user_input.strip()
+                from pjico_offices import OFFICES as _OFFICES_LIST
+                import unicodedata as _ud
+                def _norm(t):
+                    t = _ud.normalize('NFD', t)
+                    return ''.join(c for c in t if _ud.category(c) != 'Mn').lower().strip()
+                text_n = _norm(user_input)
+                for o in _OFFICES_LIST:
+                    if o["city_norm"] in text_n or text_n in o["city_norm"]:
+                        matched_city = o["city"]
+                        break
+                    for alt in o.get("alt_names", []):
+                        alt_n = _norm(alt)
+                        if alt_n in text_n or text_n in alt_n:
+                            matched_city = o["city"]
+                            break
+                office_text = f"Dạ! Đây là danh sách văn phòng PJICO tại **{matched_city}**:\n\n"
+                for i, office in enumerate(offices, 1):
+                    office_text += f"**{i}. {office['name']}**\n"
+                    office_text += f"   Địa chỉ: {office['address']}\n"
+                    office_text += f"   Điện thoại: {office['phone']}\n\n"
+                office_text += "Anh/chị có thể liên hệ trực tiếp hoặc gọi tổng đài **1900 54 54 55** để được hỗ trợ.\n\n"
+                office_text += "Anh/chị cần hỗ trợ gì thêm không ạ?"
+                add_message("assistant", office_text)
+                st.session_state.waiting_for_continue_choice = True
+                st.rerun()
+            else:
+                add_message("assistant", (
+                    f"Tôi chưa nhận ra tỉnh/thành phố từ \"{user_input}\". \n\n"
+                    "Vui lòng **chọn tỉnh/thành phố** từ danh sách bên dưới nhé!"
+                ))
+                st.rerun()
 
         # --- 1a: Chưa có tên ---
 
