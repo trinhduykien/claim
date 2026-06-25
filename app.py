@@ -1303,7 +1303,9 @@ if st.session_state.upload_phase == "analyzing":
 
                 "error": ("Chưa cấu hình API key. "
 
-                          "Vui lòng tạo file .kimi_api_key chứa API key Ollama Cloud.")
+                          "Vui lòng thêm key vào Streamlit Cloud Secrets (key: ollama_api_key) "
+
+                          "hoặc tạo file .kimi_api_key (local).")
 
             }
 
@@ -1385,27 +1387,21 @@ if st.session_state.upload_phase == "analyzing":
 
 
 
-        # Git auto-push
-
-        try:
-
-            import subprocess
-
-            git_dir = os.path.dirname(os.path.abspath(__file__))
-
-            subprocess.run(["git", "add", "-A"], cwd=git_dir, capture_output=True, timeout=30)
-
-            commit_msg = f"feat: add claim photos + contract + AI deduction reply for {st.session_state.customer_name or 'customer'} [{datetime.now().strftime('%Y-%m-%d %H:%M')}]"
-
-            subprocess.run(["git", "commit", "-m", commit_msg], cwd=git_dir, capture_output=True, timeout=30)
-
-            subprocess.run(["git", "push", "origin"], cwd=git_dir, capture_output=True, timeout=60)
-
-            add_message("assistant", " Đã đồng bộ dữ liệu lên GitHub repository.")
-
-        except Exception as e:
-
-            add_message("assistant", f"⚠️ Không thể push lên GitHub: {str(e)}")
+        # Git auto-push (chỉ chạy ở local, không chạy trên Streamlit Cloud)
+        is_cloud = os.environ.get("STREAMLIT_SHARING", "") or os.environ.get("HOSTNAME", "").startswith("streamlit")
+        if not is_cloud:
+            try:
+                import subprocess
+                git_dir = os.path.dirname(os.path.abspath(__file__))
+                subprocess.run(["git", "add", "-A"], cwd=git_dir, capture_output=True, timeout=30)
+                commit_msg = f"feat: add claim photos + contract + AI deduction reply for {st.session_state.customer_name or 'customer'} [{datetime.now().strftime('%Y-%m-%d %H:%M')}]"
+                subprocess.run(["git", "commit", "-m", commit_msg], cwd=git_dir, capture_output=True, timeout=30)
+                subprocess.run(["git", "push", "origin"], cwd=git_dir, capture_output=True, timeout=60)
+                add_message("assistant", " Đã đồng bộ dữ liệu lên GitHub repository.")
+            except Exception as e:
+                add_message("assistant", f"⚠️ Không thể push lên GitHub: {str(e)}")
+        else:
+            add_message("assistant", " Đã lưu kết quả phân tích. Để push GitHub, chạy app local.")
 
 
 

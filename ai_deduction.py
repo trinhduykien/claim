@@ -2,8 +2,7 @@
 """
 AI Deduction Analysis Module cho PJICO Claim Bot
 - Gọi Ollama Cloud API (model: kimi-k2.7-code) để phân tích ảnh thiệt hại + hợp đồng
-- Xác định các khoản khấu trừ trong tiền bồi thường
-- Trả về câu trả lời cho khách hàng
+- Đọc API key từ: Streamlit secrets → env var → file local
 - Lưu câu trả lời vào thư mục "trả lời"
 """
 
@@ -15,22 +14,33 @@ from datetime import datetime
 import requests
 
 # ============================================================
-# CONFIG — đọc API key từ env hoặc file local, KHÔNG hardcode
+# CONFIG — đọc API key từ nhiều nguồn, KHÔNG hardcode
 # ============================================================
 
-# Cách 1: Environment variable
-# set OLLAMA_API_KEY=your_key_here  (PowerShell)
-# $env:OLLAMA_API_KEY="your_key"    (PowerShell session)
-API_KEY = os.environ.get("OLLAMA_API_KEY", "")
+API_KEY = ""
 
-# Cách 2: File local (không commit lên git) — dùng lại .kimi_api_key
-_key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".kimi_api_key")
-if not API_KEY and os.path.exists(_key_file):
-    with open(_key_file, "r", encoding="utf-8") as f:
-        API_KEY = f.read().strip()
+# Cách 1: Streamlit Cloud Secrets (ưu tiên cao nhất cho online)
+try:
+    import streamlit as st
+    _secrets_key = st.secrets.get("ollama_api_key", None)
+    if _secrets_key:
+        API_KEY = _secrets_key
+except Exception:
+    pass
 
-# Ollama Cloud endpoint
-OLLAMA_BASE_URL = "https://api.ollama.ai/v1"  # OpenAI-compatible endpoint
+# Cách 2: Environment variable (cho local)
+if not API_KEY:
+    API_KEY = os.environ.get("OLLAMA_API_KEY", "")
+
+# Cách 3: File local .kimi_api_key (cho local, không commit lên git)
+if not API_KEY:
+    _key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".kimi_api_key")
+    if os.path.exists(_key_file):
+        with open(_key_file, "r", encoding="utf-8") as f:
+            API_KEY = f.read().strip()
+
+# Ollama Cloud endpoint (OpenAI-compatible)
+OLLAMA_BASE_URL = "https://api.ollama.ai/v1"
 MODEL = "kimi-k2.7-code"
 
 # Thư mục lưu câu trả lời
@@ -52,14 +62,10 @@ def encode_image_to_base64(image_path):
 
 
 def build_analysis_prompt(claim_data, photo_paths, contract_path):
-    """
-    Xây prompt gửi AI: gồm thông tin claim, danh sách ảnh, hợp đồng.
-    Yêu cầu AI phân tích khấu trừ và trả lời khách hàng.
-    """
+    """Xây prompt gửi AI phân tích khấu trừ."""
     product_name = claim_data.get("product", {}).get("name", "Không rõ")
     answers = claim_data.get("answers", {})
     
-    # Tóm tắt câu trả lời đánh giá
     answers_text = ""
     for qid, ans in answers.items():
         answers_text += f"- {qid}: {ans}\n"
@@ -93,60 +99,39 @@ YÊU CẦU ĐỊNH DẠNG TRẢ LỜI:
 
 Lưu ý: Chỉ đưa ra phân tích dựa trên thông tin có sẵn. Nếu thông tin không đủ, ghi rõ cần bổ sung gì.
 """
-
     return prompt
 
 
 def analyze_deduction(claim_data, photo_paths, contract_path):
-    """
-    Gọi Ollama Cloud API (kimi-k2.7-code) để phân tích khấu trừ.
-    
-    Args:
-        claim_data: dict — dữ liệu claim log (product, answers, result, customer_name...)
-        photo_paths: list[str] — đường dẫn ảnh thiệt hại
-        contract_path: str — đường dẫn file hợp đồng (ảnh hoặc PDF)
-    
-    Returns:
-        dict: {"success": bool, "response": str, "error": str}
-    """
+    """Gọi Ollama Cloud API để phân tích khấu trừ."""
     if not has_api_key():
         return {
             "success": False,
             "response": "",
-            "error": "Chưa cấu hình API key. Vui lòng set environment variable OLLAMA_API_KEY hoặc tạo file .kimi_api_key"
+            "error": "Chưa cấu hình API key. Vui lòng thêm key vào Streamlit Cloud Secrets (key: ollama_api_key) hoặc tạo file .kimi_api_key (local)."
         }
 
     prompt = build_analysis_prompt(claim_data, photo_paths, contract_path)
 
-    # Build messages với ảnh — dùng OpenAI-compatible format
     content = [{"type": "text", "text": prompt}]
 
-    # Thêm ảnh thiệt hại
     for photo_path in photo_paths:
         if os.path.exists(photo_path):
             try:
                 img_b64 = encode_image_to_base64(photo_path)
-                content.append({
-                    "type": "image_url",
-                    "image_url": {"url": img_b64}
-                })
+                content.append({"type": "image_url", "image_url": {"url": img_b64}})
             except Exception as e:
                 content.append({"type": "text", "text": f"[Không thể đọc ảnh: {os.path.basename(photo_path)} - {str(e)}]"})
 
-    # Thêm hợp đồng (nếu là ảnh)
     if contract_path and os.path.exists(contract_path):
         ext = os.path.splitext(contract_path)[1].lower().lstrip(".")
         if ext in ("jpg", "jpeg", "png", "gif", "webp"):
             try:
                 img_b64 = encode_image_to_base64(contract_path)
-                content.append({
-                    "type": "image_url",
-                    "image_url": {"url": img_b64}
-                })
+                content.append({"type": "image_url", "image_url": {"url": img_b64}})
             except Exception as e:
                 content.append({"type": "text", "text": f"[Không thể đọc hợp đồng: {str(e)}]"})
         else:
-            # PDF hoặc file khác → ghi chú
             content.append({"type": "text", "text": f"[Hợp đồng đính kèm: {os.path.basename(contract_path)}]"})
 
     messages = [{"role": "user", "content": content}]
@@ -183,12 +168,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
 
 
 def save_reply(claim_data, ai_response, photo_names, contract_name):
-    """
-    Lưu câu trả lời AI vào thư mục "trả lời".
-    
-    Returns:
-        str: đường dẫn file đã lưu
-    """
+    """Lưu câu trả lời AI vào thư mục trả lời."""
     os.makedirs(REPLY_DIR, exist_ok=True)
     
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
