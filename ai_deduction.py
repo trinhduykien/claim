@@ -82,22 +82,44 @@ THÔNG TIN HỒ SƠ:
 CÂU TRẢ LỜI ĐÁNH GIÁ ĐIỀU KIỆN:
 {answers_text}
 
-HƯỚNG DẪN PHÂN TÍCH:
-1. Xem xét các ảnh thiệt hại được đính kèm (nếu có).
-2. Xem xét hợp đồng bảo hiểm được đính kèm (nếu có).
-3. Dựa trên thông tin hồ sơ + ảnh + hợp đồng, xác định:
-   - Các khoản khấu trừ hợp lệ (franchise, deductible, khấu trừ theo tỷ lệ thiếu phí, khấu trừ do vi phạm điều kiện...)
-   - Các khoản không được bồi thường (thiệt hại ngoài phạm vi, tài sản không thuộc bảo hiểm...)
-   - Tiền bồi thường dự kiến sau khấu trừ
-4. Giải thích rõ ràng lý do từng khoản khấu trừ cho khách hàng.
+HƯỚNG DẪN PHÂN TÍCH CHI TIẾT:
+
+BƯỚC 1 — ĐỌC ẢNH HÓA ĐƠN/CHỨNG TỪ:
+- Đọc kỹ tất cả ảnh hóa đơn, viện phí, biên lai, chứng từ được đính kèm.
+- Liệt kê từng khoản chi phí trong hóa đơn (ví dụ: phí khám bệnh, phí phẫu thuật, phí thuốc, phí vật liệu nhân tạo...).
+- Ghi rõ số tiền từng khoản nếu đọc được từ ảnh.
+
+BƯỚC 2 — ĐỌC HỢP ĐỒNG BẢO HIỂM:
+- Đọc kỹ hợp đồng bảo hiểm được đính kèm.
+- Xác định các điều khoản loại trừ, các khoản KHÔNG được bồi thường.
+- Ví dụ: "Không thanh toán chi phí đồ nhân tạo, chân giả, răng giả, kính mắt..."
+
+BƯỚC 3 — SO SÁNH VÀ XÁC ĐỊNH KHẤU TRỪ:
+- So sánh từng khoản trong hóa đơn với điều khoản loại trừ trong hợp đồng.
+- Xác định khoản nào bị khấu trừ (không được bồi thường).
+- Ví dụ: Hóa đơn viện phí có "chi phí chân giả 2.000.000đ" + hợp đồng nói "không thanh toán đồ nhân tạo" → khoản 2.000.000đ bị khấu trừ.
+- Tính tổng chi phí, tổng khấu trừ, và tiền bồi thường thực nhận.
+
+BƯỚC 4 — TRẢ LỜI KHÁCH HÀNG:
+- Giải thích rõ ràng, dễ hiểu, lịch sự.
+- Nêu rõ từng khoản bị khấu trừ kèm lý do và số tiền.
+- Nêu rõ tiền bồi thường dự kiến.
 
 YÊU CẦU ĐỊNH DẠNG TRẢ LỜI:
-- Viết bằng tiếng Việt, lịch sự, chuyên nghiệp.
-- Trình bày rõ: Tổng bồi thường → Khấu trừ → Bồi thường thực nhận.
-- Nếu không có khấu trừ, nói rõ "Không có khoản khấu trừ, khách hàng nhận toàn bộ tiền bồi thường."
-- Nếu có ảnh/hợp đồng đính kèm, đề cập đến chi tiết quan trọng trong đó.
+- Viết bằng tiếng Việt.
+- Trình bày theo mẫu:
 
-Lưu ý: Chỉ đưa ra phân tích dựa trên thông tin có sẵn. Nếu thông tin không đủ, ghi rõ cần bổ sung gì.
+**Tổng chi phí theo hóa đơn:** [số tiền]
+**Các khoản khấu trừ:**
+1. [Tên khoản] - [Số tiền] - [Lý do theo điều khoản nào trong hợp đồng]
+2. ...
+
+**Tiền bồi thường dự kiến:** [Tổng - Khấu trừ = Thực nhận]
+
+- Nếu không có khấu trừ, ghi rõ: "Không có khoản khấu trừ, khách hàng nhận toàn bộ tiền bồi thường."
+- Nếu không đọc được ảnh hoặc thiếu thông tin, ghi rõ cần bổ sung gì.
+
+Lưu ý: PHẢI đọc và phân tích nội dung ảnh nếu có ảnh đính kèm. Không được bỏ qua ảnh.
 """
     return prompt
 

@@ -1343,13 +1343,19 @@ if st.session_state.upload_phase == "analyzing":
 
         contract_name = os.path.basename(st.session_state.uploaded_contract) if st.session_state.uploaded_contract else None
 
+        ai_text = ai_result.get("response", "")
 
+        # Fallback nếu AI trả về rỗng
+        if not ai_text or not ai_text.strip():
+            ai_text = ("AI đã xử lý nhưng không trả về nội dung. "
+                       "Vui lòng liên hệ PJICO qua tổng đài 1900 54 54 55 "
+                       "để được nhân viên hỗ trợ phân tích khấu trừ.")
 
         reply_path = save_reply(
 
             claim_data=st.session_state.last_claim_log or {},
 
-            ai_response=ai_result["response"],
+            ai_response=ai_text,
 
             photo_names=photo_names,
 
@@ -1359,12 +1365,11 @@ if st.session_state.upload_phase == "analyzing":
 
         st.session_state.ai_reply_path = reply_path
 
-        st.session_state.ai_deduction_result = ai_result["response"]
+        st.session_state.ai_deduction_result = ai_text
 
 
 
         # Hiển thị kết quả AI cho khách hàng — full nội dung
-        ai_text = ai_result["response"]
         ai_message = f"""
 
 ---
@@ -1385,7 +1390,7 @@ if st.session_state.upload_phase == "analyzing":
 
         add_message("assistant", ai_message)
 
-        # Nút download file reply
+        # Hiển thị nút download ngay sau chat messages
         with open(reply_path, "r", encoding="utf-8") as f:
             reply_content = f.read()
         st.download_button(
