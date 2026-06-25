@@ -1,2 +1,4 @@
 streamlit>=1.30
 python-aiml>=0.9.3
+requests>=2.28
+PyMuPDF>=1.24

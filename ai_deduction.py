@@ -62,9 +62,10 @@ def encode_image_to_base64(image_path):
 
 
 def extract_pdf_text(pdf_path):
-    """Đọc text từ PDF. Nếu PDF là ảnh scan (không có text), trả về None để dùng fallback OCR."""
+    """Đọc text từ PDF. Thử PyMuPDF trước, sau đó pdfplumber. Trả về None nếu là ảnh scan."""
+    # Thử PyMuPDF
     try:
-        import fitz  # PyMuPDF
+        import fitz
         doc = fitz.open(pdf_path)
         text = ""
         has_text = False
@@ -75,13 +76,34 @@ def extract_pdf_text(pdf_path):
                 text += f"\n--- Trang {page_num} ---\n"
                 text += page_text
         doc.close()
-        if not has_text:
-            return None  # PDF là ảnh scan, cần OCR
-        return text
+        if has_text:
+            return text
     except ImportError:
-        return None
-    except Exception as e:
-        return f"[Lỗi đọc PDF: {str(e)}]"
+        pass
+    except Exception:
+        pass
+    
+    # Thử pdfplumber
+    try:
+        import pdfplumber
+        text = ""
+        has_text = False
+        with pdfplumber.open(pdf_path) as pdf:
+            for page_num, page in enumerate(pdf.pages, 1):
+                page_text = page.extract_text() or ""
+                if page_text.strip():
+                    has_text = True
+                    text += f"\n--- Trang {page_num} ---\n"
+                    text += page_text
+        if has_text:
+            return text
+    except ImportError:
+        pass
+    except Exception:
+        pass
+    
+    # PDF là ảnh scan hoặc không đọc được
+    return None
 
 
 def pdf_pages_to_images(pdf_path, max_pages=3):
@@ -93,7 +115,6 @@ def pdf_pages_to_images(pdf_path, max_pages=3):
         for i, page in enumerate(doc):
             if i >= max_pages:
                 break
-            # Render page to image at 100 DPI (nhỏ hơn để giảm size)
             mat = fitz.Matrix(100/72, 100/72)
             pix = page.get_pixmap(matrix=mat)
             img_bytes = pix.tobytes("png")
@@ -101,6 +122,21 @@ def pdf_pages_to_images(pdf_path, max_pages=3):
             images.append(f"data:image/png;base64,{img_b64}")
         doc.close()
         return images
+    except ImportError:
+        # PyMuPDF not available, try pdf2image
+        try:
+            from pdf2image import convert_from_path
+            pages = convert_from_path(pdf_path, dpi=100, first_page=1, last_page=max_pages)
+            images = []
+            for page in pages:
+                import io
+                buf = io.BytesIO()
+                page.save(buf, format="PNG")
+                img_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+                images.append(f"data:image/png;base64,{img_b64}")
+            return images
+        except ImportError:
+            return []
     except Exception as e:
         return []
 
@@ -175,7 +211,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                     for idx, img_b64 in enumerate(pdf_images):
                         content.append({"type": "image_url", "image_url": {"url": img_b64}})
                 else:
-                    contract_text = f"(Không thể đọc PDF: {pdf_text})"
+                    contract_text = "(Hợp đồng PDF là ảnh scan hoặc không thể đọc text. Vui lòng upload hợp đồng dạng ảnh JPG/PNG để AI đọc được nội dung.)"
         elif ext in ("jpg", "jpeg", "png", "gif", "webp"):
             contract_text = "(Hợp đồng đính kèm dạng ảnh - xem ảnh trong cuộc trò chuyện)"
         else:
@@ -207,7 +243,13 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         else:
             content.append({"type": "text", "text": f"[Hợp đồng đính kèm: {os.path.basename(contract_path)}]"})
 
-    messages = [{"role": "user", "content": content}]
+    # System message ép AI trả lời trực tiếp, không reasoning
+    system_msg = {
+        "role": "system",
+        "content": "Bạn là chuyên gia bồi thường bảo hiểm PJICO. Khi được yêu cầu phân tích, hãy trả lời trực tiếp bằng tiếng Việt theo đúng định dạng bảng yêu cầu. KHÔNG giải thích quá dài, KHÔNG suy nghĩ nội bộ. Trả lời ngắn gọn, trực tiếp."
+    }
+    user_msg = {"role": "user", "content": content}
+    messages = [system_msg, user_msg]
 
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -218,7 +260,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         "model": MODEL,
         "messages": messages,
         "temperature": 0.3,
-        "max_tokens": 2000
+        "max_tokens": 4000
     }
 
     try:
