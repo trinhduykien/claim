@@ -179,7 +179,13 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         )
         response.raise_for_status()
         result = response.json()
-        ai_text = result["choices"][0]["message"]["content"]
+        msg = result["choices"][0]["message"]
+        # Model kimi-k2.6 có thể trả content rỗng, nội dung nằm trong "reasoning"
+        ai_text = msg.get("content", "") or ""
+        reasoning = msg.get("reasoning", "") or ""
+        # Nếu content rỗng nhưng có reasoning → dùng reasoning
+        if not ai_text.strip() and reasoning.strip():
+            ai_text = reasoning
         return {"success": True, "response": ai_text, "error": ""}
     except requests.exceptions.Timeout:
         return {"success": False, "response": "", "error": "AI xử lý quá thời gian (timeout 120s)"}
