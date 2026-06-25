@@ -1055,6 +1055,22 @@ elif current_product and st.session_state.finished and st.session_state.result:
 
 # ============================================================
 
+# RENDER CHAT MESSAGES
+
+# ============================================================
+
+
+
+for msg in st.session_state.messages:
+
+    with st.chat_message(msg["role"]):
+
+        st.markdown(msg["content"])
+
+
+
+# ============================================================
+
 # UPLOAD FLOW — Khi claim ĐỦ ĐIỀU KIỆN → cho upload ảnh + hợp đồng + AI phân tích khấu trừ
 
 # ============================================================
@@ -1415,20 +1431,6 @@ if st.session_state.upload_phase == "analyzing":
 
 
 
-
-# ============================================================
-
-# RENDER CHAT MESSAGES
-
-# ============================================================
-
-
-
-for msg in st.session_state.messages:
-
-    with st.chat_message(msg["role"]):
-
-        st.markdown(msg["content"])
 
 
 
