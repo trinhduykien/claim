@@ -1363,8 +1363,8 @@ if st.session_state.upload_phase == "analyzing":
 
 
 
-        # Hiển thị kết quả AI cho khách hàng
-
+        # Hiển thị kết quả AI cho khách hàng — full nội dung
+        ai_text = ai_result["response"]
         ai_message = f"""
 
 ---
@@ -1373,7 +1373,7 @@ if st.session_state.upload_phase == "analyzing":
 
 
 
-{ai_result["response"]}
+{ai_text}
 
 
 
@@ -1385,7 +1385,16 @@ if st.session_state.upload_phase == "analyzing":
 
         add_message("assistant", ai_message)
 
-
+        # Nút download file reply
+        with open(reply_path, "r", encoding="utf-8") as f:
+            reply_content = f.read()
+        st.download_button(
+            label="📥 Tải kết quả phân tích (Markdown)",
+            data=reply_content.encode("utf-8"),
+            file_name=os.path.basename(reply_path),
+            mime="text/markdown",
+            use_container_width=True,
+        )
 
         # Git auto-push (chỉ chạy ở local, không chạy trên Streamlit Cloud)
         is_cloud = os.environ.get("STREAMLIT_SHARING", "") or os.environ.get("HOSTNAME", "").startswith("streamlit")
