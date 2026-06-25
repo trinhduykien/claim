@@ -101,7 +101,7 @@ def extract_pdf_text(pdf_path):
     return None  # PDF là ảnh scan
 
 
-def pdf_pages_to_images(pdf_path, max_pages=8):
+def pdf_pages_to_images(pdf_path, max_pages=10):
     """Chuyển tối đa max_pages trang PDF thành ảnh base64."""
     try:
         import fitz
@@ -127,7 +127,7 @@ def pdf_pages_to_images(pdf_path, max_pages=8):
 
 
 def build_analysis_prompt(claim_data, contract_text, num_contract_pages):
-    """Xây prompt phân tích khấu trừ."""
+    """Xây prompt phân tích khấu trừ — chain-of-thought có hướng dẫn."""
     product_name = claim_data.get("product", {}).get("name", "Không rõ")
     answers = claim_data.get("answers", {})
 
@@ -135,15 +135,23 @@ def build_analysis_prompt(claim_data, contract_text, num_contract_pages):
     for qid, ans in answers.items():
         answers_text += f"- {qid}: {ans}\n"
 
-    contract_info = ""
     if num_contract_pages > 0:
-        contract_info = f"Hợp đồng bảo hiểm có {num_contract_pages} trang ảnh được đính kèm. Hãy đọc kỹ TẤT CẢ trang để tìm điều khoản loại trừ."
+        contract_info = f"""Hợp đồng bảo hiểm có {num_contract_pages} trang ảnh đính kèm.
+BẠN PHẢI ĐỌC KỸ TỪNG TRANG ẢNH HỢP ĐỒNG. Mỗi trang có thể chứa:
+- Trang bìa: thông tin hợp đồng, bên tham gia, thời hạn
+- Trang giữa: phạm vi bảo hiểm, quyền lợi, hạn mức chi trả
+- Trang điều khoản loại trừ: các khoản KHÔNG được bồi thường
+- Trang khái niệm/định nghĩa: giải thích thuật ngữ y tế, thiết bị y tế, vật liệu...
+- Trang phụ lục: danh mục chi tiết các hạng mục được/không được chi trả
+
+QUAN TRỌNG: Điều khoản loại trừ ở một trang có thể tham chiếu đến khái niệm ở trang khác.
+Ví dụ: Trang 4 ghi "không bồi thường chi phí thiết bị y tế hỗ trợ điều trị" + Trang 5-7 định nghĩa "Sanlein thuộc thiết bị y tế hỗ trợ điều trị" → Sanlein bị khấu trừ."""
     elif contract_text and contract_text != "(Không có hợp đồng đính kèm)":
         contract_info = f"Nội dung hợp đồng bảo hiểm:\n{contract_text}"
     else:
         contract_info = "(Không có hợp đồng đính kèm)"
 
-    prompt = f"""BẠN LÀ CHUYÊN VIÊN BỒI THƯỜNG PJICO. PHÂN TÍCH KHẤU TRỪ BỒI THƯỜNG.
+    prompt = f"""BẠN LÀ CHUYÊN VIÊN BỒI THƯỜNG BẢO HIỂM PJICO. NHIỆM VỤ: PHÂN TÍCH KHẤU TRỪ BỒI THƯỜNG.
 
 THÔNG TIN HỒ SƠ:
 - Sản phẩm bảo hiểm: {product_name}
@@ -152,28 +160,46 @@ THÔNG TIN HỒ SƠ:
 
 {contract_info}
 
-HƯỚNG DẪN:
-1. Đọc ảnh hóa đơn/viện phí đính kèm. Liệt kê TỪNG khoản chi phí + số tiền.
-2. Đọc TẤT CẢ trang hợp đồng bảo hiểm đính kèm. Tìm các điều khoản LOẠI TRỪ/không chi trả.
-3. So sánh: khoản nào trong hóa đơn trùng với điều khoản loại trừ → bị khấu trừ.
+HƯỚNG DẪN PHÂN TÍCH (LÀM THEO TỪNG BƯỚC):
 
-QUY TẮC TRẢ LỜI:
-- TRẢ LỜI BẰNG TIẾNG VIỆT.
-- KHÔNG suy nghĩ nội bộ. KHÔNG giải thích dài.
-- CHỈ trả lời theo đúng bảng bên dưới.
+BƯỚC 1 — ĐỌC HÓA ĐƠN:
+- Đọc ảnh hóa đơn/viện phí đính kèm.
+- Liệt kê TỪNG khoản chi phí: tên thuốc/dịch vụ + số lượng + đơn giá + thành tiền.
+- Tính tổng chi phí.
 
-ĐỊNH DẠNG TRẢ LỜI (bắt buộc):
+BƯỚC 2 — ĐỌC HỢP ĐỒNG (TẤT CẢ TRANG):
+- Đọc từng trang hợp đồng từ đầu đến cuối.
+- Tìm các điều khoản LOẠI TRỪ: các khoản KHÔNG được bồi thường.
+- Tìm các KHÁI NIỆM/ĐỊNH NGHĨA: giải thích thuật ngữ (thiết bị y tế, vật liệu, thuốc men...).
+- Tìm các HẠN MỨC: giới hạn chi trả theo hạng mục.
+- ĐÁNH DẤU: điều khoản loại trừ ở trang nào, khái niệm ở trang nào.
+
+BƯỚC 3 — CROSS-REFERENCE (SO SÁNH CHÉO):
+- Với TỪNG khoản trong hóa đơn, tra cứu trong hợp đồng:
+  + Khoản này có nằm trong điều khoản loại trừ không?
+  + Khoản này có thuộc khái niệm/định nghĩa nào bị loại trừ không?
+  + Khoản này có vượt hạn mức chi trả không?
+  + PHẢI KIỂM TRA CẢ ĐỊNH NGHĨA Ở TRANG KHÁC (vd: loại trừ ở trang 4 nói "thiết bị y tế" → phải xem trang 5-7 định nghĩa gì là "thiết bị y tế").
+- Nếu khoản trong hóa đơn KHỚP với điều khoản loại trừ → bị KHẤU TRỪ.
+- Nếu không khớp bất kỳ điều khoản loại trừ nào → KHÔNG bị khấu trừ.
+
+BƯỚC 4 — TRẢ LỜI:
+- Trả lời BẰNG TIẾNG VIỆT.
+- Trả lời theo đúng định dạng bên dưới.
+- Mỗi khoản khấu trừ phải ghi rõ: số tiền + lý do + trang nào trong hợp đồng.
+
+ĐỊNH DẠNG TRẢ LỜI (BẮT BUỘC):
 
 **Tổng chi phí theo hóa đơn:** [số tiền] VNĐ
 
 | STT | Mục khấu trừ | Số tiền (VNĐ) | Lý do khấu trừ | Tham chiếu hợp đồng |
 |-----|-------------|--------------|----------------|-------------------|
-| 1   | [tên khoản] | [số tiền]    | [lý do]        | Trang [X]          |
+| 1   | [tên khoản] | [số tiền]    | [lý do: khoản này thuộc điều khoản loại trừ nào] | Trang [X], mục [Y] |
 
 **Tổng khấu trừ:** [số tiền] VNĐ
-**Tiền bồi thường thực nhận:** [số tiền] VNĐ
+**Tiền bồi thường thực nhận:** [Tổng - Khấu trừ] = [số tiền] VNĐ
 
-Nếu không có khoản khấu trừ nào, ghi đúng dòng:
+Nếu sau khi kiểm tra tất cả điều khoản loại trừ mà không có khoản nào bị khấu trừ, ghi:
 Không có khoản khấu trừ, khách hàng nhận toàn bộ [số tiền] VNĐ.
 """
     return prompt
@@ -202,7 +228,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 contract_text = pdf_text[:10000]
             else:
                 # PDF scan → chuyển thành ảnh
-                contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=8)
+                contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=10)
                 if contract_images:
                     num_contract_pages = len(contract_images)
                     contract_text = f"(Hợp đồng PDF gồm {total_pages} trang, gửi {num_contract_pages} trang ảnh)"
@@ -231,7 +257,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
     # System message
     system_msg = {
         "role": "system",
-        "content": "Bạn là chuyên viên bồi thường bảo hiểm PJICO. LUÔN trả lời bằng tiếng Việt. Trả lời NGẮN GỌN, trực tiếp theo đúng định dạng bảng. KHÔNG suy nghĩ nội bộ, KHÔNG giải thích dài dòng."
+        "content": "Bạn là chuyên viên bồi thường bảo hiểm PJICO. LUÔN trả lời bằng tiếng Việt. Phải ĐỌC KỸ và SO SÁNH CHÉO giữa hóa đơn và hợp đồng: khoản nào trong hóa đơn có bị loại trừ trong hợp đồng (kể cả qua định nghĩa ở trang khác) thì KHẤU TRỪ. Trả lời theo đúng định dạng bảng. KHÔNG trả lời 'không có khấu trừ' nếu chưa kiểm tra kỹ tất cả trang hợp đồng."
     }
     user_msg = {"role": "user", "content": content}
     messages = [system_msg, user_msg]
