@@ -48,6 +48,9 @@ from insurance_products import PRODUCTS, get_product_by_id, get_product_by_keywo
 from pjico_offices import get_offices_by_city, get_all_cities
 
 try:
+    import importlib
+    import ai_deduction
+    importlib.reload(ai_deduction)
     from ai_deduction import analyze_deduction, save_reply, has_api_key as ai_has_key
     AI_DEDUCTION_AVAILABLE = True
 except ImportError:
