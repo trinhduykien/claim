@@ -61,7 +61,51 @@ def encode_image_to_base64(image_path):
     return f"data:{mime};base64,{data}"
 
 
-def build_analysis_prompt(claim_data, photo_paths, contract_path):
+def extract_pdf_text(pdf_path):
+    """Đọc text từ PDF. Nếu PDF là ảnh scan (không có text), trả về None để dùng fallback OCR."""
+    try:
+        import fitz  # PyMuPDF
+        doc = fitz.open(pdf_path)
+        text = ""
+        has_text = False
+        for page_num, page in enumerate(doc, 1):
+            page_text = page.get_text().strip()
+            if page_text:
+                has_text = True
+                text += f"\n--- Trang {page_num} ---\n"
+                text += page_text
+        doc.close()
+        if not has_text:
+            return None  # PDF là ảnh scan, cần OCR
+        return text
+    except ImportError:
+        return None
+    except Exception as e:
+        return f"[Lỗi đọc PDF: {str(e)}]"
+
+
+def pdf_pages_to_images(pdf_path, max_pages=3):
+    """Chuyển các trang PDF thành ảnh base64 để gửi cho AI (khi PDF là ảnh scan)."""
+    try:
+        import fitz
+        doc = fitz.open(pdf_path)
+        images = []
+        for i, page in enumerate(doc):
+            if i >= max_pages:
+                break
+            # Render page to image at 100 DPI (nhỏ hơn để giảm size)
+            mat = fitz.Matrix(100/72, 100/72)
+            pix = page.get_pixmap(matrix=mat)
+            img_bytes = pix.tobytes("png")
+            img_b64 = base64.b64encode(img_bytes).decode("utf-8")
+            images.append(f"data:image/png;base64,{img_b64}")
+        doc.close()
+        return images
+    except Exception as e:
+        return []
+
+
+def build_analysis_prompt(claim_data, photo_paths, contract_path, contract_text="(Không có hợp đồng đính kèm)"):
     """Xây prompt gửi AI phân tích khấu trừ."""
     product_name = claim_data.get("product", {}).get("name", "Không rõ")
     answers = claim_data.get("answers", {})
@@ -70,56 +114,35 @@ def build_analysis_prompt(claim_data, photo_paths, contract_path):
     for qid, ans in answers.items():
         answers_text += f"- {qid}: {ans}\n"
 
-    prompt = f"""Bạn là chuyên gia bồi thường bảo hiểm của PJICO (Tổng Công ty Cổ phần Bảo hiểm Petrolimex).
-
-Nhiệm vụ: Phân tích hồ sơ bồi thường và xác định các khoản khấu trừ trong tiền bồi thường phải trả cho khách hàng.
+    prompt = f"""Bạn là chuyên gia bồi thường bảo hiểm của PJICO. Phân tích khấu trừ bồi thường.
 
 THÔNG TIN HỒ SƠ:
-- Sản phẩm bảo hiểm: {product_name}
+- Sản phẩm: {product_name}
 - Khách hàng: {claim_data.get('customer_name', 'Không rõ')}
-- Thời gian đánh giá: {claim_data.get('timestamp', 'Không rõ')}
 
-CÂU TRẢ LỜI ĐÁNH GIÁ ĐIỀU KIỆN:
+CÂU TRẢ LỜI ĐÁNH GIÁ:
 {answers_text}
 
-HƯỚNG DẪN PHÂN TÍCH CHI TIẾT:
+NỘI DUNG HỢP ĐỒNG BẢO HIỂM:
+{contract_text}
 
-BƯỚC 1 — ĐỌC ẢNH HÓA ĐƠN/CHỨNG TỪ:
-- Đọc kỹ tất cả ảnh hóa đơn, viện phí, biên lai, chứng từ được đính kèm.
-- Liệt kê từng khoản chi phí trong hóa đơn (ví dụ: phí khám bệnh, phí phẫu thuật, phí thuốc, phí vật liệu nhân tạo...).
-- Ghi rõ số tiền từng khoản nếu đọc được từ ảnh.
+YÊU CẦU:
+1. Đọc ảnh hóa đơn/viện phí → liệt kê từng khoản chi phí + số tiền.
+2. Đọc nội dung hợp đồng bảo hiểm ở trên → tìm các điều khoản loại trừ/không chi trả.
+3. So sánh → xác định khoản nào trong hóa đơn bị khấu trừ.
 
-BƯỚC 2 — ĐỌC HỢP ĐỒNG BẢO HIỂM:
-- Đọc kỹ hợp đồng bảo hiểm được đính kèm.
-- Xác định các điều khoản loại trừ, các khoản KHÔNG được bồi thường.
-- Ví dụ: "Không thanh toán chi phí đồ nhân tạo, chân giả, răng giả, kính mắt..."
+TRẢ LỜI ĐÚNG ĐỊNH DẠNG SAU (tiếng Việt, ngắn gọn):
 
-BƯỚC 3 — SO SÁNH VÀ XÁC ĐỊNH KHẤU TRỪ:
-- So sánh từng khoản trong hóa đơn với điều khoản loại trừ trong hợp đồng.
-- Xác định khoản nào bị khấu trừ (không được bồi thường).
-- Ví dụ: Hóa đơn viện phí có "chi phí chân giả 2.000.000đ" + hợp đồng nói "không thanh toán đồ nhân tạo" → khoản 2.000.000đ bị khấu trừ.
-- Tính tổng chi phí, tổng khấu trừ, và tiền bồi thường thực nhận.
+**Tổng chi phí theo hóa đơn:** [số tiền] VNĐ
 
-BƯỚC 4 — TRẢ LỜI KHÁCH HÀNG:
-- Giải thích rõ ràng, dễ hiểu, lịch sự.
-- Nêu rõ từng khoản bị khấu trừ kèm lý do và số tiền.
-- Nêu rõ tiền bồi thường dự kiến.
+| STT | Mục khấu trừ | Số tiền (VNĐ) | Lý do khấu trừ | Tham chiếu hợp đồng |
+|-----|-------------|--------------|----------------|-------------------|
+| 1   | [tên khoản] | [số tiền]    | [lý do]        | Trang [X], mục [Y] |
 
-YÊU CẦU ĐỊNH DẠNG TRẢ LỜI:
-- Viết bằng tiếng Việt.
-- Trình bày theo mẫu:
+**Tổng khấu trừ:** [số tiền] VNĐ
+**Tiền bồi thường thực nhận:** [Tổng - Khấu trừ] = [số tiền] VNĐ
 
-**Tổng chi phí theo hóa đơn:** [số tiền]
-**Các khoản khấu trừ:**
-1. [Tên khoản] - [Số tiền] - [Lý do theo điều khoản nào trong hợp đồng]
-2. ...
-
-**Tiền bồi thường dự kiến:** [Tổng - Khấu trừ = Thực nhận]
-
-- Nếu không có khấu trừ, ghi rõ: "Không có khoản khấu trừ, khách hàng nhận toàn bộ tiền bồi thường."
-- Nếu không đọc được ảnh hoặc thiếu thông tin, ghi rõ cần bổ sung gì.
-
-Lưu ý: PHẢI đọc và phân tích nội dung ảnh nếu có ảnh đính kèm. Không được bỏ qua ảnh.
+Nếu không có khấu trừ, ghi: "Không có khoản khấu trừ, khách hàng nhận toàn bộ [số tiền] VNĐ."
 """
     return prompt
 
@@ -133,10 +156,37 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             "error": "Chưa cấu hình API key. Vui lòng thêm key vào Streamlit Cloud Secrets (key: ollama_api_key) hoặc tạo file .kimi_api_key (local)."
         }
 
-    prompt = build_analysis_prompt(claim_data, photo_paths, contract_path)
+    # Khởi tạo content trước (chứa prompt + ảnh)
+    content = []
 
-    content = [{"type": "text", "text": prompt}]
+    # Đọc hợp đồng trước
+    contract_text = "(Không có hợp đồng đính kèm)"
+    if contract_path and os.path.exists(contract_path):
+        ext = os.path.splitext(contract_path)[1].lower().lstrip(".")
+        if ext == "pdf":
+            pdf_text = extract_pdf_text(contract_path)
+            if pdf_text and not pdf_text.startswith("[Lỗi"):
+                contract_text = pdf_text[:8000]
+            else:
+                # PDF là ảnh scan → chuyển trang thành ảnh để gửi AI
+                pdf_images = pdf_pages_to_images(contract_path, max_pages=3)
+                if pdf_images:
+                    contract_text = f"(Hợp đồng PDF gồm {len(pdf_images)} trang ảnh - xem ảnh đính kèm)"
+                    for idx, img_b64 in enumerate(pdf_images):
+                        content.append({"type": "image_url", "image_url": {"url": img_b64}})
+                else:
+                    contract_text = f"(Không thể đọc PDF: {pdf_text})"
+        elif ext in ("jpg", "jpeg", "png", "gif", "webp"):
+            contract_text = "(Hợp đồng đính kèm dạng ảnh - xem ảnh trong cuộc trò chuyện)"
+        else:
+            contract_text = f"(Hợp đồng đính kèm: {os.path.basename(contract_path)})"
 
+    prompt = build_analysis_prompt(claim_data, photo_paths, contract_path, contract_text)
+
+    # Thêm prompt vào đầu content
+    content.insert(0, {"type": "text", "text": prompt})
+
+    # Thêm ảnh thiệt hại
     for photo_path in photo_paths:
         if os.path.exists(photo_path):
             try:
@@ -145,6 +195,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             except Exception as e:
                 content.append({"type": "text", "text": f"[Không thể đọc ảnh: {os.path.basename(photo_path)} - {str(e)}]"})
 
+    # Thêm hợp đồng dạng ảnh (không phải PDF - PDF đã xử lý ở trên)
     if contract_path and os.path.exists(contract_path):
         ext = os.path.splitext(contract_path)[1].lower().lstrip(".")
         if ext in ("jpg", "jpeg", "png", "gif", "webp"):
