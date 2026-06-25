@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 AI Deduction Analysis Module cho PJICO Claim Bot
-- Gọi Kimi API (Moonshot) để phân tích ảnh thiệt hại + hợp đồng
+- Gọi Ollama Cloud API (model: kimi-k2.7-code) để phân tích ảnh thiệt hại + hợp đồng
 - Xác định các khoản khấu trừ trong tiền bồi thường
 - Trả về câu trả lời cho khách hàng
 - Lưu câu trả lời vào thư mục "trả lời"
@@ -19,18 +19,19 @@ import requests
 # ============================================================
 
 # Cách 1: Environment variable
-# set KIMI_API_KEY=your_key_here  (PowerShell)
-# $env:KIMI_API_KEY="your_key"    (PowerShell session)
-KIMI_API_KEY = os.environ.get("KIMI_API_KEY", "")
+# set OLLAMA_API_KEY=your_key_here  (PowerShell)
+# $env:OLLAMA_API_KEY="your_key"    (PowerShell session)
+API_KEY = os.environ.get("OLLAMA_API_KEY", "")
 
-# Cách 2: File local (không commit lên git)
+# Cách 2: File local (không commit lên git) — dùng lại .kimi_api_key
 _key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".kimi_api_key")
-if not KIMI_API_KEY and os.path.exists(_key_file):
+if not API_KEY and os.path.exists(_key_file):
     with open(_key_file, "r", encoding="utf-8") as f:
-        KIMI_API_KEY = f.read().strip()
+        API_KEY = f.read().strip()
 
-KIMI_BASE_URL = "https://api.moonshot.cn/v1"
-KIMI_MODEL = "kimi-k2.7-code"  # Model theo yêu cầu
+# Ollama Cloud endpoint
+OLLAMA_BASE_URL = "https://api.ollama.ai/v1"  # OpenAI-compatible endpoint
+MODEL = "kimi-k2.7-code"
 
 # Thư mục lưu câu trả lời
 REPLY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trả lời")
@@ -38,7 +39,7 @@ REPLY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trả lờ
 
 def has_api_key():
     """Kiểm tra đã có API key chưa."""
-    return bool(KIMI_API_KEY)
+    return bool(API_KEY)
 
 
 def encode_image_to_base64(image_path):
@@ -98,7 +99,7 @@ Lưu ý: Chỉ đưa ra phân tích dựa trên thông tin có sẵn. Nếu thô
 
 def analyze_deduction(claim_data, photo_paths, contract_path):
     """
-    Gọi Kimi API để phân tích khấu trừ.
+    Gọi Ollama Cloud API (kimi-k2.7-code) để phân tích khấu trừ.
     
     Args:
         claim_data: dict — dữ liệu claim log (product, answers, result, customer_name...)
@@ -112,12 +113,12 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         return {
             "success": False,
             "response": "",
-            "error": "Chưa cấu hình KIMI_API_KEY. Vui lòng set environment variable hoặc tạo file .kimi_api_key"
+            "error": "Chưa cấu hình API key. Vui lòng set environment variable OLLAMA_API_KEY hoặc tạo file .kimi_api_key"
         }
 
     prompt = build_analysis_prompt(claim_data, photo_paths, contract_path)
 
-    # Build messages với ảnh
+    # Build messages với ảnh — dùng OpenAI-compatible format
     content = [{"type": "text", "text": prompt}]
 
     # Thêm ảnh thiệt hại
@@ -145,18 +146,18 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             except Exception as e:
                 content.append({"type": "text", "text": f"[Không thể đọc hợp đồng: {str(e)}]"})
         else:
-            # PDF hoặc file khác → đọc text
+            # PDF hoặc file khác → ghi chú
             content.append({"type": "text", "text": f"[Hợp đồng đính kèm: {os.path.basename(contract_path)}]"})
 
     messages = [{"role": "user", "content": content}]
 
     headers = {
-        "Authorization": f"Bearer {KIMI_API_KEY}",
+        "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
     }
 
     payload = {
-        "model": KIMI_MODEL,
+        "model": MODEL,
         "messages": messages,
         "temperature": 0.3,
         "max_tokens": 2000
@@ -164,17 +165,17 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
 
     try:
         response = requests.post(
-            f"{KIMI_BASE_URL}/chat/completions",
+            f"{OLLAMA_BASE_URL}/chat/completions",
             headers=headers,
             json=payload,
-            timeout=60
+            timeout=120
         )
         response.raise_for_status()
         result = response.json()
         ai_text = result["choices"][0]["message"]["content"]
         return {"success": True, "response": ai_text, "error": ""}
     except requests.exceptions.Timeout:
-        return {"success": False, "response": "", "error": "AI xử lý quá thời gian (timeout 60s)"}
+        return {"success": False, "response": "", "error": "AI xử lý quá thời gian (timeout 120s)"}
     except requests.exceptions.HTTPError as e:
         return {"success": False, "response": "", "error": f"HTTP error: {e.response.status_code} - {e.response.text[:200]}"}
     except Exception as e:
