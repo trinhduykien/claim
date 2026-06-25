@@ -992,7 +992,10 @@ elif current_product and st.session_state.finished and st.session_state.result:
 
         add_message("assistant", summary)
 
-        st.session_state.waiting_for_continue_choice = True
+        # Chỉ set waiting_for_continue_choice nếu KHÔNG phải claim passed
+        # (claim passed sẽ chuyển sang upload flow, không cần continue choice ngay)
+        if not result.get("passed"):
+            st.session_state.waiting_for_continue_choice = True
 
 
 
@@ -2174,7 +2177,7 @@ if st.session_state.waiting_for_product_choice and not st.session_state.current_
 
 
 
-if st.session_state.waiting_for_continue_choice and not st.session_state.waiting_for_text:
+if st.session_state.waiting_for_continue_choice and not st.session_state.waiting_for_text and not st.session_state.upload_phase:
 
     continue_options = ["Có", "Không"]
 
