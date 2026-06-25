@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-06-18T16:09:16.742128",
+  "customer_name": "ninh",
+  "product": {
+    "id": "tai_nan_2424",
+    "name": "Bảo hiểm Tai nạn Con người 24/24",
+    "url": "https://muabaohiempjico.com.vn/quy-tac-bao-hiem-tai-nan"
+  },
+  "answers": {
+    "victim_age": "18",
+    "nationality": "việt",
+    "mental_health": "Không",
+    "disability_level": "Không",
+    "incident_cause": "cứu",
+    "intentional": "Không",
+    "alcohol": "Không",
+    "law_violation": "Không",
+    "injury_type": "Thương tật",
+    "incident_description": "ok",
+    "policy_active": "Có"
+  },
+  "result": {
+    "passed": true,
+    "reasons": [],
+    "failed_questions": []
+  }
+}

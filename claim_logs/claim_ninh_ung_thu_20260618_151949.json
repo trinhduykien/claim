@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-06-18T15:19:49.589061",
+  "customer_name": "ninh",
+  "product": {
+    "id": "ung_thu",
+    "name": "Bảo hiểm Bệnh Ung Thư",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-benh-ung-thu"
+  },
+  "answers": {
+    "diagnosis_time": "sau",
+    "patient_age": "77",
+    "nationality": "việt",
+    "policy_active": "Có",
+    "cancer_stage": "cuối"
+  },
+  "result": {
+    "passed": true,
+    "reasons": [],
+    "failed_questions": []
+  }
+}

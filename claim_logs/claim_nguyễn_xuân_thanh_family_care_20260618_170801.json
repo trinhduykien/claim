@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-06-18T17:08:01.232627",
+  "customer_name": "nguyễn xuân thanh",
+  "product": {
+    "id": "family_care",
+    "name": "Bảo hiểm Sức Khỏe Gia Đình Family Care",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-suc-khoe-gia-dinh-family-care"
+  },
+  "answers": {
+    "package": "44",
+    "patient_age": "1",
+    "treatment_type": "Nội trú",
+    "waiting_period": "Không",
+    "pre_existing": "Không",
+    "hospital": "Có",
+    "cost_estimate": "10000000",
+    "policy_active": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Tuổi của người được bảo hiểm là 1, không nằm trong phạm vi (15-65 tuổi) → Không đạt điều kiện",
+      "❌ Sự cố y tế xảy ra sau 30 ngày kể từ ngày tham gia bảo hiểm không? → Trả lời: 'Không' → Không đạt điều kiện bảo hiểm"
+    ],
+    "failed_questions": [
+      "waiting_period"
+    ]
+  }
+}

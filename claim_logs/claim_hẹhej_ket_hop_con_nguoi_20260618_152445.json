@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-06-18T15:24:45.813401",
+  "customer_name": "hẹhej",
+  "product": {
+    "id": "ket_hop_con_nguoi",
+    "name": "Bảo hiểm Kết hợp Con người (Bảo hiểm Thân thể)",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-ket-hop-con-nguoi"
+  },
+  "answers": {
+    "victim_age": "80",
+    "nationality": "vn",
+    "condition_type": "c",
+    "mental_health": "cí",
+    "disability_level": "Có",
+    "under_treatment": "Có",
+    "incident_description": "cso",
+    "policy_active": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Tuổi của người được bảo hiểm là 80, không nằm trong phạm vi (1-60 tuổi) → Không đạt điều kiện",
+      "❌ Người được bảo hiểm có bị tàn phế hoặc thương tật vĩnh viễn từ 50% trở lên không? → Tra loi: 'Có' → Khong dat dieu kien bao hiem",
+      "❌ Người được bảo hiểm có đang trong thời gian điều trị thương tật, bệnh tật khác (trước khi tham gia bảo hiểm) không? → Tra loi: 'Có' → Khong dat dieu kien bao hiem"
+    ],
+    "failed_questions": [
+      "disability_level",
+      "under_treatment"
+    ]
+  }
+}

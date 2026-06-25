@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-06-18T13:19:53.382771",
+  "customer_name": "Hùng nhà tôi nổ rồi",
+  "product": {
+    "id": "phu_gia",
+    "name": "Bảo hiểm Cháy Nổ Toàn Diện Nhà Ở PJICO Phú Gia",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-chay-no-toan-dien-nha-o-pjico-phu-gia"
+  },
+  "answers": {
+    "property_type": "nhà ở",
+    "ownership": "có",
+    "cause": "rò ga",
+    "damage_inside": "mất hết",
+    "personal_injury": "khômg",
+    "damage_description": "5 tỉ",
+    "policy_active": "có"
+  },
+  "result": {
+    "passed": true,
+    "reasons": [],
+    "failed_questions": []
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-06-19T11:24:45.777264",
+  "customer_name": "yuu",
+  "product": {
+    "id": "combo360_o_to",
+    "name": "Combo 360° Bảo Vệ Nhà – Gia Đình – Ô tô",
+    "url": "https://www.pjico.com.vn/san-pham/combo-360-bao-ve-nha-gia-dinh-o-to"
+  },
+  "answers": {
+    "incident_type": "TNDS ô tô (gây thiệt hại cho bên thứ ba)",
+    "incident_within_coverage": "Có",
+    "intentional_act": "Không",
+    "alcohol_driving": "Không",
+    "normal_wear": "Không",
+    "war_terrorism": "Không",
+    "notification_timely": "Có",
+    "has_documents": "Có",
+    "within_policy_period": "Có"
+  },
+  "result": {
+    "passed": true,
+    "reasons": [],
+    "failed_questions": []
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-06-18T19:22:10.551041",
+  "customer_name": "kiên",
+  "product": {
+    "id": "hiem_ngheo",
+    "name": "Bảo hiểm Bệnh Hiểm Nghèo",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-benh-hiem-ngheo"
+  },
+  "answers": {
+    "patient_age": "65",
+    "nationality": "việt",
+    "has_disease_history": "Có",
+    "family_disease_history": "Có",
+    "payment_ability": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Người được bảo hiểm đã từng được chẩn đoán mắc bệnh hiểm nghèo nào trước đây chưa? → Trả lời: 'Có' → Không đạt điều kiện bảo hiểm"
+    ],
+    "failed_questions": [
+      "has_disease_history"
+    ]
+  }
+}

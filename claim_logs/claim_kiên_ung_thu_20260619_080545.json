@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-06-19T08:05:45.200782",
+  "customer_name": "kiên",
+  "product": {
+    "id": "ung_thu",
+    "name": "Bảo hiểm Bệnh Ung Thư",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-benh-ung-thu"
+  },
+  "answers": {
+    "patient_age": "65",
+    "nationality": "viêt nam",
+    "has_cancer_history": "Có",
+    "family_cancer_history": "Có",
+    "payment_ability": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Người được bảo hiểm đã từng được chẩn đoán mắc ung thư trước đây chưa? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường"
+    ],
+    "failed_questions": [
+      "has_cancer_history"
+    ]
+  }
+}

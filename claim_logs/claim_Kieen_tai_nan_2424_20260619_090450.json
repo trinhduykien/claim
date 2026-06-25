@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-06-19T09:04:50.200159",
+  "customer_name": "Kieen",
+  "product": {
+    "id": "tai_nan_2424",
+    "name": "Bảo hiểm Tai nạn Con người 24/24",
+    "url": "https://muabaohiempjico.com.vn/quy-tac-bao-hiem-tai-nan"
+  },
+  "answers": {
+    "victim_age": "80",
+    "incident_type": "Tai nạn khác",
+    "incident_within_coverage": "Không",
+    "mental_health": "Không",
+    "disability_level": "Có",
+    "intentional_act": "Có",
+    "alcohol_driving": "Có",
+    "law_violation": "Có",
+    "war_earthquake": "Có",
+    "notification_timely": "Có",
+    "has_documents": "Có",
+    "within_policy_period": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Tuổi của người được bảo hiểm là 80, không nằm trong phạm vi (16-70 tuổi) → Không đạt điều kiện",
+      "❌ Sự cố tai nạn có thuộc phạm vi bảo hiểm đã ghi trong hợp đồng không? → Trả lời: 'Không' → Không đạt điều kiện tiếp nhận bồi thường",
+      "❌ Người được bảo hiểm có bị tàn phế/thương tật vĩnh viễn từ 50% trở lên (thuộc điều kiện loại trừ) không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường",
+      "❌ Sự cố có phải do hành vi cố ý gây thiệt hại của người được bảo hiểm không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường",
+      "❌ Người được bảo hiểm có sử dụng rượu bia, ma túy, chất kích thích tại thời điểm xảy ra tai nạn không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường",
+      "❌ Sự cố có liên quan đến vi phạm pháp luật, đánh nhau, ngộ độc không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường",
+      "❌ Sự cố có liên quan đến động đất, chiến tranh không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường"
+    ],
+    "failed_questions": [
+      "incident_within_coverage",
+      "disability_level",
+      "intentional_act",
+      "alcohol_driving",
+      "law_violation",
+      "war_earthquake"
+    ]
+  }
+}

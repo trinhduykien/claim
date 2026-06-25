@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-06-19T10:11:53.984055",
+  "customer_name": "huy",
+  "product": {
+    "id": "suc_khoe_nguoi_vay",
+    "name": "Bảo hiểm Sức khỏe Người vay",
+    "url": "https://www.pjico.com.vn"
+  },
+  "answers": {
+    "incident_type": "Tử vong/thương tật toàn bộ vĩnh viãn do tai nạn",
+    "incident_within_coverage": "Có",
+    "within_policy_period": "Có",
+    "law_violation": "Không",
+    "intentional_act": "Không",
+    "war_terrorism": "Có",
+    "dangerous_sports": "Không",
+    "alcohol_drugs": "Không",
+    "self_treatment": "Không",
+    "hiv_aids": "Không",
+    "natural_disaster": "Không",
+    "congenital_disease": "Không",
+    "epidemic": "Không",
+    "within_waiting_period": "Có",
+    "notification_timely": "Có",
+    "claim_within_time_limit": "Có",
+    "has_documents": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Sự cố có do chiến tranh, nội chiến, nổi loạn, bạo động, khủng bố gây ra không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường",
+      "❌ Sự cố có xảy ra trong thời gian chờ (30 ngày đối với bệnh thông thường, 180 ngày đối với bệnh đặc biệt, bệnh có sẵn, biến chứng thai sản) không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường"
+    ],
+    "failed_questions": [
+      "war_terrorism",
+      "within_waiting_period"
+    ]
+  }
+}

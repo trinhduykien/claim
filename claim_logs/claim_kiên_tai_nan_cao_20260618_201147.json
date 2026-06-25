@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-06-18T20:11:47.719621",
+  "customer_name": "kiên",
+  "product": {
+    "id": "tai_nan_cao",
+    "name": "Bảo hiểm Tai nạn Con người Mức Trách Nhiệm Cao",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-tai-nan-con-nguoi-muc-trach-nhiem-cao"
+  },
+  "answers": {
+    "victim_age": "18",
+    "nationality": "Người nước ngoài định cư tại VN",
+    "buyer_type": "Cá nhân",
+    "payment_ability": "Có"
+  },
+  "result": {
+    "passed": true,
+    "reasons": [],
+    "failed_questions": []
+  }
+}

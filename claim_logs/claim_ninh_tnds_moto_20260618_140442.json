@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-06-18T14:04:42.360208",
+  "customer_name": "ninh",
+  "product": {
+    "id": "tnds_moto",
+    "name": "Bảo hiểm TNDS Chủ Xe Với Lái Xe & Người Ngồi Trên Xe Mô tô/Xe Gắn Máy",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-trach-nhiem-cua-chu-xe-voi-lai-xe-va-nguoi-ngoi-tren-xe-mo-to-xe-gan-may"
+  },
+  "answers": {
+    "incident_desc": "tôi đâm xe vào người ta",
+    "role": "Chủ xe",
+    "injury_type": "xe móp",
+    "fault": "Không",
+    "alcohol": "Có",
+    "policy_active": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Người lái xe có sử dụng rượu bia/chất kích thích vượt mức cho phép không? → Trả lời: 'Có' → Không đạt điều kiện bảo hiểm"
+    ],
+    "failed_questions": [
+      "alcohol"
+    ]
+  }
+}

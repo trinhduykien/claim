@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-06-18T16:05:23.917847",
+  "customer_name": "ninh",
+  "product": {
+    "id": "hiem_ngheo",
+    "name": "Bảo hiểm Bệnh Hiểm Nghèo",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-benh-hiem-ngheo"
+  },
+  "answers": {
+    "diagnosis_time": "sau",
+    "patient_age": "45",
+    "nationality": "việt",
+    "disease_type": "parkinson",
+    "policy_active": "Có",
+    "incident_description": "ok"
+  },
+  "result": {
+    "passed": true,
+    "reasons": [],
+    "failed_questions": []
+  }
+}

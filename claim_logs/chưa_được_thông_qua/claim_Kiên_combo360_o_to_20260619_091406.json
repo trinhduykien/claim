@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-06-19T09:14:06.724768",
+  "customer_name": "Kiên",
+  "product": {
+    "id": "combo360_o_to",
+    "name": "Combo 360° Bảo Vệ Nhà – Gia Đình – Ô tô",
+    "url": "https://www.pjico.com.vn/san-pham/combo-360-bao-ve-nha-gia-dinh-o-to"
+  },
+  "answers": {
+    "incident_type": "Cháy, nổ",
+    "incident_within_coverage": "Có",
+    "intentional_act": "Không",
+    "alcohol_driving": "Có",
+    "normal_wear": "Có",
+    "war_terrorism": "Có",
+    "notification_timely": "Có",
+    "has_documents": "Có",
+    "within_policy_period": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Nếu sự cố liên quan đến ô tô, lái xe có sử dụng rượu bia, chất kích thích vượt mức cho phép tại thời điểm xảy ra sự cố không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường",
+      "❌ Thiệt hại có phải do tài sản hao mòn tự nhiên, không phải do sự cố bất ngờ không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường",
+      "❌ Sự cố có phải do chiến tranh, khủng bố, động đất (nếu không có thỏa thuận bổ sung) không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường"
+    ],
+    "failed_questions": [
+      "alcohol_driving",
+      "normal_wear",
+      "war_terrorism"
+    ]
+  }
+}

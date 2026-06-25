@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-06-18T19:58:15.608172",
+  "customer_name": "kiên",
+  "product": {
+    "id": "phu_gia",
+    "name": "Bảo hiểm Cháy Nổ Toàn Diện Nhà Ở PJICO Phú Gia",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-chay-no-toan-dien-nha-o-pjico-phu-gia"
+  },
+  "answers": {
+    "property_type": "Condotel",
+    "ownership": "Có",
+    "customer_age": "20",
+    "has_vehicle_in_house": "Có",
+    "payment_ability": "Có"
+  },
+  "result": {
+    "passed": true,
+    "reasons": [],
+    "failed_questions": []
+  }
+}

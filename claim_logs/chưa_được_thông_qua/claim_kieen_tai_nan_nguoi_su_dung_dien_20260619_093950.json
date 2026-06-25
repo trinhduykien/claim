@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-06-19T09:39:50.492265",
+  "customer_name": "kieen",
+  "product": {
+    "id": "tai_nan_nguoi_su_dung_dien",
+    "name": "Bảo hiểm Tai nạn Người sử dụng Điện",
+    "url": "https://www.pjico.com.vn"
+  },
+  "answers": {
+    "incident_type": "Bị tai nạn do ảnh hưởng trực tiếp của dòng điện tại hộ đăng ký sử dụng điện",
+    "incident_within_coverage": "Có",
+    "intentional_act": "Không",
+    "safety_violation": "Không",
+    "alcohol_drugs": "Có",
+    "indirect_cause": "Có",
+    "electric_cause": "Có",
+    "premium_paid": "Có",
+    "mental_health": "Có",
+    "is_tenant": "Có",
+    "notification_timely": "Có",
+    "has_documents": "Có",
+    "within_claim_period": "Có",
+    "within_policy_period": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Người được bảo hiểm có sử dụng rượu, bia, ma túy, hoặc chất kích thích khác tại thời điểm xảy ra tai nạn không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường",
+      "❌ Tai nạn có xảy ra do hậu quả gián tiếp của việc sử dụng điện (cháy, nổ do điện) không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường",
+      "❌ Người được bảo hiểm có bị bệnh tâm thần hoặc tàn phế nặng (trên 80%) thuộc điều kiện không được bảo hiểm không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường",
+      "❌ Người được bảo hiểm có phải là người đến thuê ở tại hộ có tham gia bảo hiểm (thuộc điều kiện không được bảo hiểm) không? → Trả lời: 'Có' → Không đạt điều kiện tiếp nhận bồi thường"
+    ],
+    "failed_questions": [
+      "alcohol_drugs",
+      "indirect_cause",
+      "mental_health",
+      "is_tenant"
+    ]
+  }
+}

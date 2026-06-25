@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-06-19T08:05:03.964754",
+  "customer_name": "kiên",
+  "product": {
+    "id": "gian_doan_kd",
+    "name": "Bảo hiểm Gián Đoạn Kinh Doanh",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-gian-doan-kinh-doanh-2"
+  },
+  "answers": {
+    "has_business": "Có",
+    "has_property_insurance": "Không",
+    "business_legal": "Có",
+    "customer_age": "65",
+    "payment_ability": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Anh/chị đã tham gia bảo hiểm cháy & rủi ro đặc biệt hoặc mọi rủi ro tài sản chưa? → Trả lời: 'Không' → Không đạt điều kiện tiếp nhận bồi thường"
+    ],
+    "failed_questions": [
+      "has_property_insurance"
+    ]
+  }
+}

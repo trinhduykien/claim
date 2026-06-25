@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-06-18T14:56:21.509279",
+  "customer_name": "Kiên",
+  "product": {
+    "id": "ket_hop_con_nguoi",
+    "name": "Bảo hiểm Kết hợp Con người (Bảo hiểm Thân thể)",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-ket-hop-con-nguoi"
+  },
+  "answers": {
+    "victim_age": "60",
+    "nationality": "VN",
+    "condition_type": "A",
+    "mental_health": "Có",
+    "disability_level": "Có",
+    "under_treatment": "Có",
+    "incident_description": "có",
+    "policy_active": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Người được bảo hiểm có bị bệnh thần kinh, tâm thần, phong không? → Tra loi: 'Có' → Khong dat dieu kien bao hiem",
+      "❌ Người được bảo hiểm có bị tàn phế hoặc thương tật vĩnh viễn từ 50% trở lên không? → Tra loi: 'Có' → Khong dat dieu kien bao hiem",
+      "❌ Người được bảo hiểm có đang trong thời gian điều trị thương tật, bệnh tật khác (trước khi tham gia bảo hiểm) không? → Tra loi: 'Có' → Khong dat dieu kien bao hiem"
+    ],
+    "failed_questions": [
+      "mental_health",
+      "disability_level",
+      "under_treatment"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-06-18T19:16:35.285507",
+  "customer_name": "kiên",
+  "product": {
+    "id": "combo360_xe_may",
+    "name": "Combo 360° Bảo Vệ Nhà – Gia Đình – Xe máy",
+    "url": "https://www.pjico.com.vn/san-pham/combo-360-nha-gia-dinh-xe-may"
+  },
+  "answers": {
+    "customer_age": "70",
+    "has_motorbike": "Có",
+    "has_house": "cí",
+    "bike_legal": "Có",
+    "house_ownership": "Có",
+    "alcohol_driving": "Có",
+    "payment_ability": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Anh/chị có thói quen sử dụng rượu bia khi điều khiển xe máy không? → Trả lời: 'Có' → Không đạt điều kiện bảo hiểm"
+    ],
+    "failed_questions": [
+      "alcohol_driving"
+    ]
+  }
+}

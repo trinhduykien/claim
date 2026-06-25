@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-06-18T14:08:13.274457",
+  "customer_name": "hùng",
+  "product": {
+    "id": "family_care",
+    "name": "Bảo hiểm Sức Khỏe Gia Đình Family Care",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-suc-khoe-gia-dinh-family-care"
+  },
+  "answers": {
+    "package": "Không nhớ",
+    "patient_age": "90",
+    "treatment_type": "Khác",
+    "waiting_period": "Có",
+    "pre_existing": "Có",
+    "hospital": "Có",
+    "cost_estimate": "8 tỉ",
+    "policy_active": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Bệnh tình có phải là bệnh đã có trước khi tham gia bảo hiểm không? → Trả lời: 'Có' → Không đạt điều kiện bảo hiểm"
+    ],
+    "failed_questions": [
+      "pre_existing"
+    ]
+  }
+}

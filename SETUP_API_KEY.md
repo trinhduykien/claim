@@ -8,7 +8,7 @@
 
 ### PowerShell (tạm thời - mất khi tắt terminal)
 ```powershell
-$env:KIMI_API_KEY = "your-api-key-here"
+$env:KIMI_API_KEY = "your-key-here"
 streamlit run app.py
 ```
 

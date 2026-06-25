@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-06-18T14:02:57.433634",
+  "customer_name": "Cường",
+  "product": {
+    "id": "combo360_xe_may",
+    "name": "Combo 360° Bảo Vệ Nhà – Gia Đình – Xe máy",
+    "url": "https://www.pjico.com.vn/san-pham/combo-360-nha-gia-dinh-xe-may"
+  },
+  "answers": {
+    "incident_type": "cá nhân",
+    "cause": "tôi đánh nhau",
+    "intentional": "Có",
+    "wear_tear": "Không",
+    "alcohol": "Không",
+    "war_terrorism": "Không",
+    "damage_description": "tôi đấm người ta bị đòi 50 triệu",
+    "policy_active": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Sự cố có phải do hành vi cố ý của người được bảo hiểm gây ra không? → Trả lời: 'Có' → Không đạt điều kiện bảo hiểm"
+    ],
+    "failed_questions": [
+      "intentional"
+    ]
+  }
+}

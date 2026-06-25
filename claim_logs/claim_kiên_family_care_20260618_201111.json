@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-06-18T20:11:11.353644",
+  "customer_name": "kiên",
+  "product": {
+    "id": "family_care",
+    "name": "Bảo hiểm Sức Khỏe Gia Đình Family Care",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-suc-khoe-gia-dinh-family-care"
+  },
+  "answers": {
+    "package": "Nâng cao 4 người",
+    "patient_age": "70",
+    "nationality": "Người nước ngoài định cư tại VN",
+    "pre_existing": "Không",
+    "has_family": "Không",
+    "payment_ability": "Có"
+  },
+  "result": {
+    "passed": false,
+    "reasons": [
+      "❌ Tuổi của người được bảo hiểm là 70, không nằm trong phạm vi (15-65 tuổi) → Không đạt điều kiện"
+    ],
+    "failed_questions": []
+  }
+}

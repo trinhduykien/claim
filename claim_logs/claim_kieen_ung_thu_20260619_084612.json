@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-06-19T08:46:12.838381",
+  "customer_name": "kieen",
+  "product": {
+    "id": "ung_thu",
+    "name": "Bảo hiểm Bệnh Ung Thư",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-benh-ung-thu"
+  },
+  "answers": {
+    "patient_age": "65",
+    "incident_within_coverage": "Có",
+    "first_diagnosis": "Có",
+    "diagnosis_within_policy": "ko",
+    "intentional_act": "ko",
+    "notification_timely": "Có",
+    "has_documents": "Có",
+    "within_policy_period": "Có"
+  },
+  "result": {
+    "passed": true,
+    "reasons": [],
+    "failed_questions": []
+  }
+}

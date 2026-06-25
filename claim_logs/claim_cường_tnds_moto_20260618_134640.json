@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-06-18T13:46:40.743306",
+  "customer_name": "cường",
+  "product": {
+    "id": "tnds_moto",
+    "name": "Bảo hiểm TNDS Chủ Xe Với Lái Xe & Người Ngồi Trên Xe Mô tô/Xe Gắn Máy",
+    "url": "https://www.pjico.com.vn/san-pham/bao-hiem-trach-nhiem-cua-chu-xe-voi-lai-xe-va-nguoi-ngoi-tren-xe-mo-to-xe-gan-may"
+  },
+  "answers": {
+    "incident_desc": "xe khác đâm tôi",
+    "role": "người bị hại",
+    "injury_type": "xe nổ rồi",
+    "fault": "có",
+    "alcohol": "có",
+    "policy_active": "có"
+  },
+  "result": {
+    "passed": true,
+    "reasons": [],
+    "failed_questions": []
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-06-19T10:07:34.675790",
+  "customer_name": "Kiên",
+  "product": {
+    "id": "du_lich_quoc_te",
+    "name": "Bảo hiểm Du lịch quốc tế",
+    "url": "https://www.pjico.com.vn"
+  },
+  "answers": {
+    "incident_type": "Mất giấy tờ thông hành",
+    "incident_within_coverage": "Có",
+    "within_policy_period": "Có",
+    "intentional_act": "Không",
+    "alcohol_drugs": "Không",
+    "pre_existing_condition": "Không",
+    "pregnancy": "Không",
+    "dangerous_sports": "Không",
+    "high_altitude_diving": "Không",
+    "dangerous_profession": "Không",
+    "war_terrorism": "Không",
+    "nuclear_radiation": "Không",
+    "travel_for_treatment": "Không",
+    "notification_timely": "Có",
+    "has_documents": "Có"
+  },
+  "result": {
+    "passed": true,
+    "reasons": [],
+    "failed_questions": []
+  }
+}
