@@ -40,8 +40,8 @@ if not API_KEY:
             API_KEY = f.read().strip()
 
 # Ollama Cloud endpoint (OpenAI-compatible)
-OLLAMA_BASE_URL = "https://api.ollama.ai/v1"
-MODEL = "kimi-k2.7-code"
+OLLAMA_BASE_URL = "https://ollama.com/v1"
+MODEL = "kimi-k2.6:cloud"  # Ollama Cloud, hỗ trợ vision (đọc ảnh)
 
 # Thư mục lưu câu trả lời
 REPLY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trả lời")
