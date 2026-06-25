@@ -260,7 +260,8 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         "model": MODEL,
         "messages": messages,
         "temperature": 0.3,
-        "max_tokens": 4000
+        "max_tokens": 4000,
+        "think": False
     }
 
     try:
@@ -273,13 +274,55 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         response.raise_for_status()
         result = response.json()
         msg = result["choices"][0]["message"]
-        # Model kimi-k2.6 có thể trả content rỗng, nội dung nằm trong "reasoning"
         ai_text = msg.get("content", "") or ""
         reasoning = msg.get("reasoning", "") or ""
-        # Nếu content rỗng nhưng có reasoning → dùng reasoning
-        if not ai_text.strip() and reasoning.strip():
-            ai_text = reasoning
-        return {"success": True, "response": ai_text, "error": ""}
+        
+        if ai_text.strip():
+            # Content có nội dung → dùng trực tiếp
+            return {"success": True, "response": ai_text, "error": ""}
+        
+        if not reasoning.strip():
+            return {"success": True, "response": "AI không trả về nội dung. Vui lòng thử lại.", "error": ""}
+        
+        # Content rỗng, reasoning có nội dung
+        # Thử tìm phần câu trả lời cuối cùng (sau "Wait" hoặc "*Tổng chi phí*" hoặc bảng)
+        import re
+        
+        # Tìm phần bắt đầu bằng **Tổng chi phí hoặc bảng
+        patterns = [
+            r'\*\*Tổng chi phí.*',
+            r'\| STT \|.*',
+            r'\*\*Tổng khấu trừ.*',
+            r'Nếu không có khấu trừ.*',
+        ]
+        
+        extracted = ""
+        for pattern in patterns:
+            matches = re.findall(pattern, reasoning, re.DOTALL)
+            if matches:
+                # Lấy từ match đầu tiên đến hết
+                start_idx = reasoning.find(matches[0])
+                extracted = reasoning[start_idx:].strip()
+                break
+        
+        if extracted:
+            # Làm sạch - lấy đến 2000 ký tự
+            extracted = extracted[:2000]
+            return {"success": True, "response": extracted, "error": ""}
+        
+        # Fallback: lấy 1500 ký tự cuối của reasoning (thường là câu trả lời)
+        if len(reasoning) > 1500:
+            # Tìm dấu chấm câu gần nhất trước 1500
+            cut = reasoning[-1500:]
+            # Tìm bắt đầu đoạn trả lời
+            for marker in ['**Tổng', '| STT', 'Nếu không', 'Kết quả']:
+                idx = cut.find(marker)
+                if idx >= 0:
+                    cut = cut[idx:]
+                    break
+            return {"success": True, "response": cut.strip(), "error": ""}
+        else:
+            return {"success": True, "response": reasoning.strip(), "error": ""}
     except requests.exceptions.Timeout:
         return {"success": False, "response": "", "error": "AI xử lý quá thời gian (timeout 120s)"}
     except requests.exceptions.HTTPError as e:
