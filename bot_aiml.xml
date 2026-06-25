@@ -1796,7 +1796,7 @@
 
 <category>
 
-    <pattern>DANH GIA DIEU KIEN TIEP NHAN BOI THUONG</pattern>
+    <pattern>DANH GIA HO SO BOI THUONG</pattern>
 
     <template>
 
@@ -2906,6 +2906,101 @@
     <template>
         <srai>TU VAN SAN PHAM BAO HIEM</srai>
     </template>
+</category>
+
+<!-- ============================================================ -->
+<!-- PHẦN 12: UPLOAD ẢNH & HỢP ĐỒNG SAU KHI ĐỦ ĐIỀU KIỆN BỒI THƯỜNG -->
+<!-- ============================================================ -->
+
+<!-- ============ UPLOAD ẢNH THIỆT HẠI ============ -->
+
+<category>
+    <pattern>UP ANH</pattern>
+    <template>__UPLOAD_PHOTO__</template>
+</category>
+
+<category>
+    <pattern>UPLOAD ANH</pattern>
+    <template>__UPLOAD_PHOTO__</template>
+</category>
+
+<category>
+    <pattern>TAI ANH LEN</pattern>
+    <template>__UPLOAD_PHOTO__</template>
+</category>
+
+<category>
+    <pattern>GUI ANH</pattern>
+    <template>__UPLOAD_PHOTO__</template>
+</category>
+
+<category>
+    <pattern>ANH THIET HAI</pattern>
+    <template>__UPLOAD_PHOTO__</template>
+</category>
+
+<category>
+    <pattern>UP ANH THIET HAI</pattern>
+    <template>__UPLOAD_PHOTO__</template>
+</category>
+
+<!-- ============ UPLOAD HỢP ĐỒNG ============ -->
+
+<category>
+    <pattern>UP HOP DONG</pattern>
+    <template>__UPLOAD_CONTRACT__</template>
+</category>
+
+<category>
+    <pattern>UPLOAD HOP DONG</pattern>
+    <template>__UPLOAD_CONTRACT__</template>
+</category>
+
+<category>
+    <pattern>TAI HOP DONG LEN</pattern>
+    <template>__UPLOAD_CONTRACT__</template>
+</category>
+
+<category>
+    <pattern>GUI HOP DONG</pattern>
+    <template>__UPLOAD_CONTRACT__</template>
+</category>
+
+<category>
+    <pattern>HOP DONG BAO HIEM</pattern>
+    <template>__UPLOAD_CONTRACT__</template>
+</category>
+
+<!-- ============ XEM KHẨU TRỪ ============ -->
+
+<category>
+    <pattern>XEM KHAU TRU</pattern>
+    <template>__ANALYZE_DEDUCTION__</template>
+</category>
+
+<category>
+    <pattern>KHAU TRU</pattern>
+    <template>__ANALYZE_DEDUCTION__</template>
+</category>
+
+<category>
+    <pattern>PHAN TICH KHAU TRU</pattern>
+    <template>__ANALYZE_DEDUCTION__</template>
+</category>
+
+<category>
+    <pattern>XEM TIEN BOI THUONG</pattern>
+    <template>__ANALYZE_DEDUCTION__</template>
+</category>
+
+<category>
+    <pattern>TINH BOI THUONG</pattern>
+    <template>__ANALYZE_DEDUCTION__</template>
+</category>
+
+<category>
+    <pattern>XEM BOI THUONG BAO NHIEU</pattern>
+    <template>__ANALYZE_DEDUCTION__</template>
 </category>
 
 </aiml>

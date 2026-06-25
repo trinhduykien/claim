@@ -47,6 +47,12 @@ except ImportError:
 from insurance_products import PRODUCTS, get_product_by_id, get_product_by_keyword
 from pjico_offices import get_offices_by_city, get_all_cities
 
+try:
+    from ai_deduction import analyze_deduction, save_reply, has_api_key as ai_has_key
+    AI_DEDUCTION_AVAILABLE = True
+except ImportError:
+    AI_DEDUCTION_AVAILABLE = False
+
 
 
 st.set_page_config(
@@ -481,6 +487,15 @@ def init_state():
 
         st.session_state.log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "claim_logs")
 
+    # Thư mục lưu ảnh và hợp đồng
+    _base_dir = os.path.dirname(os.path.abspath(__file__))
+    if "photo_dir" not in st.session_state:
+        st.session_state.photo_dir = os.path.join(_base_dir, "ảnh")
+    if "contract_dir" not in st.session_state:
+        st.session_state.contract_dir = os.path.join(_base_dir, "Hợp đồng")
+    if "reply_dir" not in st.session_state:
+        st.session_state.reply_dir = os.path.join(_base_dir, "trả lời")
+
     if "waiting_for_welcome_choice" not in st.session_state: st.session_state.waiting_for_welcome_choice = False
     if "waiting_for_product_choice" not in st.session_state: st.session_state.waiting_for_product_choice = False
     if "waiting_for_faq_choice" not in st.session_state: st.session_state.waiting_for_faq_choice = False
@@ -488,6 +503,14 @@ def init_state():
     if "waiting_for_city_choice" not in st.session_state: st.session_state.waiting_for_city_choice = False
     if "show_rating_widget" not in st.session_state: st.session_state.show_rating_widget = False
     if "show_quick_replies" not in st.session_state: st.session_state.show_quick_replies = False
+
+    # --- Upload flow state (sau khi claim PASSED) ---
+    if "upload_phase" not in st.session_state: st.session_state.upload_phase = None  # None | "upload" | "analyzing" | "done"
+    if "uploaded_photos" not in st.session_state: st.session_state.uploaded_photos = []
+    if "uploaded_contract" not in st.session_state: st.session_state.uploaded_contract = None
+    if "ai_deduction_result" not in st.session_state: st.session_state.ai_deduction_result = None
+    if "ai_reply_path" not in st.session_state: st.session_state.ai_reply_path = None
+    if "last_claim_log" not in st.session_state: st.session_state.last_claim_log = None
 
 
 
@@ -734,6 +757,14 @@ def reset_session():
     st.session_state.asked_evaluate = False
 
     st.session_state.chat_mode = True
+
+    # Reset upload flow
+    st.session_state.upload_phase = None
+    st.session_state.uploaded_photos = []
+    st.session_state.uploaded_contract = None
+    st.session_state.ai_deduction_result = None
+    st.session_state.ai_reply_path = None
+    st.session_state.last_claim_log = None
 
 
 
@@ -1016,6 +1047,369 @@ elif current_product and st.session_state.finished and st.session_state.result:
             use_container_width=True,
 
         )
+
+
+
+# ============================================================
+
+# UPLOAD FLOW — Khi claim ĐỦ ĐIỀU KIỆN → cho upload ảnh + hợp đồng + AI phân tích khấu trừ
+
+# ============================================================
+
+
+
+if (current_product and st.session_state.finished and st.session_state.result
+        and st.session_state.result.get("passed") and not st.session_state.upload_phase):
+
+
+
+    # Lưu claim log data để dùng cho AI
+
+    if not st.session_state.last_claim_log:
+
+        st.session_state.last_claim_log = {
+
+            "timestamp": datetime.now().isoformat(),
+
+            "customer_name": st.session_state.customer_name,
+
+            "product": {"id": current_product["id"], "name": current_product["name"]},
+
+            "answers": dict(st.session_state.answers),
+
+            "result": st.session_state.result,
+
+        }
+
+
+
+    add_message("assistant", (
+
+        " Hồ sơ của anh/chị đã **ĐỦ ĐIỀU KIỆN** tiếp nhận bồi thường!\n\n"
+
+        "Để phân tích các khoản khấu trừ trong tiền bồi thường, vui lòng:\n"
+
+        "1. **Upload ảnh thiệt hại** (ảnh hiện trường, tài sản bị hư hỏng...)\n"
+
+        "2. **Upload hợp đồng bảo hiểm** (ảnh hoặc file)\n"
+
+        "Sau đó tôi sẽ dùng AI để phân tích và thông báo kết quả khấu trừ cho anh/chị.\n\n"
+
+        "👉 Cuộn xuống bên dưới để upload nhé!"
+
+    ))
+
+    st.session_state.upload_phase = "upload"
+
+    st.rerun()
+
+
+
+# ============================================================
+
+# UPLOAD UI — File uploaders cho ảnh + hợp đồng
+
+# ============================================================
+
+if st.session_state.upload_phase == "upload":
+
+
+
+    st.markdown("---")
+
+    st.markdown("### 📸 Upload ảnh thiệt hại")
+
+    uploaded_photos = st.file_uploader(
+
+        "Chọn một hoặc nhiều ảnh thiệt hại (JPG, PNG):",
+
+        type=["jpg", "jpeg", "png", "gif", "webp"],
+
+        accept_multiple_files=True,
+
+        key="photo_uploader"
+
+    )
+
+
+
+    st.markdown("### 📄 Upload hợp đồng bảo hiểm")
+
+    uploaded_contract = st.file_uploader(
+
+        "Chọn file hợp đồng (ảnh JPG/PNG hoặc PDF):",
+
+        type=["jpg", "jpeg", "png", "gif", "webp", "pdf"],
+
+        accept_multiple_files=False,
+
+        key="contract_uploader"
+
+    )
+
+
+
+    col_a, col_b = st.columns(2)
+
+
+
+    with col_a:
+
+        if st.button("🔄 Phân tích khấu trừ", key="analyze_btn", use_container_width=True,
+
+                     disabled=(not uploaded_photos and not uploaded_contract)):
+
+
+
+            # Lưu ảnh vào thư mục "ảnh"
+
+            photo_paths = []
+
+            if uploaded_photos:
+
+                os.makedirs(st.session_state.photo_dir, exist_ok=True)
+
+                ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+                safe_name = re.sub(r'[^\w]', '_', st.session_state.customer_name or "khach_hang")
+
+                for idx, photo in enumerate(uploaded_photos):
+
+                    ext = os.path.splitext(photo.name)[1] or ".jpg"
+
+                    fname = f"photo_{safe_name}_{ts}_{idx+1}{ext}"
+
+                    fpath = os.path.join(st.session_state.photo_dir, fname)
+
+                    with open(fpath, "wb") as f:
+
+                        f.write(photo.getbuffer())
+
+                    photo_paths.append(fpath)
+
+                st.session_state.uploaded_photos = photo_paths
+
+
+
+            # Lưu hợp đồng vào thư mục "Hợp đồng"
+
+            contract_path = None
+
+            if uploaded_contract:
+
+                os.makedirs(st.session_state.contract_dir, exist_ok=True)
+
+                ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+                safe_name = re.sub(r'[^\w]', '_', st.session_state.customer_name or "khach_hang")
+
+                ext = os.path.splitext(uploaded_contract.name)[1] or ".jpg"
+
+                fname = f"contract_{safe_name}_{ts}{ext}"
+
+                fpath = os.path.join(st.session_state.contract_dir, fname)
+
+                with open(fpath, "wb") as f:
+
+                    f.write(uploaded_contract.getbuffer())
+
+                contract_path = fpath
+
+                st.session_state.uploaded_contract = contract_path
+
+
+
+            if not photo_paths and not contract_path:
+
+                st.warning("Vui lòng upload ít nhất 1 ảnh hoặc hợp đồng để phân tích!")
+
+            else:
+
+                st.session_state.upload_phase = "analyzing"
+
+                st.rerun()
+
+
+
+    with col_b:
+
+        if st.button("⏭️ Bỏ qua", key="skip_upload_btn", use_container_width=True):
+
+            st.session_state.upload_phase = None
+
+            st.session_state.waiting_for_continue_choice = True
+
+            add_message("assistant", "Dạ! Anh/chị có thể upload ảnh và hợp đồng sau. Anh/chị cần hỗ trợ gì thêm không ạ?")
+
+            st.rerun()
+
+
+
+# ============================================================
+
+# AI ANALYZING — Gọi AI phân tích khấu trừ
+
+# ============================================================
+
+if st.session_state.upload_phase == "analyzing":
+
+
+
+    with st.spinner("🤖 AI đang phân tích ảnh và hợp đồng, vui lòng đợi..."):
+
+
+
+        if not AI_DEDUCTION_AVAILABLE:
+
+            ai_result = {
+
+                "success": False,
+
+                "response": "",
+
+                "error": "Module ai_deduction không khả dụng. Vui lòng cài đặt: pip install requests"
+
+            }
+
+        elif not ai_has_key():
+
+            ai_result = {
+
+                "success": False,
+
+                "response": "",
+
+                "error": ("Chưa cấu hình KIMI_API_KEY. "
+
+                          "Vui lòng set environment variable KIMI_API_KEY "
+
+                          "hoặc tạo file .kimi_api_key chứa API key.")
+
+            }
+
+        else:
+
+            claim_data = st.session_state.last_claim_log or {
+
+                "customer_name": st.session_state.customer_name,
+
+                "product": {"id": current_product["id"], "name": current_product["name"]},
+
+                "answers": dict(st.session_state.answers),
+
+                "result": st.session_state.result,
+
+            }
+
+            ai_result = analyze_deduction(
+
+                claim_data=claim_data,
+
+                photo_paths=st.session_state.uploaded_photos,
+
+                contract_path=st.session_state.uploaded_contract
+
+            )
+
+
+
+    if ai_result["success"]:
+
+        # Lưu câu trả lời AI
+
+        photo_names = [os.path.basename(p) for p in st.session_state.uploaded_photos]
+
+        contract_name = os.path.basename(st.session_state.uploaded_contract) if st.session_state.uploaded_contract else None
+
+
+
+        reply_path = save_reply(
+
+            claim_data=st.session_state.last_claim_log or {},
+
+            ai_response=ai_result["response"],
+
+            photo_names=photo_names,
+
+            contract_name=contract_name
+
+        )
+
+        st.session_state.ai_reply_path = reply_path
+
+        st.session_state.ai_deduction_result = ai_result["response"]
+
+
+
+        # Hiển thị kết quả AI cho khách hàng
+
+        ai_message = f"""
+
+---
+
+## 🤖 KẾT QUẢ PHÂN TÍCH KHẤU TRỪ BỒI THƯỜNG
+
+
+
+{ai_result["response"]}
+
+
+
+---
+
+ Thông tin đã lưu: `{os.path.basename(reply_path)}`
+
+"""
+
+        add_message("assistant", ai_message)
+
+
+
+        # Git auto-push
+
+        try:
+
+            import subprocess
+
+            git_dir = os.path.dirname(os.path.abspath(__file__))
+
+            subprocess.run(["git", "add", "-A"], cwd=git_dir, capture_output=True, timeout=30)
+
+            commit_msg = f"feat: add claim photos + contract + AI deduction reply for {st.session_state.customer_name or 'customer'} [{datetime.now().strftime('%Y-%m-%d %H:%M')}]"
+
+            subprocess.run(["git", "commit", "-m", commit_msg], cwd=git_dir, capture_output=True, timeout=30)
+
+            subprocess.run(["git", "push", "origin"], cwd=git_dir, capture_output=True, timeout=60)
+
+            add_message("assistant", " Đã đồng bộ dữ liệu lên GitHub repository.")
+
+        except Exception as e:
+
+            add_message("assistant", f"⚠️ Không thể push lên GitHub: {str(e)}")
+
+
+
+    else:
+
+        add_message("assistant", (
+
+            f"⚠️ Không thể phân tích khấu trừ: {ai_result['error']}\n\n"
+
+            "Anh/chị có thể thử lại sau hoặc liên hệ PJICO qua tổng đài 1900 54 54 55 "
+
+            "để được nhân viên hỗ trợ trực tiếp."
+
+        ))
+
+
+
+    st.session_state.upload_phase = "done"
+
+    st.session_state.waiting_for_continue_choice = True
+
+    st.rerun()
+
+
 
 
 

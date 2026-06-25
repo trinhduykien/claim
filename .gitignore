@@ -1,6 +1,15 @@
+# API keys (không commit lên git)
+.kimi_api_key
+
+# Python
 __pycache__/
 *.pyc
-_add_*.py
-_fix_*.py
-_del_*.py
-claim_logs/
+*.pyo
+.pytest_cache/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS
+Thumbs.db
+.DS_Store
