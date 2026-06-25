@@ -1298,11 +1298,9 @@ if st.session_state.upload_phase == "analyzing":
 
                 "response": "",
 
-                "error": ("Chưa cấu hình KIMI_API_KEY. "
+                "error": ("Chưa cấu hình API key. "
 
-                          "Vui lòng set environment variable KIMI_API_KEY "
-
-                          "hoặc tạo file .kimi_api_key chứa API key.")
+                          "Vui lòng tạo file .kimi_api_key chứa API key Ollama Cloud.")
 
             }
 
