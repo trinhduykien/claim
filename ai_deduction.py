@@ -275,20 +275,75 @@ def extract_invoice_text(photo_paths):
     return call_vision_model(messages, max_tokens=8000, timeout=180)
 
 
-def extract_contract_text_from_images(contract_images, num_pages):
-    """Bước 1b: Dùng Kimi K2.6 đọc ảnh hợp đồng -> trích xuất text."""
-    prompt = build_extraction_prompt_contract(num_pages)
+def extract_contract_text_from_images(contract_images, num_pages, batch_size=8):
+    """Bước 1b: Dùng Kimi K2.6 đọc ảnh hợp đồng -> trích xuất text.
+    Chia thành batch để tránh bị cắt nội dung."""
+    all_extracted_text = []
+    total_images = len(contract_images)
+    
+    # Nếu ít trang, gửi 1 lần
+    if total_images <= batch_size:
+        prompt = build_extraction_prompt_contract(num_pages)
+        content = [{"type": "text", "text": prompt}]
+        for img_b64 in contract_images:
+            content.append({"type": "image_url", "image_url": {"url": img_b64}})
+        
+        messages = [
+            {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Đọc chính xác từng trang. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng yêu cầu. KHÔNG bỏ sót trang nào."},
+            {"role": "user", "content": content}
+        ]
+        
+        return call_vision_model(messages, max_tokens=16000, timeout=300)
+    
+    # Nếu nhiều trang, chia thành batch
+    num_batches = (total_images + batch_size - 1) // batch_size
+    
+    for batch_idx in range(num_batches):
+        start = batch_idx * batch_size
+        end = min(start + batch_size, total_images)
+        batch_images = contract_images[start:end]
+        batch_num_pages = end - start
+        page_start = start + 1
+        page_end = end
+        
+        prompt = f"""Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Nhiệm vụ: ĐỌC {batch_num_pages} TRANG ẢNH (từ trang {page_start} đến trang {page_end}) và trích xuất TOÀN BỘ nội dung.
 
-    content = [{"type": "text", "text": prompt}]
-    for img_b64 in contract_images:
-        content.append({"type": "image_url", "image_url": {"url": img_b64}})
+YÊU CẦU:
+1. Đọc từng trang, không bỏ sót.
+2. Giữ nguyên số điều khoản, định nghĩa, danh mục.
+3. Không tóm tắt - ghi nguyên văn.
 
-    messages = [
-        {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Đọc chính xác từng trang. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng yêu cầu. KHÔNG bỏ sót trang nào."},
-        {"role": "user", "content": content}
-    ]
+ĐỊNH DẠNG XUẤT:
+--- Trang {page_start} ---
+[nội dung]
+--- Trang {page_start + 1} ---
+[nội dung]
+...
+--- Trang {page_end} ---
+[nội dung]
 
-    return call_vision_model(messages, max_tokens=12000, timeout=300)
+Chỉ xuất kết quả. Không thêm giải thích."""
+        
+        content = [{"type": "text", "text": prompt}]
+        for img_b64 in batch_images:
+            content.append({"type": "image_url", "image_url": {"url": img_b64}})
+        
+        messages = [
+            {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Đọc chính xác từng trang. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng. KHÔNG bỏ sót trang nào."},
+            {"role": "user", "content": content}
+        ]
+        
+        result = call_vision_model(messages, max_tokens=12000, timeout=300)
+        
+        if result["success"]:
+            all_extracted_text.append(result["text"])
+        else:
+            # Nếu batch fail, ghi lỗi nhưng tiếp tục batch khác
+            all_extracted_text.append(f"[Batch {batch_idx + 1} (trang {page_start}-{page_end}) trích xuất thất bại: {result['error']}]")
+    
+    # Ghép tất cả batch lại
+    combined_text = "\n\n".join(all_extracted_text)
+    return {"success": True, "text": combined_text, "error": ""}
 
 
 # ============================================================
