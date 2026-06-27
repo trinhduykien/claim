@@ -58,22 +58,31 @@ def encode_image_to_base64(image_path):
 
 
 def extract_pdf_text(pdf_path):
-    """Đọc text từ PDF. Trả về None nếu là ảnh scan."""
+    """Đọc text từ PDF. Trả về None nếu là ảnh scan hoặc text quá ít (PDF scan có overlay text)."""
     # Thử PyMuPDF
     try:
         import fitz
         doc = fitz.open(pdf_path)
+        total_pages = len(doc)
         text = ""
-        has_text = False
+        pages_with_text = 0
+        total_text_chars = 0
         for page_num, page in enumerate(doc, 1):
             page_text = page.get_text().strip()
             if page_text:
-                has_text = True
+                pages_with_text += 1
+                total_text_chars += len(page_text)
                 text += f"\n--- Trang {page_num} ---\n"
                 text += page_text
         doc.close()
-        if has_text:
+        # Chỉ coi là PDF text nếu:
+        # - Tất cả hoặc phần lớn trang có text (>= 50%)
+        # - Tổng text đủ dài (>= 500 ký tự - không phải vài dòng lẻ)
+        # Nếu không đủ điều kiện -> coi là PDF scan -> trả về None để chuyển thành ảnh
+        if pages_with_text > 0 and pages_with_text >= total_pages * 0.5 and total_text_chars >= 500:
             return text
+        else:
+            return None  # PDF scan hoặc text quá ít -> cần chuyển thành ảnh
     except ImportError:
         pass
     except Exception:
@@ -83,16 +92,22 @@ def extract_pdf_text(pdf_path):
     try:
         import pdfplumber
         text = ""
-        has_text = False
+        pages_with_text = 0
+        total_text_chars = 0
         with pdfplumber.open(pdf_path) as pdf:
+            total_pages = len(pdf.pages)
             for page_num, page in enumerate(pdf.pages, 1):
                 page_text = page.extract_text() or ""
-                if page_text.strip():
-                    has_text = True
+                page_text = page_text.strip()
+                if page_text:
+                    pages_with_text += 1
+                    total_text_chars += len(page_text)
                     text += f"\n--- Trang {page_num} ---\n"
                     text += page_text
-        if has_text:
+        if pages_with_text > 0 and pages_with_text >= total_pages * 0.5 and total_text_chars >= 500:
             return text
+        else:
+            return None
     except ImportError:
         pass
     except Exception:
@@ -342,7 +357,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 contract_text = pdf_text[:30000]
             else:
                 # PDF scan -> chuyển thành ảnh
-                contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=10)
+                contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=20)
                 if contract_images:
                     num_contract_pages = len(contract_images)
                     contract_text = f"(Hợp đồng PDF gồm {total_pages} trang, gửi {num_contract_pages} trang ảnh)"
