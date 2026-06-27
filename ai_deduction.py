@@ -101,7 +101,7 @@ def extract_pdf_text(pdf_path):
     return None  # PDF là ảnh scan
 
 
-def pdf_pages_to_images(pdf_path, max_pages=10):
+def pdf_pages_to_images(pdf_path, max_pages=20):
     """Chuyển tối đa max_pages trang PDF thành ảnh base64."""
     try:
         import fitz
@@ -127,7 +127,7 @@ def pdf_pages_to_images(pdf_path, max_pages=10):
 
 
 def build_analysis_prompt(claim_data, contract_text, num_contract_pages):
-    """Xây prompt phân tích khấu trừ — chain-of-thought có hướng dẫn."""
+    """Xây prompt phân tích khấu trừ — 3 bước: đọc hóa đơn → suy luận hợp đồng → xuất 1 bảng."""
     product_name = claim_data.get("product", {}).get("name", "Không rõ")
     answers = claim_data.get("answers", {})
 
@@ -137,21 +137,27 @@ def build_analysis_prompt(claim_data, contract_text, num_contract_pages):
 
     if num_contract_pages > 0:
         contract_info = f"""Hợp đồng bảo hiểm có {num_contract_pages} trang ảnh đính kèm.
-BẠN PHẢI ĐỌC KỸ TỪNG TRANG ẢNH HỢP ĐỒNG. Mỗi trang có thể chứa:
+BẠN PHẢI ĐỌC KỸ TỪNG TRANG ẢNH HỢP ĐỒNG từ trang đầu đến trang cuối. Không được bỏ sót trang nào.
+Mỗi trang có thể chứa:
 - Trang bìa: thông tin hợp đồng, bên tham gia, thời hạn
 - Trang giữa: phạm vi bảo hiểm, quyền lợi, hạn mức chi trả
 - Trang điều khoản loại trừ: các khoản KHÔNG được bồi thường
 - Trang khái niệm/định nghĩa: giải thích thuật ngữ y tế, thiết bị y tế, vật liệu...
 - Trang phụ lục: danh mục chi tiết các hạng mục được/không được chi trả
+- Trang đính chính/bổ sung: sửa đổi hoặc thêm điều khoản gốc
 
-QUAN TRỌNG: Điều khoản loại trừ ở một trang có thể tham chiếu đến khái niệm ở trang khác.
-Ví dụ: Trang 4 ghi "không bồi thường chi phí thiết bị y tế hỗ trợ điều trị" + Trang 5-7 định nghĩa "Sanlein thuộc thiết bị y tế hỗ trợ điều trị" → Sanlein bị khấu trừ."""
+QUAN TRỌNG — THAM CHIẾU CHÉO: Điều khoản loại trừ ở một trang có thể tham chiếu đến khái niệm ở trang khác.
+Ví dụ: Trang 4 ghi "không bồi thường chi phí thiết bị y tế hỗ trợ điều trị" + Trang 5-7 định nghĩa "Sanlein thuộc thiết bị y tế hỗ trợ điều trị" → Sanlein bị khấu trừ.
+Nếu Điều X tham chiếu Điều Y, bạn PHẢI đọc cả Điều Y để hiểu đầy đủ."""
     elif contract_text and contract_text != "(Không có hợp đồng đính kèm)":
         contract_info = f"Nội dung hợp đồng bảo hiểm:\n{contract_text}"
     else:
         contract_info = "(Không có hợp đồng đính kèm)"
 
-    prompt = f"""BẠN LÀ CHUYÊN VIÊN BỒI THƯỜNG BẢO HIỂM PJICO. NHIỆM VỤ: PHÂN TÍCH KHẤU TRỪ BỒI THƯỜNG.
+    prompt = f"""BẠN LÀ CHUYÊN GIA KIỂM TOÁN HỢP ĐỒNG BẢO HIỂM PJICO CAO CẤP.
+NHIỆM VỤ: Phân tích khấu trừ bồi thường bằng cách đối chiếu hóa đơn với hợp đồng, suy luận logic (kể cả khấu trừ gián tiếp/nhúng), rồi xuất ra MỘT BẢNG DUY NHẤT theo mẫu quy định.
+
+Bạn làm việc theo 3 BƯỚC BẮT BUỘC, không bỏ qua bước nào, không rút gọn, không tóm tắt — đọc TOÀN VĂN tài liệu.
 
 THÔNG TIN HỒ SƠ:
 - Sản phẩm bảo hiểm: {product_name}
@@ -160,47 +166,112 @@ THÔNG TIN HỒ SƠ:
 
 {contract_info}
 
-HƯỚNG DẪN PHÂN TÍCH (LÀM THEO TỪNG BƯỚC):
+═══════════════════════════════════════════════
+BƯỚC 1 — ĐỌC VÀ GHI NHỚ TOÀN BỘ HÓA ĐƠN
+═══════════════════════════════════════════════
 
-BƯỚC 1 — ĐỌC HÓA ĐƠN:
-- Đọc ảnh hóa đơn/viện phí đính kèm.
-- Liệt kê TỪNG khoản chi phí: tên thuốc/dịch vụ + số lượng + đơn giá + thành tiền.
-- Tính tổng chi phí.
+Đọc TOÀN BỘ ảnh hóa đơn/viện phí đính kèm từ đầu đến cuối. Không được bỏ sót bất kỳ dòng, mục, chú thích hay ghi chú nhỏ nào.
 
-BƯỚC 2 — ĐỌC HỢP ĐỒNG (TẤT CẢ TRANG):
-- Đọc từng trang hợp đồng từ đầu đến cuối.
-- Tìm các điều khoản LOẠI TRỪ: các khoản KHÔNG được bồi thường.
-- Tìm các KHÁI NIỆM/ĐỊNH NGHĨA: giải thích thuật ngữ (thiết bị y tế, vật liệu, thuốc men...).
-- Tìm các HẠN MỨC: giới hạn chi trả theo hạng mục.
-- ĐÁNH DẤU: điều khoản loại trừ ở trang nào, khái niệm ở trang nào.
+Với MỖI mục trong hóa đơn, bạn phải nắm bắt và lưu trong bộ nhớ:
+- Tên mục / hạng mục (ví dụ: "Thuốc Sanlein", "Dịch vụ Xét nghiệm", "Giường bệnh")
+- Mô tả chi tiết (nếu có)
+- Đơn vị tính & số lượng (nếu có)
+- Đơn giá (nếu có)
+- Thành tiền
 
-BƯỚC 3 — CROSS-REFERENCE (SO SÁNH CHÉO):
-- Với TỪNG khoản trong hóa đơn, tra cứu trong hợp đồng:
-  + Khoản này có nằm trong điều khoản loại trừ không?
-  + Khoản này có thuộc khái niệm/định nghĩa nào bị loại trừ không?
-  + Khoản này có vượt hạn mức chi trả không?
-  + PHẢI KIỂM TRA CẢ ĐỊNH NGHĨA Ở TRANG KHÁC (vd: loại trừ ở trang 4 nói "thiết bị y tế" → phải xem trang 5-7 định nghĩa gì là "thiết bị y tế").
-- Nếu khoản trong hóa đơn KHỚP với điều khoản loại trừ → bị KHẤU TRỪ.
-- Nếu không khớp bất kỳ điều khoản loại trừ nào → KHÔNG bị khấu trừ.
+Sau khi đọc xong, tính và ghi nhớ:
+- TỔNG TIỀN TRƯỚC THUẾ (nếu có tách riêng)
+- TIỀN THUẾ (VAT hoặc các loại, nếu có)
+- TỔNG TIỀN SAU THUẾ (= TỔNG CỘNG)
 
-BƯỚC 4 — TRẢ LỜI:
-- Trả lời BẰNG TIẾNG VIỆT.
-- Trả lời theo đúng định dạng bên dưới.
-- Mỗi khoản khấu trừ phải ghi rõ: số tiền + lý do + trang nào trong hợp đồng.
+⚠️ Bạn phải ghi nhớ CHÍNH XÁC TỪNG CON SỐ. Nếu hóa đơn có 200 dòng, bạn nhớ 200 dòng. Không được tóm tắt, không được "v.v.", không được gộp mục nếu không chắc chắn.
 
-ĐỊNH DẠNG TRẢ LỜI (BẮT BUỘC):
+═══════════════════════════════════════════════
+BƯỚC 2 — ĐỌC TOÀN BỘ HỢP ĐỒNG & SUY LUẬN KHẤU TRỪ
+═══════════════════════════════════════════════
+
+Đọc TOÀN BỘ hợp đồng từ đầu đến cuối — mọi trang ảnh, mọi điều khoản, phụ lục, đính chính, văn bản đính kèm. Không được bỏ qua bất kỳ điều khoản nào.
+
+2.1. XÁC ĐỊNH CÁC KHOẢN CÓ THỂ BỊ KHẤU TRỪ
+
+Trong quá trình đọc, xác định MỌI khoản/hạng mục có thể bị khấu trừ khỏi hóa đơn. Các khoản này có thể xuất hiện dưới nhiều dạng:
+
+• TRỰC TIẾP — hợp đồng nêu rõ hạng mục X bị khấu trừ/loại trừ
+  VD: "Chi phí thiết bị y tế hỗ trợ điều trị không được bồi thường"
+• ĐIỀU KIỆN — chỉ khấu trừ nếu thỏa mãn điều kiện
+  VD: "Nếu nghiệm thu trễ, 2% giá trị hợp đồng bị khấu trừ"
+• NHÚNG/GIÁN TIẾP (INDIRECT) — khoản cha bị khấu trừ, khoản con nằm trong khoản cha cũng bị khấu trừ
+  VD: "Gói A bị loại trừ" → Gói A gồm hạng mục B + C → Hóa đơn có B và C → Cả B và C đều bị khấu trừ
+  VD: "Thiết bị y tế hỗ trợ điều trị bị loại trừ" → Sanlein thuộc thiết bị y tế → Sanlein trong hóa đơn bị khấu trừ
+• THAM CHIẾU CHÉO — một điều khoản tham chiếu điều khoản khác
+  VD: Điều 4.3 nói "áp dụng theo Điều 7.2" → phải đọc cả Điều 7.2
+• PHỤ LỤC/ĐÍNH CHÍNH — bổ sung hoặc sửa đổi điều khoản gốc
+  VD: Phụ lục 02: "Bổ sung loại trừ 5% cho hạng mục quản lý dự án"
+• HẠN MỨC CHI TRẢ — giới hạn tối đa cho một hạng mục, phần vượt hạn mức bị khấu trừ
+  VD: "Chi trả tối đa 5.000.000 VNĐ/năm cho thuốc ngoại trú" → phần vượt 5 triệu bị khấu trừ
+
+2.2. QUY TRÌNH SUY LUẬN LOGIC (BẮT BUỘC THỰC HIỆN)
+
+Với MỖI khoản phát hiện được, thực hiện chuỗi suy luận sau:
+
+  1. Hợp đồng nói gì? → trích dẫn nguyên văn điều khoản liên quan
+  2. Khoản đó áp dụng cho cái gì? → xác định phạm vi (hạng mục, gói, toàn bộ)
+  3. Phạm vi đó có chứa các hạng mục con nào không? → liệt kê hết
+  4. Các hạng mục con/phạm vi đó có xuất hiện trong hóa đơn không?
+     → Có → bị khấu trừ (ghi rõ tên + số tiền từ hóa đơn)
+     → Không → không ảnh hưởng
+  5. Có điều kiện đi kèm không? (nếu/thì, thời hạn, nghiệm thu, v.v.)
+     → Điều kiện đã thỏa mãn theo dữ kiện đầu vào?
+  6. Có vượt hạn mức chi trả không?
+     → Phần vượt hạn mức = số tiền bị khấu trừ
+  7. Kết luận: khoản nào trong hóa đơn bị khấu trừ, số tiền bao nhiêu, vì sao
+
+2.3. NGUYÊN TẮC SUY LUẬN
+
+• KHÔNG BỎ SÓT: Nếu hợp đồng dài 100 trang, bạn vẫn đọc hết và tìm hết mọi khoản khấu trừ.
+• TRUY CHUỖI: Nếu A bị khấu trừ và A chứa B, C — kiểm tra B, C trong hóa đơn. Nếu B chứa B1, B2 — tiếp tục kiểm tra. Đi đến tận cấp lá.
+• THAM CHIẾU CHÉO: Điều X dẫn đến Điều Y → phải đọc cả Y.
+• KHÔNG SUY ĐOÁN: Chỉ khấu trừ khi có cơ sở rõ ràng trong hợp đồng. Nếu không chắc, đánh dấu "⚠ Cần xác nhận".
+• GHI NGUỒN: Mỗi kết luận khấu trừ phải kèm số điều khoản/trang trong hợp đồng.
+
+═══════════════════════════════════════════════
+BƯỚC 3 — XUẤT BẢNG KẾT QUẢ
+═══════════════════════════════════════════════
+
+Xuất DUY NHẤT MỘT BẢNG theo mẫu sau. Không viết thêm lời dẫn, không giải thích bên ngoài bảng. Chỉ hiện bảng.
+
+ĐỊNH DẠNG BẢNG (BẮT BUỘC):
 
 **Tổng chi phí theo hóa đơn:** [số tiền] VNĐ
 
-| STT | Mục khấu trừ | Số tiền (VNĐ) | Lý do khấu trừ | Tham chiếu hợp đồng |
-|-----|-------------|--------------|----------------|-------------------|
-| 1   | [tên khoản] | [số tiền]    | [lý do: khoản này thuộc điều khoản loại trừ nào] | Trang [X], mục [Y] |
+| # | Tổng tiền ban đầu | Mục bị khấu trừ | Số tiền bị khấu trừ (VNĐ) | Lí do bị khấu trừ | Nguồn điều khoản | Tiền còn lại sau khấu trừ |
+|---|---|---|---|---|---|---|
+| 0 | [TỔNG CỘNG từ hóa đơn] | — | — | — | — | [TỔNG CỘNG] |
+| 1 | | [tên hạng mục] | [số tiền] | [lí do chi tiết + trích dẫn điều khoản] | [Điều khoản/trang] | [Tổng – KH1] |
+| 2 | | [tên hạng mục] | [số tiền] | [lí do chi tiết + trích dẫn] | [Điều khoản/trang] | [(Tổng–KH1) – KH2] |
+| ... | | | | | | |
+| **KQ** | | **TỔNG KHẤU TRỪ** | **[tổng cộng]** | | | **[tiền cuối cùng còn lại]** |
 
 **Tổng khấu trừ:** [số tiền] VNĐ
 **Tiền bồi thường thực nhận:** [Tổng - Khấu trừ] = [số tiền] VNĐ
 
-Nếu sau khi kiểm tra tất cả điều khoản loại trừ mà không có khoản nào bị khấu trừ, ghi:
-Không có khoản khấu trừ, khách hàng nhận toàn bộ [số tiền] VNĐ.
+QUY TẮC XUẤT BẢNG:
+- Dòng 0 = tổng tiền ban đầu (chưa khấu trừ gì).
+- Mỗi dòng khấu trừ = một hạng mục cụ thể trong hóa đơn bị khấu trừ.
+- Cột "Lí do" = giải thích + trích dẫn nguyên văn (hoặc tóm tắt sát) điều khoản hợp đồng.
+- Cột "Nguồn điều khoản" = số điều khoản + số trang (nếu có).
+- Cột "Tiền còn lại" = chạy tích lũy: dòng 1 = Tổng – KH1; dòng 2 = (Tổng–KH1) – KH2; v.v.
+- Dòng cuối (KQ) = tổng cộng khấu trừ và số tiền cuối cùng còn lại.
+- Số tiền: định dạng có dấu phẩy (VD: 1.500.000.000). Đơn vị VNĐ.
+- Nếu KHÔNG có khoản nào bị khấu trừ: chỉ xuất dòng 0, dòng KQ với "0" cho tổng khấu trừ, và ghi "Không có khoản khấu trừ, khách hàng nhận toàn bộ [số tiền] VNĐ."
+- Nếu CÓ khoản không chắc chắn: vẫn đưa vào bảng nhưng ghi "⚠ Cần xác nhận" ở cột Lí do.
+
+NGUYÊN TẮC TỔNG QUÁT:
+1. Đọc hết, nhớ hết — không bỏ sót bất kỳ dòng nào trong hóa đơn hay điều khoản nào trong hợp đồng.
+2. Suy luận đến tận gốc — khấu trừ gián tiếp, khấu trừ nhúng, khấu trừ theo điều kiện, vượt hạn mức đều phải kiểm tra.
+3. Trích dẫn nguồn — mọi kết luận phải có điều khoản hợp đồng làm căn cứ.
+4. Chính xác tuyệt đối về con số — không làm tròn, không ước lượng, không "khoảng".
+5. Chỉ xuất bảng — kết quả cuối cùng là một bảng duy nhất, không kèm lời giải thích bên ngoài.
 """
     return prompt
 
@@ -225,7 +296,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             # Thử đọc text trước
             pdf_text = extract_pdf_text(contract_path)
             if pdf_text:
-                contract_text = pdf_text[:10000]
+                contract_text = pdf_text[:30000]
             else:
                 # PDF scan → chuyển thành ảnh
                 contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=10)
@@ -257,7 +328,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
     # System message
     system_msg = {
         "role": "system",
-        "content": "Bạn là chuyên viên bồi thường bảo hiểm PJICO. LUÔN trả lời bằng tiếng Việt. Phải ĐỌC KỸ và SO SÁNH CHÉO giữa hóa đơn và hợp đồng: khoản nào trong hóa đơn có bị loại trừ trong hợp đồng (kể cả qua định nghĩa ở trang khác) thì KHẤU TRỪ. Trả lời theo đúng định dạng bảng. KHÔNG trả lời 'không có khấu trừ' nếu chưa kiểm tra kỹ tất cả trang hợp đồng."
+        "content": "Bạn là chuyên gia kiểm toán hợp đồng bảo hiểm PJICO cao cấp. LUÔN trả lời bằng tiếng Việt. Nhiệm vụ: ĐỌC TOÀN BỘ hóa đơn (ghi nhớ từng dòng, từng con số) → ĐỌC TOÀN BỘ hợp đồng (mọi trang, mọi điều khoản, phụ lục, đính chính) → SUY LUẬN LOGIC về các khoản khấu trừ (kể cả khấu trừ gián tiếp/nhúng: khoản cha bị loại trừ → khoản con trong hóa đơn cũng bị loại trừ; tham chiếu chéo: Điều X dẫn đến Điều Y phải đọc cả Y; vượt hạn mức chi trả). Mọi kết luận phải có điều khoản hợp đồng làm căn cứ. CHÍNH XÁC TUYỆT ĐỐI về con số — không làm tròn, không ước lượng. Output cuối cùng là MỘT BẢNG DUY NHẤT theo mẫu, không kèm lời giải thích bên ngoài. KHÔNG trả lời 'không có khấu trừ' nếu chưa kiểm tra kỹ tất cả trang hợp đồng."
     }
     user_msg = {"role": "user", "content": content}
     messages = [system_msg, user_msg]
@@ -271,7 +342,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         "model": MODEL,
         "messages": messages,
         "temperature": 0.2,
-        "max_tokens": 4000,
+        "max_tokens": 8000,
         "think": False
     }
 
@@ -280,7 +351,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             f"{OLLAMA_BASE_URL}/chat/completions",
             headers=headers,
             json=payload,
-            timeout=120
+            timeout=300
         )
         response.raise_for_status()
         result = response.json()
@@ -319,7 +390,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         return {"success": True, "response": reasoning[-1000:].strip(), "error": ""}
 
     except requests.exceptions.Timeout:
-        return {"success": False, "response": "", "error": "AI xử lý quá thời gian (timeout 120s)"}
+        return {"success": False, "response": "", "error": "AI xử lý quá thời gian (timeout 300s)"}
     except requests.exceptions.HTTPError as e:
         return {"success": False, "response": "", "error": f"HTTP error: {e.response.status_code} - {e.response.text[:200]}"}
     except Exception as e:
