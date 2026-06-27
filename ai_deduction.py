@@ -155,7 +155,7 @@ Thông tin loại trừ và thông tin định nghĩa THƯỜNG NẰM Ở CÁC T
 - -> Phải KẾT NỐI: Sanlein thuoc Thiết bị y tế hỗ trợ điều trị -> bị loại trừ -> KHẤU TRỪ
 
 Bạn KHÔNG ĐƯỢC chỉ đọc từng trang riêng lẻ. Bạn PHẢI tổng hợp thông tin từ TẤT CẢ các trang rồi kết nối chúng lại với nhau.
-Nếu Điều X tham chiếu Điều Y, bạn PHẢI đọc cả Điều Y để hiểu đầy đủ.''
+Nếu Điều X tham chiếu Điều Y, bạn PHẢI đọc cả Điều Y để hiểu đầy đủ."""
     elif contract_text and contract_text != '(Không có hợp đồng đính kèm)':
         contract_info = f'Nội dung hợp đồng bảo hiểm:\n{contract_text}'
     else:
@@ -315,7 +315,7 @@ NGUYÊN TẮC TỔNG QUÁT:
 3. Trích dẫn nguồn - mọi kết luận phải có điều khoản hợp đồng làm căn cứ.
 4. Chính xác tuyệt đối về con số - không làm tròn, không ước lượng, không 'khoảng'.
 5. Chỉ xuất bảng - kết quả cuối cùng là một bảng duy nhất, không kèm lời giải thích bên ngoài.
-"""
+'''
     return prompt
 
 
