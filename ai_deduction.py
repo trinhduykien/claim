@@ -400,7 +400,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         "model": MODEL,
         "messages": messages,
         "temperature": 0.2,
-        "max_tokens": 8000,
+        "max_tokens": 16000,
         "think": False
     }
 
@@ -424,14 +424,17 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         if not reasoning.strip():
             return {"success": True, "response": "AI không trả về nội dung. Vui lòng thử lại.", "error": ""}
 
-        # Content rỗng, reasoning có nội dung -> tìm phần bảng/đáp án
+        # Content rỗng, reasoning có nội dung -> tìm phần BẢNG cuối cùng (output nằm cuối reasoning)
         markers = ["**Tổng chi phí", "| # |", "| STT |", "**Tổng khấu trừ", "Không có khoản khấu trừ", "Tổng chi phí theo", "Tiền bồi thường thực nhận"]
+        last_match_idx = -1
         for marker in markers:
-            idx = reasoning.find(marker)
-            if idx >= 0:
-                return {"success": True, "response": reasoning[idx:][:3000].strip(), "error": ""}
+            idx = reasoning.rfind(marker)
+            if idx > last_match_idx:
+                last_match_idx = idx
+        if last_match_idx >= 0:
+            return {"success": True, "response": reasoning[last_match_idx:][:5000].strip(), "error": ""}
 
-        # Fallback: tìm phần cuối có dấu hiệu trả lời
+        # Fallback: tìm phần cuối có dấu hiệu trả lời (bảng)
         lines = reasoning.split("\n")
         answer_lines = []
         in_answer = False
@@ -442,10 +445,10 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 answer_lines.append(line)
 
         if answer_lines:
-            return {"success": True, "response": "\n".join(answer_lines)[:3000], "error": ""}
+            return {"success": True, "response": "\n".join(answer_lines)[:5000], "error": ""}
 
-        # Last resort: lấy 1000 ký tự cuối
-        return {"success": True, "response": reasoning[-1000:].strip(), "error": ""}
+        # Last resort: lấy 2000 ký tự cuối
+        return {"success": True, "response": reasoning[-2000:].strip(), "error": ""}
 
     except requests.exceptions.Timeout:
         return {"success": False, "response": "", "error": "AI xử lý quá thời gian (timeout 300s)"}
