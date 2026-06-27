@@ -296,17 +296,17 @@ BƯỚC 2(D) - KẾT LUẬN:
 BƯỚC 3 - XUẤT BẢNG KẾT QUẢ
 ===============================================
 
-Xuất DUY NHẤT MỘT BẢNG theo mẫu sau. Không viết thêm lời dẫn, không giải thích bên ngoài bảng. Chỉ hiện bảng.
+Xuất DUY NHẤT MỘT BẢNG theo đúng mẫu bên dưới. Không viết thêm lời dẫn, không giải thích bên ngoài bảng. Chỉ hiện bảng.
 
-ĐỊNH DẠNG BẢNG (BẮT BUỘC):
+ĐỊNH DẠNG BẢNG (BẮT BUỘC - làm đúng mẫu):
 
 **Tổng chi phí theo hóa đơn:** [số tiền] VNĐ
 
-| # | Tổng tiền ban đầu | Mục bị khấu trừ | Số tiền bị khấu trừ (VNĐ) | Lí do bị khấu trừ | Nguồn điều khoản | Tiền còn lại sau khấu trừ |
+| # | Tổng tiền ban đầu | Mục bị khấu trừ | Số tiền bị khấu trừ (VNĐ) | Lí do bị khấu trừ | Nguồn điều khoản | Tiền còn lại |
 |---|---|---|---|---|---|---|
 | 0 | [TỔNG CỘNG từ hóa đơn] | - | - | - | - | [TỔNG CỘNG] |
-| 1 | | [tên hạng mục] | [số tiền] | [lí do chi tiết + trích dẫn điều khoản] | [Điều khoản/trang] | [Tổng - KH1] |
-| 2 | | [tên hạng mục] | [số tiền] | [lí do chi tiết + trích dẫn] | [Điều khoản/trang] | [(Tổng-KH1) - KH2] |
+| 1 | | [tên hạng mục] | [số tiền] | [lí do: trích dẫn điều khoản + giải thích vì sao khoản trong hóa đơn bị khấu trừ] | [Điều khoản/trang] | [Tổng - KH1] |
+| 2 | | [tên hạng mục] | [số tiền] | [lí do: trích dẫn điều khoản + giải thích] | [Điều khoản/trang] | [Tổng-KH1 - KH2] |
 | ... | | | | | | |
 | **KQ** | | **TỔNG KHẤU TRỪ** | **[tổng cộng]** | | | **[tiền cuối cùng còn lại]** |
 
@@ -314,14 +314,14 @@ Xuất DUY NHẤT MỘT BẢNG theo mẫu sau. Không viết thêm lời dẫn, 
 **Tiền bồi thường thực nhận:** [Tổng - Khấu trừ] = [số tiền] VNĐ
 
 QUY TẮC XUẤT BẢNG:
-- Dòng 0 = tổng tiền ban đầu (chưa khấu trừ gì).
+- Dòng 0 = tổng tiền ban đầu (chưa khấu trừ gì). Cột 'Tiền còn lại' = TỔNG CỘNG.
 - Mỗi dòng khấu trừ = một hạng mục cụ thể trong hóa đơn bị khấu trừ.
-- Cột 'Lí do' = giải thích + trích dẫn nguyên văn (hoặc tóm tắt sát) điều khoản hợp đồng.
-- Cột 'Nguồn điều khoản' = số điều khoản + số trang (nếu có).
+- Cột 'Lí do' PHẢI ghi rõ: (a) điều khoản hợp đồng gì, (b) vì sao khoản trong hóa đơn bị khấu trừ theo điều khoản đó. Trích dẫn nguyên văn hoặc tóm tắt sát điều khoản.
+- Cột 'Nguồn điều khoản' = số điều khoản + số trang (nếu có) trong hợp đồng.
 - Cột 'Tiền còn lại' = chạy tích lũy: dòng 1 = Tổng - KH1; dòng 2 = (Tổng-KH1) - KH2; v.v.
 - Dòng cuối (KQ) = tổng cộng khấu trừ và số tiền cuối cùng còn lại.
 - Số tiền: định dạng có dấu phẩy (VD: 1.500.000.000). Đơn vị VNĐ.
-- Nếu KHÔNG có khoản nào bị khấu trừ: chỉ xuất dòng 0, dòng KQ với '0' cho tổng khấu trừ, và ghi 'Không có khoản khấu trừ, khách hàng nhận toàn bộ [số tiền] VNĐ.'
+- Nếu KHÔNG có khoản nào bị khấu trừ: chỉ xuất dòng 0 và dòng KQ với '0' cho tổng khấu trừ, và ghi 'Không có khoản khấu trừ, khách hàng nhận toàn bộ [số tiền] VNĐ.'
 - Nếu CÓ khoản không chắc chắn: vẫn đưa vào bảng nhưng ghi '[!] Cần xác nhận' ở cột Lí do.
 
 NGUYÊN TẮC TỔNG QUÁT:
@@ -425,7 +425,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             return {"success": True, "response": "AI không trả về nội dung. Vui lòng thử lại.", "error": ""}
 
         # Content rỗng, reasoning có nội dung -> tìm phần bảng/đáp án
-        markers = ["**Tổng chi phí", "| STT |", "**Tổng khấu trừ", "Không có khoản khấu trừ", "Tổng chi phí theo"]
+        markers = ["**Tổng chi phí", "| # |", "| STT |", "**Tổng khấu trừ", "Không có khoản khấu trừ", "Tổng chi phí theo", "Tiền bồi thường thực nhận"]
         for marker in markers:
             idx = reasoning.find(marker)
             if idx >= 0:
@@ -436,7 +436,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         answer_lines = []
         in_answer = False
         for line in lines:
-            if any(m in line for m in ["**Tổng", "| STT", "| 1 ", "| 1  ", "Không có khoản", "Tiền bồi thường"]):
+            if any(m in line for m in ["**Tổng", "| # |", "| STT", "| 1 ", "| 1  ", "Không có khoản", "Tiền bồi thường", "Tiền còn lại"]):
                 in_answer = True
             if in_answer:
                 answer_lines.append(line)
