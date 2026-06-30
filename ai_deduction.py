@@ -244,13 +244,23 @@ def call_vision_model(messages, max_tokens=8000, timeout=300):
         # Fallback: reasoning có nội dung
         if reasoning.strip():
             # Tìm phần có cấu trúc (=== HÓA ĐƠN === hoặc === HỢP ĐỒNG ===)
-            markers = ["=== HÓA ĐƠN ===", "=== HỢP ĐỒNG ===", "DANH SÁCH MỤC", "--- Trang 1 ---", "Tổng tiền:"]
+            markers = ["=== HÓA ĐƠN ===", "=== HỢP ĐỒNG ===", "DANH SÁCH MỤC", "--- Trang 1 ---", "Tổng tiền:", "--- Trang"]
             for marker in markers:
                 idx = reasoning.find(marker)
                 if idx >= 0:
-                    return {"success": True, "text": reasoning[idx:].strip()[:10000], "error": ""}
-            # Last resort: lấy 3000 ký tự cuối
-            return {"success": True, "text": reasoning[-3000:].strip(), "error": ""}
+                    return {"success": True, "text": reasoning[idx:].strip()[:15000], "error": ""}
+            # Thử tìm nội dung có dấu hiệu hợp đồng/hóa đơn
+            contract_markers = ["ĐIỀU", "Điều khoản", "Bộ phận giả", "Sanlein", "thiết bị y tế", "loại trừ", "bồi thường"]
+            found_idx = -1
+            for marker in contract_markers:
+                idx = reasoning.find(marker)
+                if idx >= 0 and idx < len(reasoning):
+                    found_idx = idx
+                    break
+            if found_idx >= 0:
+                return {"success": True, "text": reasoning[found_idx:].strip()[:15000], "error": ""}
+            # Last resort: lấy 8000 ký tự cuối (thường là phần trả lời)
+            return {"success": True, "text": reasoning[-8000:].strip(), "error": ""}
 
         return {"success": False, "text": "", "error": "AI không trả về nội dung."}
 
@@ -282,7 +292,7 @@ def extract_invoice_text(photo_paths):
     return call_vision_model(messages, max_tokens=8000, timeout=180)
 
 
-def extract_contract_text_from_images(contract_images, num_pages, batch_size=8):
+def extract_contract_text_from_images(contract_images, num_pages, batch_size=4):
     """Bước 1b: Dùng Kimi K2.6 đọc ảnh hợp đồng -> trích xuất text.
     Chia thành batch để tránh bị cắt nội dung."""
     all_extracted_text = []
@@ -300,7 +310,7 @@ def extract_contract_text_from_images(contract_images, num_pages, batch_size=8):
             {"role": "user", "content": content}
         ]
         
-        return call_vision_model(messages, max_tokens=16000, timeout=300)
+        return call_vision_model(messages, max_tokens=10000, timeout=180)
     
     # Nếu nhiều trang, chia thành batch
     num_batches = (total_images + batch_size - 1) // batch_size
@@ -340,7 +350,7 @@ Chỉ xuất kết quả. Không thêm giải thích."""
             {"role": "user", "content": content}
         ]
         
-        result = call_vision_model(messages, max_tokens=12000, timeout=300)
+        result = call_vision_model(messages, max_tokens=8000, timeout=180)
         
         if result["success"]:
             all_extracted_text.append(result["text"])
@@ -557,7 +567,7 @@ NGUYÊN TẮC TỔNG QUÁT:
     return prompt
 
 
-def call_analysis_model(messages, max_tokens=8000, timeout=300):
+def call_analysis_model(messages, max_tokens=6000, timeout=240):
     """Gọi analysis model (GLM-5.2) qua Ollama Cloud API."""
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -639,54 +649,77 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         }
 
     # ============================================================
-    # BƯỚC 1A: KIMI ĐỌC ẢNH HÓA ĐƠN
+    # BƯỚC 1: KIMI ĐỌC ẢNH HÓA ĐƠN + HỢP ĐỒNG (SONG SONG)
     # ============================================================
-    invoice_text = "(Không có hóa đơn)"
+    import threading
 
-    if photo_paths:
+    invoice_result_box = {"result": None}
+    contract_result_box = {"result": None}
+
+    def read_invoice():
+        if not photo_paths:
+            invoice_result_box["result"] = {"success": False, "text": "", "error": "Không có ảnh"}
+            return
         any_photo = [p for p in photo_paths if os.path.exists(p)]
-        if any_photo:
-            invoice_result = extract_invoice_text(any_photo)
-            if invoice_result["success"]:
-                invoice_text = invoice_result["text"]
-            else:
-                return {
-                    "success": False,
-                    "response": "",
-                    "error": f"Bước 1 (đọc hóa đơn) thất bại: {invoice_result['error']}"
-                }
+        if not any_photo:
+            invoice_result_box["result"] = {"success": False, "text": "", "error": "Không tìm thấy file ảnh"}
+            return
+        invoice_result_box["result"] = extract_invoice_text(any_photo)
 
-    # ============================================================
-    # BƯỚC 1B: KIMI ĐỌC ẢNH HỢP ĐỒNG
-    # ============================================================
-    contract_text = "(Không có hợp đồng đính kèm)"
-    contract_images = []
-
-    if contract_path and os.path.exists(contract_path):
+    def read_contract():
+        if not contract_path or not os.path.exists(contract_path):
+            contract_result_box["result"] = {"success": False, "text": "", "error": "Không có hợp đồng"}
+            return
         ext = os.path.splitext(contract_path)[1].lower().lstrip(".")
         if ext == "pdf":
-            # Thử đọc text trước
             pdf_text = extract_pdf_text(contract_path)
             if pdf_text:
-                contract_text = pdf_text[:50000]
-            else:
-                # PDF scan -> chuyển thành ảnh
-                contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=20)
-                if contract_images:
-                    # Dùng Kimi đọc ảnh hợp đồng
-                    contract_result = extract_contract_text_from_images(contract_images, len(contract_images))
-                    if contract_result["success"]:
-                        contract_text = contract_result["text"]
-                    else:
-                        # Nếu Kimi đọc fail, vẫn gửi thông tin cho GLM
-                        contract_text = f"(Hợp đồng PDF gồm {total_pages} trang ảnh, trích xuất thất bại: {contract_result['error']})"
+                contract_result_box["result"] = {"success": True, "text": pdf_text[:50000], "error": ""}
+                return
+            contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=20)
+            if contract_images:
+                result = extract_contract_text_from_images(contract_images, len(contract_images))
+                if result["success"]:
+                    contract_result_box["result"] = result
+                else:
+                    contract_result_box["result"] = {"success": True, "text": f"(Hợp đồng PDF gồm {total_pages} trang ảnh, trích xuất thất bại: {result['error']})", "error": ""}
+                return
+            contract_result_box["result"] = {"success": False, "text": "", "error": "Không thể đọc PDF"}
+            return
         elif ext in ("jpg", "jpeg", "png", "gif", "webp"):
-            contract_images.append(encode_image_to_base64(contract_path))
-            contract_result = extract_contract_text_from_images(contract_images, 1)
-            if contract_result["success"]:
-                contract_text = contract_result["text"]
-            else:
-                contract_text = f"(Hợp đồng dạng 1 ảnh, trích xuất thất bại: {contract_result['error']})"
+            img_b64 = encode_image_to_base64(contract_path)
+            result = extract_contract_text_from_images([img_b64], 1)
+            contract_result_box["result"] = result
+            return
+        contract_result_box["result"] = {"success": False, "text": "", "error": f"Định dạng không hỗ trợ: {ext}"}
+
+    # Chạy 2 thread song song
+    t_invoice = threading.Thread(target=read_invoice)
+    t_contract = threading.Thread(target=read_contract)
+    t_invoice.start()
+    t_contract.start()
+    t_invoice.join(timeout=300)
+    t_contract.join(timeout=300)
+
+    # Xử lý kết quả hóa đơn
+    invoice_text = "(Không có hóa đơn)"
+    inv_result = invoice_result_box["result"]
+    if inv_result and inv_result.get("success") and inv_result.get("text"):
+        invoice_text = inv_result["text"]
+    elif inv_result and not inv_result.get("success") and photo_paths:
+        return {
+            "success": False,
+            "response": "",
+            "error": f"Bước 1 (đọc hóa đơn) thất bại: {inv_result.get('error', 'unknown')}"
+        }
+
+    # Xử lý kết quả hợp đồng
+    contract_text = "(Không có hợp đồng đính kèm)"
+    con_result = contract_result_box["result"]
+    if con_result and con_result.get("success") and con_result.get("text"):
+        contract_text = con_result["text"]
+    elif con_result and not con_result.get("success") and contract_path and os.path.exists(contract_path):
+        contract_text = f"(Hợp đồng trích xuất thất bại: {con_result.get('error', 'unknown')})"
 
     # ============================================================
     # BƯỚC 2: GLM-5.2 PHÂN TÍCH KHẤU TRỪ
@@ -700,7 +733,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
     user_msg = {"role": "user", "content": prompt}
     messages = [system_msg, user_msg]
 
-    analysis_result = call_analysis_model(messages, max_tokens=8000, timeout=300)
+    analysis_result = call_analysis_model(messages, max_tokens=6000, timeout=240)
 
     if analysis_result["success"]:
         return {"success": True, "response": analysis_result["text"], "error": ""}
