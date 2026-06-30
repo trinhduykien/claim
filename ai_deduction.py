@@ -241,26 +241,32 @@ def call_vision_model(messages, max_tokens=8000, timeout=300):
         if content_text.strip():
             return {"success": True, "text": content_text.strip(), "error": ""}
 
-        # Fallback: reasoning có nội dung
+        # Fallback: reasoning có nội dung — lấy toàn bộ, không hardcode marker
         if reasoning.strip():
-            # Tìm phần có cấu trúc (=== HÓA ĐƠN === hoặc === HỢP ĐỒNG ===)
-            markers = ["=== HÓA ĐƠN ===", "=== HỢP ĐỒNG ===", "DANH SÁCH MỤC", "--- Trang 1 ---", "Tổng tiền:", "--- Trang"]
-            for marker in markers:
-                idx = reasoning.find(marker)
-                if idx >= 0:
-                    return {"success": True, "text": reasoning[idx:].strip()[:15000], "error": ""}
-            # Thử tìm nội dung có dấu hiệu hợp đồng/hóa đơn
-            contract_markers = ["ĐIỀU", "Điều khoản", "Bộ phận giả", "Sanlein", "thiết bị y tế", "loại trừ", "bồi thường"]
-            found_idx = -1
-            for marker in contract_markers:
-                idx = reasoning.find(marker)
-                if idx >= 0 and idx < len(reasoning):
-                    found_idx = idx
+            # Lọc bỏ phần "thinking" của model (thường là tiếng Anh, ở đầu reasoning)
+            # và giữ lại phần text trích xuất (thường là tiếng Việt, có cấu trúc)
+            lines = reasoning.split("\n")
+            # Tìm vị trí bắt đầu nội dung thực: dòng có dấu hiệu structured text
+            start_idx = 0
+            for i, line in enumerate(lines):
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                # Dấu hiệu nội dung trích xuất: có format structure hoặc tiếng Việt có dấu
+                if any(m in stripped for m in ["===", "--- Trang", "Tổng tiền", "DANH SÁCH", "ĐIỀU", "Điều", "Bảo hiểm", "Hợp đồng", "Phí bảo hiểm", "Mức phí"]):
+                    start_idx = i
                     break
-            if found_idx >= 0:
-                return {"success": True, "text": reasoning[found_idx:].strip()[:15000], "error": ""}
-            # Last resort: lấy 8000 ký tự cuối (thường là phần trả lời)
-            return {"success": True, "text": reasoning[-8000:].strip(), "error": ""}
+                # Dòng dài > 20 ký tự và có ký tự tiếng Việt
+                if len(stripped) > 20 and any(ord(c) > 0x1E00 for c in stripped):
+                    start_idx = i
+                    break
+            result_text = "\n".join(lines[start_idx:]).strip()
+            if not result_text:
+                result_text = reasoning.strip()
+            # Giới hạn 15KB
+            if len(result_text) > 15000:
+                result_text = result_text[:15000]
+            return {"success": True, "text": result_text, "error": ""}
 
         return {"success": False, "text": "", "error": "AI không trả về nội dung."}
 
