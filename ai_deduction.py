@@ -154,16 +154,23 @@ YÊU CẦU:
 4. Ghi rõ TỔNG CỘNG (tổng số tiền).
 5. Giữ nguyên số liệu chính xác - không làm tròn, không ước lượng.
 
+YÊU CẦU ĐẶC BIỆT VỀ TÊN THUỐC / HÀNG MỤC Y TẾ:
+- Tên thuốc phải được đọc CHÍNH XÁC từng chữ cái. Đặc biệt chú ý các ký tự dễ nhầm: b/d, n/h, m/n, l/i, o/a.
+- Nếu tên thuốc in trên hóa đơn có dấu hoặc không dấu, ghi nguyên văn như in.
+- Nếu không chắc về một chữ trong tên thuốc, ghi [?] sau chữ đó để đánh dấu cần kiểm tra.
+- Không được tự ý "sửa" tên thuốc theo ý hiểu - phải ghi đúng những gì in trên hóa đơn.
+- Phân loại rõ mỗi mục: thuốc, vật tư y tế, dịch vụ y tế, hay loại khác.
+
 ĐỊNH DẠNG XUẤT (bắt buộc theo mẫu):
 
 === HÓA ĐƠN ===
 Tổng tiền: [số tổng cộng trên hóa đơn]
 
 DANH SÁCH MỤC:
-1. [Tên mục] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
-2. [Tên mục] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
+1. [Tên mục] | [Loại: thuốc/vật tư y tế/dịch vụ/khác] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
+2. [Tên mục] | [Loại: thuốc/vật tư y tế/dịch vụ/khác] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
 ...
-N. [Tên mục] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
+N. [Tên mục] | [Loại: thuốc/vật tư y tế/dịch vụ/khác] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
 
 (thuế/phí nếu có)
 Thuế VAT: [số tiền]
@@ -410,8 +417,9 @@ Hạng mục bị loại trừ có thể là:
 
 DANH SÁCH B - KHÁI NIỆM / ĐỊNH NGHĨA / DANH MỤC:
 Mọi trang định nghĩa thuật ngữ, liệt kê danh mục, giải thích khái niệm.
-VD: 'Thiết bị y tế hỗ trợ điều trị bao gồm: Sanlein, thuốc nhỏ mắt, băng y tế...'
+VD: 'Thiết bị y tế hỗ trợ điều trị bao gồm: ...'
 -> Mỗi khái niệm trong DANH SÁCH A (loại trừ) PHẢI được tra trong DANH SÁCH B để tìm các hạng mục con cụ thể.
+-> Lưu ý: định nghĩa trong hợp đồng có thể KHÔNG bao gồm thuốc. Phải đọc kỹ xem định nghĩa ghi gì.
 
 DANH SÁCH C - HẠN MỨC CHI TRẢ:
 Mọi giới hạn chi trả: tối đa X VNĐ/năm, tối đa Y VNĐ/lần, tối đa Z% giá trị...
@@ -445,23 +453,64 @@ BƯỚC 2(D) - KẾT LUẬN:
   - Nếu mục bị khấu trừ qua bất kỳ bước 2(A)/2(B)/2(C) nào -> đưa vào bảng kết quả.
   - Nếu không bị khấu trừ qua bất kỳ bước nào -> KHÔNG đưa vào bảng.
 
-2.3. VÍ DỤ MINH HỌA (để hiểu cách suy luận, KHÔNG được dùng ví dụ này làm khuôn cố định):
+2.3. NGUYÊN TẮC PHÂN LOẠI ĐỐI TƯỢNG — QUAN TRỌNG NHẤT
 
-  - Hóa đơn có: 'Thuốc Sanlein - 500.000 VNĐ'
-  - DANH SÁCH A: 'Không bồi thường chi phí thiết bị y tế hỗ trợ điều trị' (trang 4)
-  - DANH SÁCH B: 'Thiết bị y tế hỗ trợ điều trị bao gồm: Sanlein, thuốc nhỏ mắt...' (trang 7)
-  -> Bước 2(A): 'Sanlein' không trùng trực tiếp với 'thiết bị y tế hỗ trợ điều trị' -> Không trùng trực tiếp.
-  -> Bước 2(B): Duyệt DANH SÁCH B -> khái niệm 'thiết bị y tế hỗ trợ điều trị' có chứa 'Sanlein'? CÓ. Khái niệm này có bị loại trừ trong DANH SÁCH A? CÓ.
-  -> KẾT LUẬN: Sanlein bị KHẤU TRỪ gián tiếp. Lí do: Sanlein thuộc 'thiết bị y tế hỗ trợ điều trị' - hạng mục này bị loại trừ theo điều khoản ở trang 4.
+Khi đối chiếu mục trong hóa đơn với khái niệm trong hợp đồng, bạn PHẢI xác định ĐÚNG LOẠI của đối tượng:
 
-  [!] Đây chỉ là 1 ví dụ về cách suy luận. Hợp đồng thực tế có thể có các khái niệm và điều khoản khác. Bạn PHẢI áp dụng quy trình này cho TỪNG MỤC trong hóa đơn, với TỪNG KHÁI NIỆM trong hợp đồng - không được bỏ qua.
+  a) THUỐC (medicine/pharmaceutical drug):
+     - Là chế phẩm có hoạt chất y tế được dùng qua đường uống, nhỏ mắt, nhỏ tai, bôi da, tiêm, truyền...
+     - Bao gồm: thuốc nhỏ mắt, thuốc mỡ bôi ngoài da, thuốc uống, thuốc tiêm, gel bôi trơn mắt (nếu có hoạt chất điều trị)...
+     - Đặc điểm: thường có tên thương mại + hàm lượng hoạt chất + dạng bào chế (vd: 'Ofloxacin 0.3% nhỏ mắt 5ml', 'Sanlein 0.3% nhỏ mắt 5ml').
+     - Nếu hợp đồng nói 'không bồi thường thuốc ngoài danh mục' -> kiểm tra thuốc có trong danh mục không.
+     - Nếu hợp đồng nói 'không bồi thường thiết bị y tế' -> THUỐC KHÔNG PHẢI THIẾT BỊ Y TẾ. Không được khấu trừ thuốc theo điều khoản loại trừ thiết bị y tế.
 
-2.4. NGUYÊN TẮC SUY LUẬN
+  b) VẬT TƯ Y TẾ (medical device/supplies):
+     - Là dụng cụ/hàng lo dùng trong y tế KHÔNG có hoạt chất điều trị: băng gạc, ống tiêm, kim tiêm, catheter, găng tay y tế, máy đo huyết áp, nhiệt kế...
+     - Đặc điểm: là vật lý, không phải chế phẩm dược phẩm.
+     - Nếu hợp đồng nói 'không bồi thường thiết bị y tế' -> vật tư y tế MỚI bị khấu trừ.
+
+  c) DỊCH VỤ Y TẾ (medical service):
+     - Khám bệnh, xét nghiệm, phẫu thuật, vật lý trị liệu, chụp X-quang, siêu âm...
+     - Là quy trình/dịch vụ do nhân viên y tế thực hiện.
+
+  d) CÁC LOẠI KHÁC: thực phẩm chức năng, mỹ phẩm, hàng hóa...
+
+NGUYÊN TẮC XÁC ĐỊNH:
+- XÉT THEO BẢN CHẤT CỦA ĐỐI TƯỢNG, KHÔNG XÉT THEO ĐƯỜNG DÙNG.
+  VD: Thuốc nhỏ mắt là THUỐC (có hoạt chất điều trị), KHÔNG PHẢI vật tư y tế, KHÔNG PHẢI thiết bị y tế.
+  VD: Gel bôi trơn mắt (nếu có hoạt chất điều trị) là THUỐC. Nếu KHÔNG có hoạt chất điều trị (chỉ là gel bôi trơn) thì là vật tư y tế.
+- KHI HỢP ĐỒNG LIỆT KÊ 'thiết bị y tế hỗ trợ điều trị', bạn PHẢI tra trong DANH SÁCH B để xem định nghĩa cụ thể: hợp đồng ghi rõ 'thiết bị y tế' gồm những gì. Nếu định nghĩa không nhắc đến thuốc -> thuốc KHÔNG bị khấu trừ theo điều khoản đó.
+- KHÔNG ĐƯỢC TỰ Ý MỞ RỘNG khái niệm: nếu hợp đồng nói 'thiết bị y tế' mà hóa đơn là 'thuốc' -> KHÔNG KHẤU TRỪ theo điều khoản thiết bị y tế. Phải tìm điều khoản khác áp dụng trực tiếp cho thuốc.
+- ĐƯỜNG DÙNG KHÔNG XÁC ĐỊNH LOẠI: thuốc nhỏ mắt vẫn là thuốc, thuốc mỡ bôi da vẫn là thuốc. Không được gọi thuốc là 'thiết bị y tế' chỉ vì cùng đường dùng với vật tư.
+
+2.4. VÍ DỤ MINH HỌA (để hiểu cách suy luận, KHÔNG được dùng ví dụ này làm khuôn cố định):
+
+  Tình huống 1 — Khấu trừ gián tiếp HỢP LỆ:
+  - Hóa đơn có: 'Băng gạc y tế - 50.000 VNĐ' (vật tư y tế)
+  - DANH SÁCH A: 'Không bồi thường vật tư y tế tiêu hao' (trang 4)
+  - DANH SÁCH B: 'Vật tư y tế tiêu hao bao gồm: băng gạc, bông y tế, ống tiêm...' (trang 7)
+  -> Bước 2(A): 'Băng gạc' không trùng trực tiếp với 'vật tư y tế tiêu hao' -> Không trùng trực tiếp.
+  -> Bước 2(B): Duyệt DANH SÁCH B -> khái niệm 'vật tư y tế tiêu hao' có chứa 'băng gạc'? CÓ. Khái niệm này có bị loại trừ trong DANH SÁCH A? CÓ.
+  -> KẾT LUẬN: Băng gạc bị KHẤU TRỪ gián tiếp. Đúng loại đối tượng.
+
+  Tình huống 2 — KHÔNG khấu trừ vì sai loại đối tượng:
+  - Hóa đơn có: 'Thuốc Ofloxacin 0.3% nhỏ mắt 5ml - 60.000 VNĐ' (THUỐC)
+  - DANH SÁCH A: 'Không bồi thường thiết bị y tế hỗ trợ điều trị' (trang 4)
+  - DANH SÁCH B: 'Thiết bị y tế hỗ trợ điều trị bao gồm: băng gạc, ống tiêm, catheter...' (trang 7) — KHÔNG nhắc đến thuốc
+  -> Bước 2(A): 'Ofloxacin' không trùng trực tiếp với 'thiết bị y tế' -> Không trùng trực tiếp.
+  -> Bước 2(B): Duyệt DANH SÁCH B -> 'thiết bị y tế' có chứa 'Ofloxacin'? KHÔNG. Định nghĩa không nhắc đến thuốc.
+  -> Ofloxacin là THUỐC, không phải thiết bị y tế -> KHÔNG KHẤU TRỪ theo điều khoản thiết bị y tế.
+  -> Tiếp tục tra các điều khoản khác (có điều khoản nào nói rõ 'không bồi thường thuốc ngoài danh mục' không?).
+
+  [!] Đây chỉ là ví dụ về cách suy luận. Bạn PHẢI áp dụng cho TỪNG MỤC trong hóa đơn, với TỪNG KHÁI NIỆM trong hợp đồng — dựa trên NỘI DUNG THỰC TẾ của hợp đồng, không dựa trên ví dụ.
+
+2.5. NGUYÊN TẮC SUY LUẬN
 
 - KHÔNG BỎ SÓT: Đọc hết mọi điều khoản, tìm hết mọi khoản khấu trừ.
 - TRUY CHUỖI ĐẾN TẬN CẤP LÁ: A bị khấu trừ chứa B, C -> kiểm tra B, C. B chứa B1, B2 -> tiếp tục. Đi đến tận cùng.
 - THAM CHIẾU CHÉO: Điều X dẫn đến Điều Y -> phải đọc cả Y.
 - KHÔNG SUY ĐOÁN: Chỉ khấu trừ khi có cơ sở rõ ràng. Nếu không chắc, đánh dấu '[!] Cần xác nhận'.
+- KHÔNG TỰ Ý MỞ RỘNG KHÁI NIỆM: Khấu trừ theo đúng loại đối tượng. Thuốc ≠ thiết bị y tế ≠ vật tư y tế. Chỉ khấu trừ khi hợp đồng THỰC SỰ áp dụng cho loại đối tượng đó.
 - GHI NGUỒN: Mỗi kết luận khấu trừ phải kèm số điều khoản + số trang trong hợp đồng.
 - KIỂM TRA CHÉO BẮT BUỘC: MỖI MỤC trong hóa đơn PHẢI kiểm tra cả 3 danh sách A, B, C.
 
@@ -500,9 +549,10 @@ QUY TẮC XUẤT BẢNG:
 NGUYÊN TẮC TỔNG QUÁT:
 1. Đọc hết, nhớ hết - không bỏ sót bất kỳ dòng nào trong hóa đơn hay điều khoản nào trong hợp đồng.
 2. Suy luận đến tận gốc - khấu trừ gián tiếp, khấu trừ nhúng, khấu trừ theo điều kiện, vượt hạn mức đều phải kiểm tra.
-3. Trích dẫn nguồn - mọi kết luận phải có điều khoản hợp đồng làm căn cứ.
-4. Chính xác tuyệt đối về con số - không làm tròn, không ước lượng, không 'khoảng'.
-5. Chỉ xuất bảng - kết quả cuối cùng là một bảng duy nhất, không kèm lời giải thích bên ngoài.
+3. KHÔNG TỰ Ý MỞ RỘNG KHÁI NIỆM - khấu trừ đúng loại đối tượng: thuốc là thuốc, thiết bị là thiết bị, vật tư là vật tư. Chỉ khấu trừ khi hợp đồng thực sự áp dụng cho loại đối tượng đó.
+4. Trích dẫn nguồn - mọi kết luận phải có điều khoản hợp đồng làm căn cứ.
+5. Chính xác tuyệt đối về con số - không làm tròn, không ước lượng, không 'khoảng'.
+6. Chỉ xuất bảng - kết quả cuối cùng là một bảng duy nhất, không kèm lời giải thích bên ngoài.
 '''
     return prompt
 
@@ -645,7 +695,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
 
     system_msg = {
         "role": "system",
-        "content": "Bạn là chuyên gia kiểm toán hợp đồng bảo hiểm PJICO cao cấp. LUÔN trả lời bằng tiếng Việt. Nhiệm vụ: ĐỌC TOÀN BỘ text hóa đơn (ghi nhớ từng dòng, từng con số) -> ĐỌC TOÀN BỘ text hợp đồng (mọi điều khoản, phụ lục, đính chính) -> XÂY DỰNG 3 DANH SÁCH TRONG ĐẦU: (A) Điều khoản loại trừ, (B) Khái niệm/định nghĩa/danh mục, (C) Hạn mức chi trả -> MAP TỪNG MỤC trong hóa đơn vào 3 danh sách theo quy trình 2(A) -> 2(B) -> 2(C). ĐẶC BIỆT: khoản trong hóa đơn có thể KHÔNG TRÙNG TÊN trực tiếp với điều khoản loại trừ, nhưng có THUỘC một khái niệm/định nghĩa bị loại trừ (khấu trừ gián tiếp). Phải KẾT NỐI thông tin giữa các trang: loại trừ ở trang 4 nói 'thiết bị y tế' + định nghĩa ở trang 7 nói 'Sanlein thuộc thiết bị y tế' -> Sanlein bị khấu trừ. Mọi kết luận phải có điều khoản hợp đồng làm căn cứ. CHÍNH XÁC TUYỆT ĐỐI về con số - không làm tròn, không ước lượng. Output cuối cùng là MỘT BẢNG DUY NHẤT theo mẫu, không kèm lời giải thích bên ngoài. KHÔNG trả lời 'không có khấu trừ' nếu chưa kiểm tra kỹ tất cả điều khoản hợp đồng."
+        "content": "Bạn là chuyên gia kiểm toán hợp đồng bảo hiểm PJICO cao cấp. LUÔN trả lời bằng tiếng Việt. Nhiệm vụ: ĐỌC TOÀN BỘ text hóa đơn (ghi nhớ từng dòng, từng con số) -> ĐỌC TOÀN BỘ text hợp đồng (mọi điều khoản, phụ lục, đính chính) -> XÂY DỰNG 3 DANH SÁCH TRONG ĐẦU: (A) Điều khoản loại trừ, (B) Khái niệm/định nghĩa/danh mục, (C) Hạn mức chi trả -> MAP TỪNG MỤC trong hóa đơn vào 3 danh sách theo quy trình 2(A) -> 2(B) -> 2(C). ĐẶC BIỆT: khoản trong hóa đơn có thể KHÔNG TRÙNG TÊN trực tiếp với điều khoản loại trừ, nhưng có THUỘC một khái niệm/định nghĩa bị loại trừ (khấu trừ gián tiếp). Phải KẾT NỐI thông tin giữa các trang. QUAN TRỌNG: PHẢI PHÂN BIỆT ĐÚNG LOẠI ĐỐI TƯỢNG — thuốc là thuốc (có hoạt chất điều trị), thiết bị y tế là thiết bị (dụng cụ vật lý), vật tư y tế là vật tư (băng gạc, ống tiêm...). KHÔNG ĐƯỢC tự ý mở rộng khái niệm: nếu hợp đồng loại trừ 'thiết bị y tế' thì KHÔNG được khấu trừ THUỐC theo điều khoản đó. Chỉ khấu trừ khi hợp đồng THỰC SỰ áp dụng cho loại đối tượng đó. Mọi kết luận phải có điều khoản hợp đồng làm căn cứ. CHÍNH XÁC TUYỆT ĐỐI về con số - không làm tròn, không ước lượng. Output cuối cùng là MỘT BẢNG DUY NHẤT theo mẫu, không kèm lời giải thích bên ngoài. KHÔNG trả lời 'không có khấu trừ' nếu chưa kiểm tra kỹ tất cả điều khoản hợp đồng."
     }
     user_msg = {"role": "user", "content": prompt}
     messages = [system_msg, user_msg]
