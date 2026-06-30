@@ -241,29 +241,26 @@ def call_vision_model(messages, max_tokens=8000, timeout=300):
         if content_text.strip():
             return {"success": True, "text": content_text.strip(), "error": ""}
 
-        # Fallback: reasoning có nội dung — lấy toàn bộ, không hardcode marker
+        # Fallback: reasoning có nội dung — lọc thinking tiếng Anh, giữ text tiếng Việt
         if reasoning.strip():
-            # Lọc bỏ phần "thinking" của model (thường là tiếng Anh, ở đầu reasoning)
-            # và giữ lại phần text trích xuất (thường là tiếng Việt, có cấu trúc)
             lines = reasoning.split("\n")
-            # Tìm vị trí bắt đầu nội dung thực: dòng có dấu hiệu structured text
+            # Kimi thường: thinking tiếng Anh ở đầu, text tiếng Việt ở sau
+            # Heuristic: tìm dòng đầu tiên có >= 3 ký tự tiếng Việt (có dấu)
+            # Ký tự tiếng Việt: 0x00C0-0x024F (Latin Extended), 0x1E00-0x1EFF
             start_idx = 0
             for i, line in enumerate(lines):
                 stripped = line.strip()
-                if not stripped:
+                if not stripped or len(stripped) < 10:
                     continue
-                # Dấu hiệu nội dung trích xuất: có format structure hoặc tiếng Việt có dấu
-                if any(m in stripped for m in ["===", "--- Trang", "Tổng tiền", "DANH SÁCH", "ĐIỀU", "Điều", "Bảo hiểm", "Hợp đồng", "Phí bảo hiểm", "Mức phí"]):
-                    start_idx = i
-                    break
-                # Dòng dài > 20 ký tự và có ký tự tiếng Việt
-                if len(stripped) > 20 and any(ord(c) > 0x1E00 for c in stripped):
+                # Đếm ký tự tiếng Việt (có dấu)
+                viet_chars = sum(1 for c in stripped if 0x00C0 <= ord(c) <= 0x024F or 0x1E00 <= ord(c) <= 0x1EFF)
+                # Dòng có >= 3 ký tự tiếng Việt -> likely là nội dung trích xuất
+                if viet_chars >= 3:
                     start_idx = i
                     break
             result_text = "\n".join(lines[start_idx:]).strip()
-            if not result_text:
+            if not result_text or len(result_text) < 50:
                 result_text = reasoning.strip()
-            # Giới hạn 15KB
             if len(result_text) > 15000:
                 result_text = result_text[:15000]
             return {"success": True, "text": result_text, "error": ""}
@@ -704,8 +701,10 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
     t_contract = threading.Thread(target=read_contract)
     t_invoice.start()
     t_contract.start()
-    t_invoice.join(timeout=300)
-    t_contract.join(timeout=300)
+    # Hóa đơn nhanh (1-3 ảnh), chờ tối đa 200s
+    t_invoice.join(timeout=200)
+    # Hợp đồng có thể 16+ trang scan, chờ tối đa 600s
+    t_contract.join(timeout=600)
 
     # Xử lý kết quả hóa đơn
     invoice_text = "(Không có hóa đơn)"
@@ -726,6 +725,8 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         contract_text = con_result["text"]
     elif con_result and not con_result.get("success") and contract_path and os.path.exists(contract_path):
         contract_text = f"(Hợp đồng trích xuất thất bại: {con_result.get('error', 'unknown')})"
+    elif con_result is None and contract_path and os.path.exists(contract_path):
+        contract_text = "(Hợp đồng đang được trích xuất, vui lòng đợi hoặc thử lại)"
 
     # ============================================================
     # BƯỚC 2: GLM-5.2 PHÂN TÍCH KHẤU TRỪ
