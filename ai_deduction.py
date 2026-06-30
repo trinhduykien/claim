@@ -674,7 +674,15 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 errors_t1[name] = f"Timeout khi đọc {name}"
 
         # --- Collect Tier 1 results ---
-        invoice_text = results_t1.get("invoice", "")
+        _inv_raw = results_t1.get("invoice", "")
+        if isinstance(_inv_raw, dict) and _inv_raw.get("success"):
+            invoice_text = _inv_raw.get("text", "")
+        elif isinstance(_inv_raw, dict):
+            invoice_text = f"[LỖI ĐỌC HÓA ĐƠN: {_inv_raw.get('error', 'unknown')}]"
+        elif isinstance(_inv_raw, str):
+            invoice_text = _inv_raw
+        else:
+            invoice_text = ""
         if "invoice" in errors_t1 and not invoice_text:
             invoice_text = f"[LỖI ĐỌC HÓA ĐƠN: {errors_t1['invoice']}]"
 
@@ -684,10 +692,17 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             key = f"contract_{idx}"
             if key in results_t1:
                 val = results_t1[key]
-                if isinstance(val, tuple):
-                    contract_texts.append(val)  # (text, page_start, page_end)
+                if isinstance(val, tuple) and len(val) == 3:
+                    text_val, ps, pe = val
+                    # text_val could be a dict from kimi_read_contract_chunk
+                    if isinstance(text_val, dict) and text_val.get("success"):
+                        contract_texts.append((text_val.get("text", ""), ps, pe))
+                    elif isinstance(text_val, dict):
+                        contract_texts.append((f"[LỖI ĐỌC HỢP ĐỒNG CHUNK {idx}: {text_val.get('error', 'unknown')}]", ps, pe))
+                    else:
+                        contract_texts.append((str(text_val), ps, pe))
                 else:
-                    contract_texts.append((val, 0, 0))
+                    contract_texts.append((str(val), 0, 0))
             elif key in errors_t1:
                 contract_texts.append((f"[LỖI ĐỌC HỢP ĐỒNG CHUNK {idx}: {errors_t1[key]}]", 0, 0))
 
