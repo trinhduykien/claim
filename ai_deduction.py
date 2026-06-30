@@ -835,64 +835,15 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             contract_chunk_texts.append("(Không có hợp đồng đính kèm)")
 
         # ============================================================
-        # TIER 2 (REDUCE): GLM PHÂN TÍCH TỪNG CHUNK SONG SONG
+        # TIER 2 (BỎ): Truyền thẳng text từ Tier 1 sang Tier 3
+        # (Như v0.6 gốc - GLM nhận raw text, đọc trực tiếp)
         # ============================================================
 
-        # GLM 1: phân tích hóa đơn -> phân loại THUOC/VAT TU Y TE/DICH VU Y TE/KHAC
-        invoice_analysis_box = {"result": None}
-        contract_analysis_boxes = [{"result": None} for _ in contract_chunk_texts]
-
-        def analyze_invoice():
-            prompt = build_invoice_analysis_prompt(invoice_text)
-            messages = [
-                {"role": "system", "content": "Bạn là chuyên gia phân tích hóa đơn y tế. Phân loại chính xác từng hạng mục. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng yêu cầu."},
-                {"role": "user", "content": prompt}
-            ]
-            invoice_analysis_box["result"] = call_analysis_model(messages, max_tokens=4000, timeout=180)
-
-        def analyze_contract_chunk(idx, chunk_text):
-            prompt = build_contract_analysis_prompt(chunk_text, idx)
-            messages = [
-                {"role": "system", "content": "Bạn là chuyên gia phân tích hợp đồng bảo hiểm y tế. Trích xuất chính xác điều khoản loại trừ, định nghĩa, hạn mức. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng yêu cầu."},
-                {"role": "user", "content": prompt}
-            ]
-            contract_analysis_boxes[idx]["result"] = call_analysis_model(messages, max_tokens=4000, timeout=180)
-
-        threads_tier2 = []
-        t_inv_analysis = threading.Thread(target=analyze_invoice)
-        threads_tier2.append(t_inv_analysis)
-
-        for idx, chunk_text in enumerate(contract_chunk_texts):
-            t = threading.Thread(target=analyze_contract_chunk, args=(idx, chunk_text))
-            threads_tier2.append(t)
-
-        # Khởi động tất cả threads Tier 2
-        for t in threads_tier2:
-            t.start()
-
-        # Chờ tất cả (timeout 180s mỗi thread)
-        for t in threads_tier2:
-            t.join(timeout=180)
-
-        # Thu thập kết quả Tier 2
-        inv_analysis_result = invoice_analysis_box["result"]
-        if inv_analysis_result and inv_analysis_result.get("success") and inv_analysis_result.get("text"):
-            invoice_analysis = inv_analysis_result["text"]
-        else:
-            # Fallback: dùng raw invoice_text nếu GLM phân tích hóa đơn fail
-            invoice_analysis = invoice_text
-
-        contract_analyses = []
-        for idx, box in enumerate(contract_analysis_boxes):
-            res = box["result"]
-            if res and res.get("success") and res.get("text"):
-                contract_analyses.append(res["text"])
-            else:
-                # Fallback: dùng raw chunk text nếu GLM fail
-                contract_analyses.append(contract_chunk_texts[idx])
+        invoice_analysis = invoice_text
+        contract_analyses = contract_chunk_texts
 
         # ============================================================
-        # TIER 3 (MERGE): GLM MANAGER TỔNG HỢP -> XUẤT BẢNG CUỐI CÙNG
+        # TIER 3 (MERGE): GLM PHÂN TÍCH KHẤU TRỪ -> XUẤT BẢNG CUỐI CÙNG
         # ============================================================
 
         contract_analyses_joined = "\n\n".join(contract_analyses)
