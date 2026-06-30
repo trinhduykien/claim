@@ -28,16 +28,16 @@ def _load_api_key():
     # 1. Streamlit secrets
     try:
         import streamlit as st
-        if hasattr(st, "secrets") and "api_key" in st.secrets:
-            return st.secrets["api_key"]
+        if hasattr(st, "secrets") and "ollama_api_key" in st.secrets:
+            return st.secrets["ollama_api_key"]
     except Exception:
         pass
     # 2. Environment variable
-    env_key = os.environ.get("API_KEY") or os.environ.get("OLLAMA_API_KEY")
+    env_key = os.environ.get("OLLAMA_API_KEY") or os.environ.get("API_KEY")
     if env_key:
         return env_key
     # 3. File
-    key_file = Path(__file__).parent / "api_key.txt"
+    key_file = Path(__file__).parent / ".kimi_api_key"
     if key_file.exists():
         return key_file.read_text(encoding="utf-8").strip()
     return ""
