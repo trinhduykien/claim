@@ -44,7 +44,7 @@ def _load_api_key():
 
 
 API_KEY = _load_api_key()
-OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "https://api.ollama.com/v1")
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "https://ollama.com/v1")
 VISION_MODEL = "kimi-k2.6:cloud"
 ANALYSIS_MODEL = "glm-5.2:cloud"
 REPLY_DIR = Path(__file__).parent / "reply"
