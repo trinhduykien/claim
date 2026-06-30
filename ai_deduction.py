@@ -755,14 +755,30 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 errors_t2[name] = f"Timeout khi phân tích {name}"
 
         # --- Collect Tier 2 results ---
-        invoice_analysis = results_t2.get("invoice", "")
+        _inv2_raw = results_t2.get("invoice", "")
+        if isinstance(_inv2_raw, dict) and _inv2_raw.get("success"):
+            invoice_analysis = _inv2_raw.get("text", "")
+        elif isinstance(_inv2_raw, dict):
+            invoice_analysis = f"[LỖI PHÂN TÍCH HÓA ĐƠN: {_inv2_raw.get('error', 'unknown')}]"
+        elif isinstance(_inv2_raw, str):
+            invoice_analysis = _inv2_raw
+        else:
+            invoice_analysis = ""
         if "invoice" in errors_t2 and not invoice_analysis:
             invoice_analysis = f"[LỖI PHÂN TÍCH HÓA ĐƠN: {errors_t2['invoice']}]"
 
         for idx in range(len(contract_texts)):
             key = f"contract_{idx}"
             if key in results_t2:
-                contract_analyses.append(results_t2[key])
+                _val = results_t2[key]
+                if isinstance(_val, dict) and _val.get("success"):
+                    contract_analyses.append(_val.get("text", ""))
+                elif isinstance(_val, dict):
+                    contract_analyses.append(f"[LỖI PHÂN TÍCH HỢP ĐỒNG CHUNK {idx}: {_val.get('error', 'unknown')}]")
+                elif isinstance(_val, str):
+                    contract_analyses.append(_val)
+                else:
+                    contract_analyses.append("")
             elif key in errors_t2:
                 contract_analyses.append(f"[LỖI PHÂN TÍCH HỢP ĐỒNG CHUNK {idx}: {errors_t2[key]}]")
             else:
