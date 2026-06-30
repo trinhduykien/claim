@@ -1,671 +1,844 @@
 # -*- coding: utf-8 -*-
 """
-AI Deduction Analysis Module cho PJICO Claim Bot
-Pipeline 3 tầng (Map-Reduce):
-  Tầng 1 (Map): N Kimi đọc ảnh song song — 1 Kimi đọc hóa đơn, N-1 Kimi chia trang hợp đồng
-  Tầng 2 (Reduce): N GLM phân tích song song — 1 GLM phân tích hóa đơn, N-1 GLM phân tích trang hợp đồng
-  Tầng 3 (Merge): 1 GLM "trưởng phòng" tổng hợp → xuất bảng khấu trừ cuối
-- Đọc API key từ: Streamlit secrets -> env var -> file local
-- Lưu câu trả lời vào thư mục "trả lời"
+AI Deduction Analysis Pipeline - 3-tier Map-Reduce-Merge
+Tier 1 (MAP): Kimi reads invoice + contract images in parallel
+Tier 2 (REDUCE): GLM analyzes each chunk independently in parallel
+Tier 3 (MERGE): GLM manager cross-references everything
 """
 
 import os
+import sys
 import json
 import base64
+import time
 import re
-from datetime import datetime
-import requests
 import threading
+import traceback
+from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# ============================================================
+import requests
+
+# ---------------------------------------------------------------------------
 # CONFIG
-# ============================================================
+# ---------------------------------------------------------------------------
 
-API_KEY = ""
+def _load_api_key():
+    """Load API key from streamlit secrets, env, or file."""
+    # 1. Streamlit secrets
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets") and "api_key" in st.secrets:
+            return st.secrets["api_key"]
+    except Exception:
+        pass
+    # 2. Environment variable
+    env_key = os.environ.get("API_KEY") or os.environ.get("OLLAMA_API_KEY")
+    if env_key:
+        return env_key
+    # 3. File
+    key_file = Path(__file__).parent / "api_key.txt"
+    if key_file.exists():
+        return key_file.read_text(encoding="utf-8").strip()
+    return ""
 
-# Cách 1: Streamlit Cloud Secrets
-try:
-    import streamlit as st
-    _secrets_key = st.secrets.get("ollama_api_key", None)
-    if _secrets_key:
-        API_KEY = _secrets_key.strip()
-except Exception:
-    pass
 
-# Cách 2: Environment variable
-if not API_KEY:
-    API_KEY = os.environ.get("OLLAMA_API_KEY", "")
-
-# Cách 3: File local
-if not API_KEY:
-    _key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".kimi_api_key")
-    if os.path.exists(_key_file):
-        with open(_key_file, "r", encoding="utf-8") as f:
-            API_KEY = f.read().strip()
-
-OLLAMA_BASE_URL = "https://ollama.com/v1"
-
-VISION_MODEL = "kimi-k2.6:cloud"     # Tầng 1: đọc ảnh, trích xuất text
-ANALYSIS_MODEL = "glm-5.2:cloud"     # Tầng 2+3: phân tích + tổng hợp
-
-REPLY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trả lời")
-
-# Số trang hợp đồng mỗi Kimi/GLM xử lý
+API_KEY = _load_api_key()
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "https://api.ollama.com/v1")
+VISION_MODEL = "kimi-k2.6:cloud"
+ANALYSIS_MODEL = "glm-5.2:cloud"
+REPLY_DIR = Path(__file__).parent / "reply"
 CONTRACT_CHUNK_SIZE = 10
 
+# Ensure reply directory exists
+REPLY_DIR.mkdir(parents=True, exist_ok=True)
+
+# ---------------------------------------------------------------------------
+# UTILITY FUNCTIONS
+# ---------------------------------------------------------------------------
 
 def has_api_key():
+    """Check if API key is available."""
     return bool(API_KEY)
 
 
-# ============================================================
-# UTILITY: IMAGE / PDF
-# ============================================================
-
 def encode_image_to_base64(image_path):
+    """Encode an image file to base64 string."""
     with open(image_path, "rb") as f:
-        ext = os.path.splitext(image_path)[1].lower().lstrip(".")
-        mime = f"image/{ext}" if ext in ("jpg", "jpeg", "png", "gif", "webp") else "image/jpeg"
-        data = base64.b64encode(f.read()).decode("utf-8")
-    return f"data:{mime};base64,{data}"
+        return base64.b64encode(f.read()).decode("utf-8")
 
 
 def extract_pdf_text(pdf_path):
-    """Đọc text từ PDF. Trả về None nếu là ảnh scan hoặc text quá ít."""
+    """Extract text from a PDF. Returns (text, has_text)."""
+    try:
+        import fitz  # PyMuPDF
+    except ImportError:
+        try:
+            from PyPDF2 import PdfReader
+            reader = PdfReader(pdf_path)
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text() or ""
+            return text, bool(text.strip())
+        except ImportError:
+            return "", False
+
+    doc = fitz.open(pdf_path)
+    text = ""
+    for page in doc:
+        text += page.get_text() or ""
+    doc.close()
+    return text, bool(text.strip())
+
+
+def pdf_pages_to_images(pdf_path, dpi=200):
+    """Convert PDF pages to images. Returns list of (image_path, page_num)."""
     try:
         import fitz
-        doc = fitz.open(pdf_path)
-        total_pages = len(doc)
-        text = ""
-        pages_with_text = 0
-        total_text_chars = 0
-        for page_num, page in enumerate(doc, 1):
-            page_text = page.get_text().strip()
-            if page_text:
-                pages_with_text += 1
-                total_text_chars += len(page_text)
-                text += f"\n--- Trang {page_num} ---\n"
-                text += page_text
-        doc.close()
-        if pages_with_text > 0 and pages_with_text >= total_pages * 0.5 and total_text_chars >= 500:
-            return text
+    except ImportError:
+        raise RuntimeError("PyMuPDF (fitz) is required for PDF to image conversion")
+
+    doc = fitz.open(pdf_path)
+    results = []
+    tmp_dir = Path(pdf_path).parent / f"_tmp_{Path(pdf_path).stem}"
+    tmp_dir.mkdir(exist_ok=True)
+
+    for i, page in enumerate(doc):
+        mat = fitz.Matrix(dpi / 72, dpi / 72)
+        pix = page.get_pixmap(matrix=mat)
+        img_path = tmp_dir / f"page_{i+1:03d}.png"
+        pix.save(str(img_path))
+        results.append((str(img_path), i + 1))
+
+    doc.close()
+    return results
+
+
+# ---------------------------------------------------------------------------
+# VIETNAMESE TEXT EXTRACTION FROM REASONING
+# ---------------------------------------------------------------------------
+
+def _count_vietnamese_chars(text):
+    """Count characters in Vietnamese Unicode ranges."""
+    count = 0
+    for ch in text:
+        cp = ord(ch)
+        if (0x00C0 <= cp <= 0x024F) or (0x1E00 <= cp <= 0x1EFF):
+            count += 1
+    return count
+
+
+def _extract_vietnamese_text(reasoning):
+    """
+    Filter out English thinking tokens and keep only Vietnamese text.
+    Find the first line with >= 3 Vietnamese characters as the start.
+    """
+    if not reasoning:
+        return ""
+
+    lines = reasoning.split("\n")
+    start_idx = -1
+    for i, line in enumerate(lines):
+        if _count_vietnamese_chars(line) >= 3:
+            start_idx = i
+            break
+
+    if start_idx == -1:
+        # No Vietnamese found, return as-is stripped
+        return reasoning.strip()
+
+    # Collect from start_idx onwards, filter out pure-English lines
+    result_lines = []
+    for line in lines[start_idx:]:
+        stripped = line.strip()
+        if not stripped:
+            result_lines.append("")
+            continue
+        # Keep lines that have some Vietnamese or are short (likely data/numbers)
+        vc = _count_vietnamese_chars(stripped)
+        if vc >= 1 or len(stripped) < 80:
+            result_lines.append(stripped)
         else:
-            return None
-    except ImportError:
-        pass
-    except Exception:
-        pass
+            # Skip long English-only lines (thinking tokens)
+            pass
 
-    try:
-        import pdfplumber
-        text = ""
-        pages_with_text = 0
-        total_text_chars = 0
-        with pdfplumber.open(pdf_path) as pdf:
-            total_pages = len(pdf.pages)
-            for page_num, page in enumerate(pdf.pages, 1):
-                page_text = page.extract_text() or ""
-                page_text = page_text.strip()
-                if page_text:
-                    pages_with_text += 1
-                    total_text_chars += len(page_text)
-                    text += f"\n--- Trang {page_num} ---\n"
-                    text += page_text
-        if pages_with_text > 0 and pages_with_text >= total_pages * 0.5 and total_text_chars >= 500:
-            return text
-        else:
-            return None
-    except ImportError:
-        pass
-    except Exception:
-        pass
-
-    return None
+    return "\n".join(result_lines).strip()
 
 
-def pdf_pages_to_images(pdf_path, max_pages=30):
-    """Chuyển tối đa max_pages trang PDF thành ảnh base64."""
-    try:
-        import fitz
-        doc = fitz.open(pdf_path)
-        total_pages = len(doc)
-        images = []
-        for i, page in enumerate(doc):
-            if i >= max_pages:
-                break
-            mat = fitz.Matrix(80/72, 80/72)
-            pix = page.get_pixmap(matrix=mat)
-            img_bytes = pix.tobytes("jpeg")
-            img_b64 = base64.b64encode(img_bytes).decode("utf-8")
-            images.append(f"data:image/jpeg;base64,{img_b64}")
-        doc.close()
-        return images, total_pages
-    except ImportError:
-        pass
-    except Exception:
-        pass
-    return [], 0
-
-
-# ============================================================
-# API CALL HELPERS
-# ============================================================
+# ---------------------------------------------------------------------------
+# MODEL CALL FUNCTIONS
+# ---------------------------------------------------------------------------
 
 def call_vision_model(messages, max_tokens=8000, timeout=180):
-    """Gọi vision model (Kimi K2.6) qua Ollama Cloud API."""
+    """Call Kimi vision model via OpenAI-compatible API. Returns text response."""
     headers = {
         "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
     payload = {
         "model": VISION_MODEL,
         "messages": messages,
-        "temperature": 0.1,
         "max_tokens": max_tokens,
-        "think": False
+        "temperature": 0.1,
+        "stream": False,
     }
-    try:
-        response = requests.post(
-            f"{OLLAMA_BASE_URL}/chat/completions",
-            headers=headers,
-            json=payload,
-            timeout=timeout
-        )
-        response.raise_for_status()
-        result = response.json()
-        msg = result["choices"][0]["message"]
 
-        content_text = msg.get("content", "") or ""
-        reasoning = msg.get("reasoning", "") or ""
+    url = f"{OLLAMA_BASE_URL}/chat/completions"
+    resp = requests.post(url, headers=headers, json=payload, timeout=timeout)
+    resp.raise_for_status()
+    data = resp.json()
 
-        # Ưu tiên content
-        if content_text.strip():
-            return {"success": True, "text": content_text.strip(), "error": ""}
+    choice = data["choices"][0]
+    message = choice.get("message", {})
 
-        # Fallback: reasoning — lọc thinking tiếng Anh, giữ text tiếng Việt
-        if reasoning.strip():
-            lines = reasoning.split("\n")
-            start_idx = 0
-            for i, line in enumerate(lines):
-                stripped = line.strip()
-                if not stripped or len(stripped) < 10:
-                    continue
-                viet_chars = sum(1 for c in stripped if 0x00C0 <= ord(c) <= 0x024F or 0x1E00 <= ord(c) <= 0x1EFF)
-                if viet_chars >= 3:
-                    start_idx = i
-                    break
-            result_text = "\n".join(lines[start_idx:]).strip()
-            if not result_text or len(result_text) < 50:
-                result_text = reasoning.strip()
-            if len(result_text) > 15000:
-                result_text = result_text[:15000]
-            return {"success": True, "text": result_text, "error": ""}
+    # Check for reasoning field (thinking models)
+    reasoning = message.get("reasoning") or message.get("reasoning_content") or ""
+    content = message.get("content", "")
 
-        return {"success": False, "text": "", "error": "AI không trả về nội dung."}
+    if reasoning and not content:
+        # Fallback: extract Vietnamese from reasoning
+        extracted = _extract_vietnamese_text(reasoning)
+        if extracted:
+            # Truncate to 15KB
+            if len(extracted.encode("utf-8")) > 15360:
+                extracted = extracted[:15000]
+            return extracted
 
-    except requests.exceptions.Timeout:
-        return {"success": False, "text": "", "error": f"Vision model timeout ({timeout}s)"}
-    except requests.exceptions.HTTPError as e:
-        return {"success": False, "text": "", "error": f"HTTP error: {e.response.status_code} - {e.response.text[:200]}"}
-    except Exception as e:
-        return {"success": False, "text": "", "error": str(e)}
+    if content:
+        if len(content.encode("utf-8")) > 15360:
+            content = content[:15000]
+        return content
+
+    # Last resort
+    if reasoning:
+        extracted = _extract_vietnamese_text(reasoning)
+        if len(extracted.encode("utf-8")) > 15360:
+            extracted = extracted[:15000]
+        return extracted
+
+    return ""
 
 
 def call_analysis_model(messages, max_tokens=6000, timeout=180):
-    """Gọi analysis model (GLM-5.2) qua Ollama Cloud API."""
+    """Call GLM analysis model. Returns text response."""
     headers = {
         "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
     payload = {
         "model": ANALYSIS_MODEL,
         "messages": messages,
-        "temperature": 0.2,
         "max_tokens": max_tokens,
-        "think": False
+        "temperature": 0.1,
+        "stream": False,
     }
-    try:
-        response = requests.post(
-            f"{OLLAMA_BASE_URL}/chat/completions",
-            headers=headers,
-            json=payload,
-            timeout=timeout
-        )
-        response.raise_for_status()
-        result = response.json()
-        msg = result["choices"][0]["message"]
 
-        content_text = msg.get("content", "") or ""
-        reasoning = msg.get("reasoning", "") or ""
+    url = f"{OLLAMA_BASE_URL}/chat/completions"
+    resp = requests.post(url, headers=headers, json=payload, timeout=timeout)
+    resp.raise_for_status()
+    data = resp.json()
 
-        if content_text.strip():
-            return {"success": True, "text": content_text.strip(), "error": ""}
+    choice = data["choices"][0]
+    message = choice.get("message", {})
 
-        # Fallback: reasoning
-        if reasoning.strip():
-            lines = reasoning.split("\n")
-            start_idx = 0
-            for i, line in enumerate(lines):
-                stripped = line.strip()
-                if not stripped or len(stripped) < 10:
-                    continue
-                viet_chars = sum(1 for c in stripped if 0x00C0 <= ord(c) <= 0x024F or 0x1E00 <= ord(c) <= 0x1EFF)
-                if viet_chars >= 3:
-                    start_idx = i
-                    break
-            result_text = "\n".join(lines[start_idx:]).strip()
-            if not result_text or len(result_text) < 50:
-                result_text = reasoning.strip()
-            if len(result_text) > 8000:
-                result_text = result_text[:8000]
-            return {"success": True, "text": result_text, "error": ""}
+    reasoning = message.get("reasoning") or message.get("reasoning_content") or ""
+    content = message.get("content", "")
 
-        return {"success": False, "text": "", "error": "AI không trả về nội dung."}
+    if reasoning and not content:
+        extracted = _extract_vietnamese_text(reasoning)
+        if extracted:
+            if len(extracted.encode("utf-8")) > 8192:
+                extracted = extracted[:8000]
+            return extracted
 
-    except requests.exceptions.Timeout:
-        return {"success": False, "text": "", "error": f"Analysis model timeout ({timeout}s)"}
-    except requests.exceptions.HTTPError as e:
-        return {"success": False, "text": "", "error": f"HTTP error: {e.response.status_code} - {e.response.text[:200]}"}
-    except Exception as e:
-        return {"success": False, "text": "", "error": str(e)}
+    if content:
+        if len(content.encode("utf-8")) > 8192:
+            content = content[:8000]
+        return content
+
+    if reasoning:
+        extracted = _extract_vietnamese_text(reasoning)
+        if len(extracted.encode("utf-8")) > 8192:
+            extracted = extracted[:8000]
+        return extracted
+
+    return ""
 
 
-# ============================================================
-# TẦNG 1: KIMI ĐỌC ẢNH (MAP)
-# ============================================================
+# ---------------------------------------------------------------------------
+# TIER 1 - MAP: KIMI READS IMAGES
+# ---------------------------------------------------------------------------
 
 def build_invoice_prompt():
-    return """Bạn là chuyên gia trích xuất dữ liệu từ ảnh hóa đơn/viện phí. Nhiệm vụ: ĐỌC ẢNH HÓA ĐƠN và trích xuất TOÀN BỘ nội dung thành text có cấu trúc.
+    """Build prompt for Kimi to read invoice images."""
+    return (
+        "Ban la chuyen gia doc hoa don y te. Hay doc cac hinh anh hoa don ben duoi "
+        "va xuat ket qua theo dinh dang sau:\n\n"
+        "1. THONG TIN HOA DON:\n"
+        "   - So hoa don\n"
+        "   - Ngay phat hanh\n"
+        "   - Don vi ban thuoc / phuong thuc thanh toan\n"
+        "   - Benh nhan / Ma the BHYT (neu co)\n\n"
+        "2. CHI TIET HANG HOA:\n"
+        "   Tien hanh doc TUNG DONG hang hoa trong hoa don.\n"
+        "   Voi moi dong, xuat:\n"
+        "   - STT\n"
+        "   - TEN HANG (doc chinh xac ten thuoc / vat tu y te / dich vu)\n"
+        "   - DON VI TINH\n"
+        "   - SO LUONG\n"
+        "   - DON GIA\n"
+        "   - THANH TIEN\n\n"
+        "3. TONG CONG: Tong tien toan hoa don\n\n"
+        "LUU Y QUAN TRONG:\n"
+        "- Doc CHINH XAC ten thuoc, khong duoc suy doan hay viet lai.\n"
+        "- Neu khong ro ten thuoc, ghi '[KHONG RO]'.\n"
+        "- Phan loai moi dong vao 1 trong 4 nhom:\n"
+        "  + THUOC: thuoc chua benh (ten thuoc + ham luong + dong goi)\n"
+        "  + VAT TU Y TE: bang tiem, dong ruou, gang tay, ga xo, tam y te...\n"
+        "  + DICH VU: kham benh, xet nghiem, tien phong, tien cong...\n"
+        "  + KHAC: khong thuoc 3 nhom tren\n\n"
+        "Xuat ket qua dang van ban, ro rang, co cau truc."
+    )
 
-YÊU CẦU:
-1. Đọc từng dòng trên hóa đơn, không bỏ sót bất kỳ dòng nào.
-2. Với mỗi hạng mục, ghi rõ: tên mục, mô tả, đơn vị tính, số lượng, đơn giá, thành tiền.
-3. Ghi rõ các khoản thuế, phí khác nếu có.
-4. Ghi rõ TỔNG CỘNG (tổng số tiền).
-5. Giữ nguyên số liệu chính xác - không làm tròn, không ước lượng.
 
-YÊU CẦU ĐẶC BIỆT VỀ TÊN THUỐC / HÀNG MỤC Y TẾ:
-- Tên thuốc phải được đọc CHÍNH XÁC từng chữ cái. Đặc biệt chú ý các ký tự dễ nhầm: b/d, n/h, m/n, l/i, o/a.
-- Nếu không chắc về một chữ trong tên thuốc, ghi [?] sau chữ đó.
-- Không được tự ý "sửa" tên thuốc theo ý hiểu - phải ghi đúng những gì in trên hóa đơn.
-- Phân loại rõ mỗi mục: thuốc, vật tư y tế, dịch vụ y tế, hay loại khác.
-
-ĐỊNH DẠNG XUẤT:
-
-=== HÓA ĐƠN ===
-Tổng tiền: [số tổng cộng trên hóa đơn]
-
-DANH SÁCH MỤC:
-1. [Tên mục] | [Loại: thuốc/vật tư y tế/dịch vụ/khác] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
-2. [Tên mục] | [Loại] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
-...
-
-Thuế VAT: [số tiền] (nếu có)
-Tổng sau thuế: [số tiền] (nếu có)
-=== HẾT HÓA ĐƠN ===
-
-Chỉ xuất kết quả theo định dạng trên. Không thêm lời giải thích."""
-
-
-def build_contract_chunk_prompt(page_start, page_end, num_pages):
-    return f"""Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Nhiệm vụ: ĐỌC {page_end - page_start + 1} TRANG ẢNH (trang {page_start} đến trang {page_end}) và trích xuất TOÀN BỘ nội dung.
-
-YÊU CẦU:
-1. Đọc từng trang, không bỏ sót.
-2. Giữ nguyên số điều khoản, định nghĩa, danh mục.
-3. Không tóm tắt - ghi nguyên văn nội dung.
-
-ĐỊNH DẠNG XUẤT:
---- Trang {page_start} ---
-[nội dung nguyên văn]
---- Trang {page_start + 1} ---
-[nội dung nguyên văn]
-...
---- Trang {page_end} ---
-[nội dung nguyên văn]
-
-Chỉ xuất kết quả. Không thêm giải thích."""
+def build_contract_chunk_prompt(page_start, page_end):
+    """Build prompt for Kimi to read contract pages."""
+    return (
+        f"Ban la chuyen gia phan tich hop dong bao hiem. Hay doc cac trang hop dong "
+        f"tu trang {page_start} den trang {page_end} trong hinh anh ben duoi.\n\n"
+        "Hay xuat toan bo noi dung van ban cua cac trang nay, bao gom:\n\n"
+        "1. Tieu de muc, dieu khoan, so dieu\n"
+        "2. Noi dung chi tiet cua moi dieu khoan\n"
+        "3. Cac bang, danh muc, dinh nghia (neu co)\n"
+        "4. Cac muc loai tru, gioi han tra tien, dieu kien\n\n"
+        "LUU Y:\n"
+        "- Doc nguyen van, khong tom tat hay bo qua.\n"
+        "- Giu nguyen so dieu, so trang tham chieu.\n"
+        "- Neu co bang, xuat theo dinh dang bang.\n"
+        "- Neu khong doc duoc phan nao, ghi '[KHONG DOC DUOC]'.\n\n"
+        "Xuat ket qua dang van ban day du."
+    )
 
 
 def kimi_read_invoice(photo_paths):
-    """Kimi đọc ảnh hóa đơn."""
-    if not photo_paths:
-        return {"success": False, "text": "", "error": "Không có ảnh hóa đơn"}
-    any_photo = [p for p in photo_paths if os.path.exists(p)]
-    if not any_photo:
-        return {"success": False, "text": "", "error": "Không tìm thấy file ảnh"}
-
+    """Kimi reads invoice images and returns extracted text."""
     prompt = build_invoice_prompt()
-    content = [{"type": "text", "text": prompt}]
-    for photo_path in any_photo:
-        try:
-            content.append({"type": "image_url", "image_url": {"url": encode_image_to_base64(photo_path)}})
-        except Exception as e:
-            content.append({"type": "text", "text": f"[Không thể đọc ảnh: {str(e)}]"})
+    content_parts = [{"type": "text", "text": prompt}]
 
-    messages = [
-        {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh. Đọc chính xác từng dòng. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng yêu cầu."},
-        {"role": "user", "content": content}
-    ]
-    return call_vision_model(messages, max_tokens=8000, timeout=180)
+    for path in photo_paths:
+        b64 = encode_image_to_base64(path)
+        content_parts.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/png;base64,{b64}"}
+        })
+
+    messages = [{"role": "user", "content": content_parts}]
+    return call_vision_model(messages, max_tokens=8000, timeout=200)
 
 
 def kimi_read_contract_chunk(chunk_images, page_start, page_end):
-    """Kimi đọc 1 chunk trang hợp đồng."""
-    prompt = build_contract_chunk_prompt(page_start, page_end, page_end)
-    content = [{"type": "text", "text": prompt}]
-    for img_b64 in chunk_images:
-        content.append({"type": "image_url", "image_url": {"url": img_b64}})
+    """Kimi reads a chunk of contract pages and returns extracted text."""
+    prompt = build_contract_chunk_prompt(page_start, page_end)
+    content_parts = [{"type": "text", "text": prompt}]
 
-    messages = [
-        {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Đọc chính xác từng trang. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng. KHÔNG bỏ sót trang nào."},
-        {"role": "user", "content": content}
-    ]
-    return call_vision_model(messages, max_tokens=8000, timeout=180)
+    for img_path, _page_num in chunk_images:
+        b64 = encode_image_to_base64(img_path)
+        content_parts.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/png;base64,{b64}"}
+        })
+
+    messages = [{"role": "user", "content": content_parts}]
+    return call_vision_model(messages, max_tokens=8000, timeout=300)
 
 
-# ============================================================
-# TẦNG 2: GLM PHÂN TÍCH (REDUCE)
-# ============================================================
+# ---------------------------------------------------------------------------
+# TIER 2 - REDUCE: GLM ANALYZES EACH CHUNK
+# ---------------------------------------------------------------------------
 
 def build_invoice_analysis_prompt(invoice_text, claim_data):
-    """GLM phân tích hóa đơn — liệt kê mục, phân loại, ghi rõ số tiền."""
-    product_name = claim_data.get("product", {}).get("name", "Không rõ")
-    return f'''Bạn là chuyên gia phân tích hóa đơn y tế. Đọc hóa đơn dưới đây và xuất danh sách cấu trúc.
+    """Build prompt for GLM to analyze invoice text against claim data."""
+    claim_info = json.dumps(claim_data, ensure_ascii=False, indent=2) if claim_data else "Khong co thong tin yeu cau"
 
-Sản phẩm bảo hiểm: {product_name}
-Khách hàng: {claim_data.get("customer_name", "Không rõ")}
-
-NỘI DUNG HÓA ĐƠN:
-{invoice_text}
-
-NHIỆM VỤ: Với TỪNG mục trong hóa đơn, xác định:
-1. Tên chính xác
-2. Loại đối tượng: THUỐC (có hoạt chất điều trị) / VẬT TƯ Y TẾ (dụng cụ vật lý) / DỊCH VỤ Y TẾ / KHÁC
-3. Số tiền
-4. Ghi chú nếu tên có khả năng bị OCR sai (ghi [?])
-
-NGUYÊN TẮC PHÂN LOẠI:
-- THUỐC: có hoạt chất y tế, dạng bào chế (viên, nhỏ mắt, mỡ, tiêm...). VD: Ofloxacin 0.3% nhỏ mắt, Paracetamol 500mg
-- VẬT TƯ Y TẾ: dụng cụ vật lý không có hoạt chất. VD: băng gạc, ống tiêm, catheter, găng tay
-- DỊCH VỤ Y TẾ: quy trình do nhân viên y tế thực hiện. VD: khám bệnh, xét nghiệm, phẫu thuật
-- Đường dùng KHÔNG xác định loại: thuốc nhỏ mắt vẫn là THUỐC, không phải vật tư
-
-XUẤT ĐỊNH DẠNG:
-=== PHÂN TÍCH HÓA ĐƠN ===
-Tổng tiền: [số]
-Số mục: [số]
-
-1. Tên: [tên] | Loại: [THUỐC/VẬT TƯ/DỊCH VỤ/KHÁC] | Số tiền: [số] | Ghi chú: [nếu có]
-2. Tên: [tên] | Loại: [loại] | Số tiền: [số] | Ghi chú: [nếu có]
-...
-=== HẾT PHÂN TÍCH ===
-
-Chỉ xuất kết quả theo định dạng trên.'''
+    return (
+        "Ban la chuyen gia thanh tra bao hiem y te. Ban nhan duoc noi dung hoa don "
+        "va thong tin yeu cau tra tien. Hay phan tich va phan loai tung mat hang.\n\n"
+        "=== NOI DUNG HOA DON ===\n"
+        f"{invoice_text}\n\n"
+        "=== THONG TIN YEU CAU TRA TIEN ===\n"
+        f"{claim_info}\n\n"
+        "=== NHIEM VU ===\n"
+        "1. Phan loai moi mat hang vao 1 trong 4 nhom:\n"
+        "   - THUOC: thuoc chua benh (can ten thuoc + ham luong + dong goi)\n"
+        "   - VAT TU Y TE: bang tiem, dong ruou, gang tay, tam y te, ga xo...\n"
+        "   - DICH VU: kham benh, xet nghiem, tien phong, tien cong...\n"
+        "   - KHAC: khong thuoc 3 nhom tren\n\n"
+        "2. Voi moi mat hang, xuat:\n"
+        "   - STT\n"
+        "   - TEN HANG\n"
+        "   - PHAN LOAI (THUOC / VAT TU Y TE / DICH VU / KHAC)\n"
+        "   - SO LUONG\n"
+        "   - DON GIA\n"
+        "   - THANH TIEN\n"
+        "   - GHI CHU (neu co van de ve ten hang, so luong, don gia)\n\n"
+        "3. Kiem tra tong tien hop don khong.\n\n"
+        "LUU Y PHAN LOAI:\n"
+        "- THUOC khac THIET BI Y TE: may hut dam, may do huyet ap la thiet bi, khong phai thuoc.\n"
+        "- THIET BI Y TE khac VAT TU Y TE: thiet bi co the tai su dung, vat tu y te dung 1 lan.\n"
+        "- Neu ten hang ghi 'thuoc' nhung thuc chat la vat tu y te, phan loai dung.\n\n"
+        "Xuat ket qua dang bang, ro rang."
+    )
 
 
 def build_contract_analysis_prompt(contract_chunk_text, page_start, page_end):
-    """GLM phân tích 1 chunk hợp đồng — tìm loại trừ, định nghĩa, hạn mức."""
-    return f'''Bạn là chuyên gia pháp lý bảo hiểm. Đọc đoạn hợp đồng dưới đây (trang {page_start}-{page_end}) và trích xuất 3 loại thông tin:
-
-NỘI DUNG HỢP ĐỒNG (trang {page_start}-{page_end}):
-{contract_chunk_text}
-
-NHIỆM VỤ: Tìm và liệt kê:
-
-A. ĐIỀU KHOẢN LOẠI TRỪ (không bồi thường / không chi trả):
-- Trích dẫn nguyên văn điều khoản
-- Ghi rõ số điều khoản + trang
-
-B. KHÁI NIỆM / ĐỊNH NGHĨA / DANH MỤC:
-- Mọi định nghĩa thuật ngữ, liệt kê danh mục, giải thích khái niệm
-- Trích dẫn nguyên văn + trang
-- Đặc biệt chú ý: định nghĩa nào liệt kê hạng mục cụ thể (VD: "thiết bị y tế bao gồm: ...")
-
-C. HẠN MỨC CHI TRẢ:
-- Mọi giới hạn: tối đa X VNĐ/năm, Y VNĐ/lần, Z%...
-- Ghi rõ điều khoản + trang
-
-XUẤT ĐỊNH DẠNG:
-=== PHÂN TÍCH HỢP ĐỒNG (trang {page_start}-{page_end}) ===
-
-[A] ĐIỀU KHOẢN LOẠI TRỪ:
-1. [trích dẫn nguyên văn] — Điều khoản: [số], Trang: [số]
-2. ...
-
-[B] KHÁI NIỆM / ĐỊNH NGHĨA:
-1. [khái niệm]: [trích dẫn nguyên văn] — Trang: [số]
-2. ...
-
-[C] HẠN MỨC CHI TRẢ:
-1. [hạn mức] — Điều khoản: [số], Trang: [số]
-2. ...
-
-(không có mục nào thì ghi "không có")
-=== HẾT PHÂN TÍCH ===
-
-Chỉ xuất kết quả theo định dạng trên.'''
+    """Build prompt for GLM to analyze a contract chunk."""
+    return (
+        f"Ban la chuyen gia phan tich hop dong bao hiem y te. "
+        f"Hay phan tich noi dung hop dong tu trang {page_start} den trang {page_end}.\n\n"
+        f"=== NOI DUNG HOP DONG (TRANG {page_start}-{page_end}) ===\n"
+        f"{contract_chunk_text}\n\n"
+        "=== NHIEM VU ===\n"
+        "Hay trich xuat 3 loai thong tin sau:\n\n"
+        "A. MUC LOAI TRU (EXCLUSIONS):\n"
+        "   - Cac dieu kien, benh, tinh trang KHONG DUOC tra tien\n"
+        "   - Cac han che bao hiem\n"
+        "   - Cac dieu kien bat buoc khong duoc tra\n\n"
+        "B. DINH NGHIA (DEFINITIONS):\n"
+        "   - Dinh nghia cac thuat ngu y te, bao hiem\n"
+        "   - Dinh nghia 'thuoc', 'vat tu y te', 'dich vu y te'\n"
+        "   - Dinh nghia 'benh co san', 'benh man tinh', 'cap cuu'...\n\n"
+        "C. GIOI HAN TRA TIEN (LIMITS):\n"
+        "   - Muc tra toi da cho tung loai chi phi\n"
+        "   - Ty le tra (80%, 90%, 100%...)\n"
+        "   - Han muc tra cho tung loai thuoc / dich vu\n"
+        "   - Mien thuong (deductible)\n\n"
+        "Xuat ket qua theo cau truc:\n"
+        "A. MUC LOAI TRU:\n  ...\n"
+        "B. DINH NGHIA:\n  ...\n"
+        "C. GIOI HAN TRA TIEN:\n  ...\n\n"
+        "Neu khong co thong tin nao, ghi 'Khong co' cho phan do."
+    )
 
 
 def glm_analyze_invoice(invoice_text, claim_data):
-    """GLM phân tích hóa đơn."""
+    """GLM analyzes invoice. Returns analysis text."""
     prompt = build_invoice_analysis_prompt(invoice_text, claim_data)
     messages = [
-        {"role": "system", "content": "Bạn là chuyên gia phân tích hóa đơn y tế bảo hiểm. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng."},
-        {"role": "user", "content": prompt}
+        {"role": "system", "content": "Ban la chuyen gia thanh tra bao hiem y te Viet Nam."},
+        {"role": "user", "content": prompt},
     ]
     return call_analysis_model(messages, max_tokens=4000, timeout=120)
 
 
 def glm_analyze_contract_chunk(chunk_text, page_start, page_end):
-    """GLM phân tích 1 chunk hợp đồng."""
+    """GLM analyzes a contract chunk. Returns analysis text."""
     prompt = build_contract_analysis_prompt(chunk_text, page_start, page_end)
     messages = [
-        {"role": "system", "content": "Bạn là chuyên gia pháp lý bảo hiểm PJICO. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng. Trích dẫn nguyên văn điều khoản."},
-        {"role": "user", "content": prompt}
+        {"role": "system", "content": "Ban la chuyen gia phan tich hop dong bao hiem y te Viet Nam."},
+        {"role": "user", "content": prompt},
     ]
     return call_analysis_model(messages, max_tokens=4000, timeout=120)
 
 
-# ============================================================
-# TẦNG 3: GLM TRƯỞNG PHÒNG TỔNG HỢP (MERGE)
-# ============================================================
+# ---------------------------------------------------------------------------
+# TIER 3 - MERGE: GLM MANAGER CROSS-REFERENCES
+# ---------------------------------------------------------------------------
 
 def build_merge_prompt(claim_data, invoice_analysis, contract_analyses):
-    """GLM trưởng phòng nhận tất cả báo cáo → xuất bảng khấu trừ cuối."""
-    product_name = claim_data.get("product", {}).get("name", "Không rõ")
-    answers = claim_data.get("answers", {})
+    """Build the final merge prompt for the GLM manager."""
+    claim_info = json.dumps(claim_data, ensure_ascii=False, indent=2) if claim_data else "Khong co"
 
-    # Ghép các báo cáo hợp đồng
-    contract_reports = "\n\n".join(contract_analyses)
+    contract_text = "\n\n".join(contract_analyses) if contract_analyses else "Khong co phan tich hop dong"
 
-    return f'''BẠN LÀ TRƯỞNG PHÒNG KIỂM TOÁN BẢO HIỂM PJICO. Bạn nhận báo cáo từ các nhân viên phân tích và phải xuất bảng khấu trừ bồi thường cuối cùng.
-
-THÔNG TIN HỒ SƠ:
-- Sản phẩm bảo hiểm: {product_name}
-- Khách hàng: {claim_data.get("customer_name", "Không rõ")}
-- Loại sự cố: {answers.get("incident_type", "Không rõ")}
-
-===============================================
-BÁO CÁO 1: PHÂN TÍCH HÓA ĐƠN
-===============================================
-{invoice_analysis}
-
-===============================================
-BÁO CÁO 2: PHÂN TÍCH HỢP ĐỒNG (từ các nhân viên)
-===============================================
-{contract_reports}
-
-===============================================
-NHIỆM VỤ CỦA BẠN (TRƯỞNG PHÒNG)
-===============================================
-
-Bạn có 2 báo cáo: hóa đơn đã phân loại + hợp đồng đã trích xuất điều khoản. Nhiệm vụ: đối chiếu từng mục hóa đơn với hợp đồng, tìm khoản khấu trừ, xuất bảng cuối.
-
-QUY TRÌNH SUY LUẬN BẮT BUỘC:
-
-Với TỪNG MỤC trong hóa đơn:
-
-BƯỚC A - TRA ĐIỀU KHOẢN LOẠI TRỪ TRỰC TIẾP:
-- Mục có trùng tên trực tiếp với điều khoản loại trừ không?
--> Có → KHẤU TRỪ. Ghi: tên + số tiền + điều khoản + trang.
--> Không → sang BƯỚC B.
-
-BƯỚC B - TRA KHÁI NIỆM/ĐỊNH NGHĨA (KHẤU TRỪ GIÁN TIẾP):
-- Mục có thuộc khái niệm/định nghĩa nào trong hợp đồng không?
-- Khái niệm đó có bị loại trừ không?
--> CẢ HAI → KHẤU TRỪ gián tiếp. Ghi: tên + số tiền + khái niệm trung gian + điều khoản + trang.
--> Không → sang BƯỚC C.
-
-BƯỚC C - TRA HẠN MỨC CHI TRẢ:
-- Mục có hạn mức không? Vượt hạn mức không?
--> Vượt → phần vượt bị KHẤU TRỪ.
--> Không → không khấu trừ.
-
-NGUYÊN TẮC PHÂN LOẠI ĐỐI TƯỢNG — QUAN TRỌNG:
-- THUỐC (có hoạt chất điều trị) ≠ VẬT TƯ Y TẾ (dụng cụ vật lý) ≠ THIẾT BỊ Y TẾ ≠ DỊCH VỤ
-- Đường dùng KHÔNG xác định loại: thuốc nhỏ mắt vẫn là THUỐC
-- KHÔNG TỰ Ý MỞ RỘNG khái niệm: hợp đồng loại trừ "thiết bị y tế" → KHÔNG khấu trừ THUỐC theo điều khoản đó
-- Chỉ khấu trừ khi hợp đồng THỰC SỰ áp dụng cho loại đối tượng đó
-- KẾT NỐI thông tin giữa các trang: loại trừ ở trang 4 + định nghĩa ở trang 7 → suy luận
-
-XUẤT BẢNG THEO MẪU:
-
-**Tổng chi phí theo hóa đơn:** [số tiền] VNĐ
-
-| # | Tổng tiền ban đầu | Mục bị khấu trừ | Số tiền bị khấu trừ (VNĐ) | Lí do bị khấu trừ | Nguồn điều khoản | Tiền còn lại |
-|---|---|---|---|---|---|---|
-| 0 | [TỔNG] | - | - | - | - | [TỔNG] |
-| 1 | | [tên] | [số] | [lí do: điều khoản + giải thích] | [Điều khoản/trang] | [Tổng - KH1] |
-| 2 | | [tên] | [số] | [lí do] | [Điều khoản/trang] | [Tổng-KH1-KH2] |
-| **KQ** | | **TỔNG KHẤU TRỪ** | **[tổng]** | | | **[còn lại]** |
-
-**Tổng khấu trừ:** [số] VNĐ
-**Tiền bồi thường thực nhận:** [Tổng - Khấu trừ] = [số] VNĐ
-
-QUY TẮC:
-- Dòng 0 = tổng tiền. Cột 'Tiền còn lại' = TỔNG.
-- Cột 'Tiền còn lại' chạy tích lũy.
-- Số tiền có dấu phẩy (VD: 1.500.000). Đơn vị VNĐ.
-- Không có khấu trừ → dòng 0 + KQ với '0', ghi 'Không có khoản khấu trừ, khách hàng nhận toàn bộ [số] VNĐ.'
-- Không chắc → ghi '[!] Cần xác nhận' ở Lí do.
-- Chỉ xuất bảng, không kèm lời giải thích bên ngoài.'''
+    return (
+        "Ban la QUAN LY CAP CAO cua bo phan thanh tra bao hiem y te. "
+        "Cac truong phong da phan tich hoa don va hop dong. "
+        "Bay gio ban tong hop tat ca, tham chieu cheo va ra quyet dinh tra tien cuoi cung.\n\n"
+        "=== THONG TIN YEU CAU TRA TIEN ===\n"
+        f"{claim_info}\n\n"
+        "=== BAO CAO PHAN TICH HOA DON ===\n"
+        f"{invoice_analysis}\n\n"
+        "=== CAC BAO CAO PHAN TICH HOP DONG ===\n"
+        f"{contract_text}\n\n"
+        "=== NHIEM VU CUOI CUNG ===\n"
+        "1. THAM CHIEU CHEO: So sanh tung mat hang trong hoa don voi:\n"
+        "   - Muc loai tru trong hop dong -> neu trung -> KHONG TRA\n"
+        "   - Gioi han tra tien trong hop dong -> neu vuot -> GIOI HAN\n"
+        "   - Dinh nghia trong hop dong -> phan loai dung/sai\n\n"
+        "2. KET QA PHAN LOAI XAC NHAN:\n"
+        "   - THUOC: thuoc chua benh (ten + ham luong + dong goi)\n"
+        "   - THIET BI Y TE: may hut dam, may do huyet ap... (KHONG phai thuoc)\n"
+        "   - VAT TU Y TE: bang tiem, dong ruou, gang tay... (KHONG phai thiet bi)\n"
+        "   - DICH VU: kham benh, xet nghiem, tien cong...\n"
+        "   - KHAC: khong thuoc cac nhom tren\n\n"
+        "3. DEDUCTION GIÁN TIẾP (INDIRECT DEDUCTION):\n"
+        "   - Neu 1 mat hang THUOC bi loai tru, cac vat tu y te lien quan "
+        "     (bang tiem, dong ruou...) cung co the bi loai tru.\n"
+        "   - Neu dich vu bi loai tru, cac thuoc/vat tu phuc vu dich vu do "
+        "     cung xem xet loai tru.\n"
+        "   - Ghi ro ly do deduction gian tiep.\n\n"
+        "4. BANG KET QA TRA TIEN:\n"
+        "   Xuat bang voi cac cot:\n"
+        "   | STT | TEN HANG | PHAN LOAI | SO LUONG | DON GIA | THANH TIEN | "
+        "   " + "TY LE TRA | TIEN TRA | LY DO DEDUCTION | GHI CHU |\n\n"
+        "   - TY LE TRA: 0% (loai tru) / 50% / 80% / 100% ...\n"
+        "   - TIEN TRA = THANH TIEN x TY LE TRA\n"
+        "   - LY DO DEDUCTION: tom tat ly do (muc loai tru, vuot gioi han, "
+        "     sai phan loai, deduction gian tiep...)\n\n"
+        "5. TONG KET:\n"
+        "   - TONG TIEN HOA DON\n"
+        "   - TONG TIEN TRA\n"
+        "   - TONG TIEN DEDUCTION\n"
+        "   - TY LE TRA TOAN BO\n\n"
+        "6. KIEN NGHI:\n"
+        "   - Neu can bo sung giay to, ghi ro\n"
+        "   - Neu co van de can lam ro, ghi ro\n\n"
+        "Hay xuat bao cao day du, ro rang, co cau truc tot."
+    )
 
 
 def glm_merge_analysis(claim_data, invoice_analysis, contract_analyses):
-    """GLM trưởng phòng tổng hợp tất cả báo cáo → xuất bảng cuối."""
+    """GLM manager merges all analyses. Returns final report text."""
     prompt = build_merge_prompt(claim_data, invoice_analysis, contract_analyses)
     messages = [
-        {"role": "system", "content": "Bạn là trưởng phòng kiểm toán bảo hiểm PJICO. Nhận báo cáo từ nhân viên, đối chiếu hóa đơn với hợp đồng, xuất bảng khấu trừ. Trả lời bằng tiếng Việt. PHÂN BIỆT ĐÚNG LOẠI ĐỐI TƯỢNG: thuốc ≠ thiết bị y tế ≠ vật tư. KHÔNG tự ý mở rộng khái niệm. Chỉ xuất bảng kết quả."},
-        {"role": "user", "content": prompt}
+        {
+            "role": "system",
+            "content": (
+                "Ban la quan ly cap cao bo phan thanh tra bao hiem y te Viet Nam. "
+                "Ban tong hop cac bao cao va ra quyet dinh tra tien cuoi cung."
+            ),
+        },
+        {"role": "user", "content": prompt},
     ]
     return call_analysis_model(messages, max_tokens=6000, timeout=240)
 
 
-# ============================================================
-# PIPELINE CHÍNH: 3 TẦNG (MAP-REDUCE-MERGE)
-# ============================================================
+# ---------------------------------------------------------------------------
+# MAIN PIPELINE
+# ---------------------------------------------------------------------------
 
 def analyze_deduction(claim_data, photo_paths, contract_path):
-    """Pipeline 3 tầng song song."""
+    """
+    Main 3-tier Map-Reduce-Merge pipeline.
 
-    if not has_api_key():
+    Args:
+        claim_data: dict with claim information
+        photo_paths: list of paths to invoice photo images
+        contract_path: path to contract PDF or image(s)
+
+    Returns:
+        dict: {"success": bool, "response": str, "error": str}
+    """
+    try:
+        # --- Check API key ---
+        if not has_api_key():
+            return {
+                "success": False,
+                "response": "",
+                "error": "Khong co API key. Vui long cau hinh API_KEY.",
+            }
+
+        # --- Prepare invoice images ---
+        invoice_images = []
+        if photo_paths:
+            for p in photo_paths:
+                if Path(p).exists():
+                    invoice_images.append(p)
+
+        # --- Prepare contract images and text ---
+        contract_images = []  # list of (image_path, page_num)
+        contract_text_direct = ""  # if PDF has text, skip Kimi
+        contract_is_scanned = True
+
+        if contract_path and Path(contract_path).exists():
+            ext = Path(contract_path).suffix.lower()
+
+            if ext == ".pdf":
+                # Try extracting text first
+                text, has_text = extract_pdf_text(contract_path)
+                if has_text:
+                    contract_text_direct = text
+                    contract_is_scanned = False
+                else:
+                    # Scanned PDF -> convert to images
+                    contract_images = pdf_pages_to_images(contract_path)
+                    contract_is_scanned = True
+            elif ext in (".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tiff"):
+                # Single image contract
+                contract_images = [(contract_path, 1)]
+                contract_is_scanned = True
+            else:
+                # Unknown format, try as PDF
+                try:
+                    text, has_text = extract_pdf_text(contract_path)
+                    if has_text:
+                        contract_text_direct = text
+                        contract_is_scanned = False
+                    else:
+                        contract_images = pdf_pages_to_images(contract_path)
+                        contract_is_scanned = True
+                except Exception:
+                    pass
+
+        # --- Split contract images into chunks ---
+        contract_chunks = []  # list of (chunk_images, page_start, page_end)
+        contract_text_chunks = []  # for text-based PDF: list of (text, page_start, page_end)
+
+        if contract_is_scanned and contract_images:
+            total_pages = len(contract_images)
+            for i in range(0, total_pages, CONTRACT_CHUNK_SIZE):
+                chunk = contract_images[i:i + CONTRACT_CHUNK_SIZE]
+                page_start = chunk[0][1]
+                page_end = chunk[-1][1]
+                contract_chunks.append((chunk, page_start, page_end))
+        elif not contract_is_scanned and contract_text_direct:
+            # Split text into chunks by approximate page count
+            total_pages_est = max(1, len(contract_text_direct) // 3000)
+            chunk_size = max(1, len(contract_text_direct) // max(1, total_pages_est // CONTRACT_CHUNK_SIZE + 1))
+            for i in range(0, len(contract_text_direct), chunk_size * 3000):
+                chunk_text = contract_text_direct[i:i + chunk_size * 3000]
+                page_start = (i // 3000) + 1
+                page_end = ((i + chunk_size * 3000) // 3000) + 1
+                contract_text_chunks.append((chunk_text, page_start, page_end))
+
+        # ===================================================================
+        # TIER 1 - MAP: KIMI READS INVOICE + CONTRACT IN PARALLEL
+        # ===================================================================
+
+        invoice_text = ""
+        contract_texts = []  # list of (text, page_start, page_end)
+
+        threads_t1 = []
+        results_t1 = {}
+        errors_t1 = {}
+
+        # --- Invoice thread ---
+        if invoice_images:
+            def _read_invoice():
+                try:
+                    results_t1["invoice"] = kimi_read_invoice(invoice_images)
+                except Exception as e:
+                    errors_t1["invoice"] = str(e)
+
+            t_inv = threading.Thread(target=_read_invoice, daemon=True)
+            threads_t1.append(("invoice", t_inv))
+        else:
+            results_t1["invoice"] = ""
+
+        # --- Contract chunk threads ---
+        if contract_is_scanned and contract_chunks:
+            for idx, (chunk_imgs, ps, pe) in enumerate(contract_chunks):
+                def _read_contract(_imgs=chunk_imgs, _ps=ps, _pe=pe, _idx=idx):
+                    try:
+                        results_t1[f"contract_{_idx}"] = (kimi_read_contract_chunk(_imgs, _ps, _pe), _ps, _pe)
+                    except Exception as e:
+                        errors_t1[f"contract_{_idx}"] = str(e)
+
+                t = threading.Thread(target=_read_contract, daemon=True)
+                threads_t1.append((f"contract_{idx}", t))
+        elif not contract_is_scanned and contract_text_chunks:
+            # Text already extracted, no Kimi needed
+            for idx, (ctext, ps, pe) in enumerate(contract_text_chunks):
+                results_t1[f"contract_{idx}"] = (ctext, ps, pe)
+
+        # --- Start all threads ---
+        for name, t in threads_t1:
+            t.start()
+
+        # --- Join with timeouts ---
+        for name, t in threads_t1:
+            if name == "invoice":
+                t.join(timeout=200)
+            else:
+                t.join(timeout=600)
+
+            if t.is_alive():
+                errors_t1[name] = f"Timeout khi doc {name}"
+
+        # --- Collect Tier 1 results ---
+        invoice_text = results_t1.get("invoice", "")
+        if "invoice" in errors_t1 and not invoice_text:
+            invoice_text = f"[LOI DOC HOA DON: {errors_t1['invoice']}]"
+
+        # Collect contract texts in order
+        num_contract_chunks = len(contract_chunks) if contract_is_scanned else len(contract_text_chunks)
+        for idx in range(num_contract_chunks):
+            key = f"contract_{idx}"
+            if key in results_t1:
+                val = results_t1[key]
+                if isinstance(val, tuple):
+                    contract_texts.append(val)  # (text, page_start, page_end)
+                else:
+                    contract_texts.append((val, 0, 0))
+            elif key in errors_t1:
+                contract_texts.append((f"[LOI DOC HOP DONG CHUNK {idx}: {errors_t1[key]}]", 0, 0))
+
+        # ===================================================================
+        # TIER 2 - REDUCE: GLM ANALYZES EACH CHUNK IN PARALLEL
+        # ===================================================================
+
+        invoice_analysis = ""
+        contract_analyses = []
+
+        threads_t2 = []
+        results_t2 = {}
+        errors_t2 = {}
+
+        # --- Invoice analysis thread ---
+        if invoice_text and not invoice_text.startswith("[LOI"):
+            def _analyze_invoice():
+                try:
+                    results_t2["invoice"] = glm_analyze_invoice(invoice_text, claim_data)
+                except Exception as e:
+                    errors_t2["invoice"] = str(e)
+
+            t_ia = threading.Thread(target=_analyze_invoice, daemon=True)
+            threads_t2.append(("invoice", t_ia))
+        else:
+            results_t2["invoice"] = "[KHONG CO HOA DON DE PHAN TICH]"
+
+        # --- Contract analysis threads ---
+        for idx, (ctext, ps, pe) in enumerate(contract_texts):
+            if ctext and not ctext.startswith("[LOI"):
+                def _analyze_contract(_text=ctext, _ps=ps, _pe=pe, _idx=idx):
+                    try:
+                        results_t2[f"contract_{_idx}"] = glm_analyze_contract_chunk(_text, _ps, _pe)
+                    except Exception as e:
+                        errors_t2[f"contract_{_idx}"] = str(e)
+
+                t = threading.Thread(target=_analyze_contract, daemon=True)
+                threads_t2.append((f"contract_{idx}", t))
+            else:
+                results_t2[f"contract_{idx}"] = f"[KHONG CO NOI DUNG HOP DONG CHUNK {idx}]"
+
+        # --- Start all threads ---
+        for name, t in threads_t2:
+            t.start()
+
+        # --- Join with 180s timeout each ---
+        for name, t in threads_t2:
+            t.join(timeout=180)
+            if t.is_alive():
+                errors_t2[name] = f"Timeout khi phan tich {name}"
+
+        # --- Collect Tier 2 results ---
+        invoice_analysis = results_t2.get("invoice", "")
+        if "invoice" in errors_t2 and not invoice_analysis:
+            invoice_analysis = f"[LOI PHAN TICH HOA DON: {errors_t2['invoice']}]"
+
+        for idx in range(len(contract_texts)):
+            key = f"contract_{idx}"
+            if key in results_t2:
+                contract_analyses.append(results_t2[key])
+            elif key in errors_t2:
+                contract_analyses.append(f"[LOI PHAN TICH HOP DONG CHUNK {idx}: {errors_t2[key]}]")
+            else:
+                contract_analyses.append("")
+
+        # ===================================================================
+        # TIER 3 - MERGE: GLM MANAGER
+        # ===================================================================
+
+        if not invoice_analysis and not any(contract_analyses):
+            return {
+                "success": False,
+                "response": "",
+                "error": "Khong co du lieu de tong hop. Thu phan tich that bai o tat ca cac tang.",
+            }
+
+        merge_response = glm_merge_analysis(claim_data, invoice_analysis, contract_analyses)
+
+        return {
+            "success": True,
+            "response": merge_response,
+            "error": "",
+        }
+
+    except Exception as e:
+        tb = traceback.format_exc()
         return {
             "success": False,
             "response": "",
-            "error": "Chưa cấu hình API key. Vui lòng thêm key vào Streamlit Cloud Secrets (key: ollama_api_key) hoặc tạo file .kimi_api_key (local)."
+            "error": f"{str(e)}\n\n{tb}",
         }
 
-    # ============================================================
-    # TẦNG 1: KIMI ĐỌC ẢNH (MAP) — song song
-    # ============================================================
-    # Chuẩn bị dữ liệu
-    invoice_images = []
-    contract_images = []
-    total_contract_pages = 0
 
-    # Hóa đơn
-    if photo_paths:
-        invoice_images = [p for p in photo_paths if os.path.exists(p)]
-
-    # Hợp đồng
-    if contract_path and os.path.exists(contract_path):
-        ext = os.path.splitext(contract_path)[1].lower().lstrip(".")
-        if ext == "pdf":
-            pdf_text = extract_pdf_text(contract_path)
-            if pdf_text:
-                # PDF có text → không cần Kimi, dùng trực tiếp
-                contract_text_raw = pdf_text[:50000]
-                contract_images = []  # không cần đọc ảnh
-            else:
-                contract_images, total_contract_pages = pdf_pages_to_images(contract_path, max_pages=30)
-        elif ext in ("jpg", "jpeg", "png", "gif", "webp"):
-            contract_images = [encode_image_to_base64(contract_path)]
-            total_contract_pages = 1
-
-    # Chia trang hợp đồng thành các chunk (mỗi chunk = CONTRACT_CHUNK_SIZE trang)
-    contract_chunks = []
-    if contract_images:
-        chunk_size = CONTRACT_CHUNK_SIZE
-        for i in range(0, len(contract_images), chunk_size):
-            chunk_imgs = contract_images[i:i + chunk_size]
-            page_start = i + 1
-            page_end = min(i + chunk_size, len(contract_images))
-            contract_chunks.append({
-                "images": chunk_imgs,
-                "page_start": page_start,
-                "page_end": page_end
-            })
-
-    # Nếu PDF có text sẵn → 1 chunk text
-    if not contract_chunks and contract_path and os.path.exists(contract_path):
-        ext = os.path.splitext(contract_path)[1].lower().lstrip(".")
-        if ext == "pdf":
-            pdf_text = extract_pdf_text(contract_path)
-            if pdf_text:
-                # Chia text theo trang
-                pages = re.split(r'--- Trang \d+ ---', pdf_text)
-                pages = [p.strip() for p in pages if p.strip()]
-                chunk_size = CONTRACT_CHUNK_SIZE
-                for i in range(0, len(pages), chunk_size):
-                    chunk_pages = pages[i:i + chunk_size]
-   
-# ============================================================
-# LUU KET QUA
-# ============================================================
+# ---------------------------------------------------------------------------
+# SAVE REPLY
+# ---------------------------------------------------------------------------
 
 def save_reply(claim_data, ai_response, photo_names, contract_name):
-    """Luu cau tra loi AI vao thu muc tra loi."""
-    os.makedirs(REPLY_DIR, exist_ok=True)
+    """
+    Save the AI response to REPLY_DIR as a markdown file.
 
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    safe_name = re.sub(r'[^\w]', '_', claim_data.get("customer_name", "khach_hang"))
-    product_id = claim_data.get("product", {}).get("id", "unknown")
+    Args:
+        claim_data: dict with claim info
+        ai_response: str, the AI's response text
+        photo_names: list of str, invoice photo file names
+        contract_name: str, contract file name
 
-    filename = f"reply_{safe_name}_{product_id}_{ts}.md"
-    filepath = os.path.join(REPLY_DIR, filename)
+    Returns:
+        str: path to saved file
+    """
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    claim_id = ""
+    if isinstance(claim_data, dict):
+        claim_id = claim_data.get("claim_id") or claim_data.get("ma_yeu_cau") or claim_data.get("id") or "unknown"
+    else:
+        claim_id = "unknown"
 
-    content = f"""# Phan tich khoan khau tru boi thuong
+    # Clean claim_id for filename
+    safe_id = re.sub(r"[^\w\-]", "_", str(claim_id))
+    filename = f"reply_{safe_id}_{timestamp}.md"
+    filepath = REPLY_DIR / filename
 
-**Khach hang:** {claim_data.get('customer_name', 'Khong ro')}
-**San pham:** {claim_data.get('product', {}).get('name', 'Khong ro')}
-**Thoi gian:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+    lines = []
+    lines.append(f"# Ket Qua Phan Tich Deduction - {claim_id}")
+    lines.append("")
+    lines.append(f"**Thoi gian:** {time.strftime('%Y-%m-%d %H:%M:%S')}")
+    lines.append("")
+    lines.append("## Thong Tin Yeu Cau")
+    lines.append("")
+    if isinstance(claim_data, dict):
+        for k, v in claim_data.items():
+            lines.append(f"- **{k}:** {v}")
+    else:
+        lines.append(str(claim_data))
+    lines.append("")
+    lines.append("## File Dinh Kem")
+    lines.append("")
+    lines.append(f"**Hop dong:** {contract_name}")
+    lines.append("")
+    if photo_names:
+        lines.append("**Hoa don / Anh:**")
+        for name in photo_names:
+            lines.append(f"- {name}")
+    else:
+        lines.append("**Hoa don / Anh:** Khong co")
+    lines.append("")
+    lines.append("---")
+    lines.append("")
+    lines.append("## Ket Qua Phan Tich AI")
+    lines.append("")
+    lines.append(ai_response)
+    lines.append("")
+    lines.append("---")
+    lines.append(f"*File duoc tao tu dong boi AI Deduction Pipeline*")
 
-## Anh thiet hai dinh kem:
-"""
-    for name in photo_names:
-        content += f"- {name}\n"
+    content = "\n".join(lines)
+    filepath.write_text(content, encoding="utf-8")
+    return str(filepath)
 
-    content += f"""
-## Hop dong dinh kem:
-- {contract_name or 'Khong co'}
 
-## Phan tich AI:
-{ai_response}
-"""
+# ---------------------------------------------------------------------------
+# MODULE ENTRY POINT
+# ---------------------------------------------------------------------------
 
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(content)
-
-    return filepath
+if __name__ == "__main__":
+    # Quick test
+    print(f"API Key available: {has_api_key()}")
+    print(f"Vision model: {VISION_MODEL}")
+    print(f"Analysis model: {ANALYSIS_MODEL}")
+    print(f"Reply dir: {REPLY_DIR}")
+    print(f"Contract chunk size: {CONTRACT_CHUNK_SIZE}")
+    print("Module ready.")
