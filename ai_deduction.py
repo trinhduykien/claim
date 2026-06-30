@@ -272,51 +272,51 @@ def call_analysis_model(messages, max_tokens=6000, timeout=180):
 def build_invoice_prompt():
     """Build prompt for Kimi to read invoice images."""
     return (
-        "Ban la chuyen gia doc hoa don y te. Hay doc cac hinh anh hoa don ben duoi "
-        "va xuat ket qua theo dinh dang sau:\n\n"
-        "1. THONG TIN HOA DON:\n"
-        "   - So hoa don\n"
-        "   - Ngay phat hanh\n"
-        "   - Don vi ban thuoc / phuong thuc thanh toan\n"
-        "   - Benh nhan / Ma the BHYT (neu co)\n\n"
-        "2. CHI TIET HANG HOA:\n"
-        "   Tien hanh doc TUNG DONG hang hoa trong hoa don.\n"
-        "   Voi moi dong, xuat:\n"
+        "Bạn là chuyên gia đọc hóa đơn y tế. Hãy đọc các hình ảnh hóa đơn bên dưới "
+        "và xuất kết quả theo định dạng sau:\n\n"
+        "1. THÔNG TIN HÓA ĐƠN:\n"
+        "   - Số hóa đơn\n"
+        "   - Ngày phát hành\n"
+        "   - Đơn vị bán thuốc / phương thức thanh toán\n"
+        "   - Bệnh nhân / Mã thẻ BHYT (nếu có)\n\n"
+        "2. CHI TIẾT HÀNG HÓA:\n"
+        "   Tiến hành đọc TỪNG DÒNG hàng hóa trong hóa đơn.\n"
+        "   Với mỗi dòng, xuất:\n"
         "   - STT\n"
-        "   - TEN HANG (doc chinh xac ten thuoc / vat tu y te / dich vu)\n"
-        "   - DON VI TINH\n"
-        "   - SO LUONG\n"
-        "   - DON GIA\n"
-        "   - THANH TIEN\n\n"
-        "3. TONG CONG: Tong tien toan hoa don\n\n"
-        "LUU Y QUAN TRONG:\n"
-        "- Doc CHINH XAC ten thuoc, khong duoc suy doan hay viet lai.\n"
-        "- Neu khong ro ten thuoc, ghi '[KHONG RO]'.\n"
-        "- Phan loai moi dong vao 1 trong 4 nhom:\n"
-        "  + THUOC: thuoc chua benh (ten thuoc + ham luong + dong goi)\n"
-        "  + VAT TU Y TE: bang tiem, dong ruou, gang tay, ga xo, tam y te...\n"
-        "  + DICH VU: kham benh, xet nghiem, tien phong, tien cong...\n"
-        "  + KHAC: khong thuoc 3 nhom tren\n\n"
-        "Xuat ket qua dang van ban, ro rang, co cau truc."
+        "   - TÊN HÀNG (đọc chính xác tên thuốc / vật tư y tế / dịch vụ)\n"
+        "   - ĐƠN VỊ TÍNH\n"
+        "   - SỐ LƯỢNG\n"
+        "   - ĐƠN GIÁ\n"
+        "   - THÀNH TIỀN\n\n"
+        "3. TỔNG CỘNG: Tổng tiền toàn hóa đơn\n\n"
+        "LƯU Ý QUAN TRỌNG:\n"
+        "- Đọc CHÍNH XÁC tên thuốc, không được suy đoán hay viết lại.\n"
+        "- Nếu không rõ tên thuốc, ghi '[KHÔNG RÕ]'.\n"
+        "- Phân loại mỗi dòng vào 1 trong 4 nhóm:\n"
+        "  + THUỐC: thuốc chữa bệnh (tên thuốc + hàm lượng + đóng gói)\n"
+        "  + VẬT TƯ Y TẾ: băng tiêm, dung dịch, găng tay, gạc xô, tăm y tế...\n"
+        "  + DỊCH VỤ: khám bệnh, xét nghiệm, tiền phòng, tiền công...\n"
+        "  + KHÁC: không thuộc 3 nhóm trên\n\n"
+        "Xuất kết quả dạng văn bản, rõ ràng, có cấu trúc."
     )
 
 
 def build_contract_chunk_prompt(page_start, page_end):
     """Build prompt for Kimi to read contract pages."""
     return (
-        f"Ban la chuyen gia phan tich hop dong bao hiem. Hay doc cac trang hop dong "
-        f"tu trang {page_start} den trang {page_end} trong hinh anh ben duoi.\n\n"
-        "Hay xuat toan bo noi dung van ban cua cac trang nay, bao gom:\n\n"
-        "1. Tieu de muc, dieu khoan, so dieu\n"
-        "2. Noi dung chi tiet cua moi dieu khoan\n"
-        "3. Cac bang, danh muc, dinh nghia (neu co)\n"
-        "4. Cac muc loai tru, gioi han tra tien, dieu kien\n\n"
-        "LUU Y:\n"
-        "- Doc nguyen van, khong tom tat hay bo qua.\n"
-        "- Giu nguyen so dieu, so trang tham chieu.\n"
-        "- Neu co bang, xuat theo dinh dang bang.\n"
-        "- Neu khong doc duoc phan nao, ghi '[KHONG DOC DUOC]'.\n\n"
-        "Xuat ket qua dang van ban day du."
+        f"Bạn là chuyên gia phân tích hợp đồng bảo hiểm. Hãy đọc các trang hợp đồng "
+        f"từ trang {page_start} đến trang {page_end} trong hình ảnh bên dưới.\n\n"
+        "Hãy xuất toàn bộ nội dung văn bản của các trang này, bao gồm:\n\n"
+        "1. Tiêu đề mục, điều khoản, số điều\n"
+        "2. Nội dung chi tiết của mỗi điều khoản\n"
+        "3. Các bảng, danh mục, định nghĩa (nếu có)\n"
+        "4. Các mục loại trừ, giới hạn trả tiền, điều kiện\n\n"
+        "LƯU Ý:\n"
+        "- Đọc nguyên văn, không tóm tắt hay bỏ qua.\n"
+        "- Giữ nguyên số điều, số trang tham chiếu.\n"
+        "- Nếu có bảng, xuất theo định dạng bảng.\n"
+        "- Nếu không đọc được phần nào, ghi '[KHÔNG ĐỌC ĐƯỢC]'.\n\n"
+        "Xuất kết quả dạng văn bản đầy đủ."
     )
 
 
@@ -358,65 +358,65 @@ def kimi_read_contract_chunk(chunk_images, page_start, page_end):
 
 def build_invoice_analysis_prompt(invoice_text, claim_data):
     """Build prompt for GLM to analyze invoice text against claim data."""
-    claim_info = json.dumps(claim_data, ensure_ascii=False, indent=2) if claim_data else "Khong co thong tin yeu cau"
+    claim_info = json.dumps(claim_data, ensure_ascii=False, indent=2) if claim_data else "Không có thông tin yêu cầu"
 
     return (
-        "Ban la chuyen gia thanh tra bao hiem y te. Ban nhan duoc noi dung hoa don "
-        "va thong tin yeu cau tra tien. Hay phan tich va phan loai tung mat hang.\n\n"
-        "=== NOI DUNG HOA DON ===\n"
+        "Bạn là chuyên gia thanh tra bảo hiểm y tế. Bạn nhận được nội dung hóa đơn "
+        "và thông tin yêu cầu trả tiền. Hãy phân tích và phân loại từng mặt hàng.\n\n"
+        "=== NỘI DUNG HÓA ĐƠN ===\n"
         f"{invoice_text}\n\n"
-        "=== THONG TIN YEU CAU TRA TIEN ===\n"
+        "=== THÔNG TIN YÊU CẦU TRẢ TIỀN ===\n"
         f"{claim_info}\n\n"
-        "=== NHIEM VU ===\n"
-        "1. Phan loai moi mat hang vao 1 trong 4 nhom:\n"
-        "   - THUOC: thuoc chua benh (can ten thuoc + ham luong + dong goi)\n"
-        "   - VAT TU Y TE: bang tiem, dong ruou, gang tay, tam y te, ga xo...\n"
-        "   - DICH VU: kham benh, xet nghiem, tien phong, tien cong...\n"
-        "   - KHAC: khong thuoc 3 nhom tren\n\n"
-        "2. Voi moi mat hang, xuat:\n"
+        "=== NHIỆM VỤ ===\n"
+        "1. Phân loại mỗi mặt hàng vào 1 trong 4 nhóm:\n"
+        "   - THUỐC: thuốc chữa bệnh (cần tên thuốc + hàm lượng + đóng gói)\n"
+        "   - VẬT TƯ Y TẾ: băng tiêm, dung dịch, găng tay, tăm y tế, gạc xô...\n"
+        "   - DỊCH VỤ: khám bệnh, xét nghiệm, tiền phòng, tiền công...\n"
+        "   - KHÁC: không thuộc 3 nhóm trên\n\n"
+        "2. Với mỗi mặt hàng, xuất:\n"
         "   - STT\n"
-        "   - TEN HANG\n"
-        "   - PHAN LOAI (THUOC / VAT TU Y TE / DICH VU / KHAC)\n"
-        "   - SO LUONG\n"
-        "   - DON GIA\n"
-        "   - THANH TIEN\n"
-        "   - GHI CHU (neu co van de ve ten hang, so luong, don gia)\n\n"
-        "3. Kiem tra tong tien hop don khong.\n\n"
-        "LUU Y PHAN LOAI:\n"
-        "- THUOC khac THIET BI Y TE: may hut dam, may do huyet ap la thiet bi, khong phai thuoc.\n"
-        "- THIET BI Y TE khac VAT TU Y TE: thiet bi co the tai su dung, vat tu y te dung 1 lan.\n"
-        "- Neu ten hang ghi 'thuoc' nhung thuc chat la vat tu y te, phan loai dung.\n\n"
-        "Xuat ket qua dang bang, ro rang."
+        "   - TÊN HÀNG\n"
+        "   - PHÂN LOẠI (THUỐC / VẬT TƯ Y TẾ / DỊCH VỤ / KHÁC)\n"
+        "   - SỐ LƯỢNG\n"
+        "   - ĐƠN GIÁ\n"
+        "   - THÀNH TIỀN\n"
+        "   - GHI CHÚ (nếu có vấn đề về tên hàng, số lượng, đơn giá)\n\n"
+        "3. Kiểm tra tổng tiền hợp đồng không.\n\n"
+        "LƯU Ý PHÂN LOẠI:\n"
+        "- THUỐC khác THIẾT BỊ Y TẾ: máy hút đờm, máy đo huyết áp là thiết bị, không phải thuốc.\n"
+        "- THIẾT BỊ Y TẾ khác VẬT TƯ Y TẾ: thiết bị có thể tái sử dụng, vật tư y tế dùng 1 lần.\n"
+        "- Nếu tên hàng ghi 'thuốc' nhưng thực chất là vật tư y tế, phân loại đúng.\n\n"
+        "Xuất kết quả dạng bảng, rõ ràng."
     )
 
 
 def build_contract_analysis_prompt(contract_chunk_text, page_start, page_end):
     """Build prompt for GLM to analyze a contract chunk."""
     return (
-        f"Ban la chuyen gia phan tich hop dong bao hiem y te. "
-        f"Hay phan tich noi dung hop dong tu trang {page_start} den trang {page_end}.\n\n"
-        f"=== NOI DUNG HOP DONG (TRANG {page_start}-{page_end}) ===\n"
+        f"Bạn là chuyên gia phân tích hợp đồng bảo hiểm y tế. "
+        f"Hãy phân tích nội dung hợp đồng từ trang {page_start} đến trang {page_end}.\n\n"
+        f"=== NỘI DUNG HỢP ĐỒNG (TRANG {page_start}-{page_end}) ===\n"
         f"{contract_chunk_text}\n\n"
-        "=== NHIEM VU ===\n"
-        "Hay trich xuat 3 loai thong tin sau:\n\n"
-        "A. MUC LOAI TRU (EXCLUSIONS):\n"
-        "   - Cac dieu kien, benh, tinh trang KHONG DUOC tra tien\n"
-        "   - Cac han che bao hiem\n"
-        "   - Cac dieu kien bat buoc khong duoc tra\n\n"
-        "B. DINH NGHIA (DEFINITIONS):\n"
-        "   - Dinh nghia cac thuat ngu y te, bao hiem\n"
-        "   - Dinh nghia 'thuoc', 'vat tu y te', 'dich vu y te'\n"
-        "   - Dinh nghia 'benh co san', 'benh man tinh', 'cap cuu'...\n\n"
-        "C. GIOI HAN TRA TIEN (LIMITS):\n"
-        "   - Muc tra toi da cho tung loai chi phi\n"
-        "   - Ty le tra (80%, 90%, 100%...)\n"
-        "   - Han muc tra cho tung loai thuoc / dich vu\n"
-        "   - Mien thuong (deductible)\n\n"
-        "Xuat ket qua theo cau truc:\n"
-        "A. MUC LOAI TRU:\n  ...\n"
-        "B. DINH NGHIA:\n  ...\n"
-        "C. GIOI HAN TRA TIEN:\n  ...\n\n"
-        "Neu khong co thong tin nao, ghi 'Khong co' cho phan do."
+        "=== NHIỆM VỤ ===\n"
+        "Hãy trích xuất 3 loại thông tin sau:\n\n"
+        "A. MỤC LOẠI TRỪ (EXCLUSIONS):\n"
+        "   - Các điều kiện, bệnh, tình trạng KHÔNG ĐƯỢC trả tiền\n"
+        "   - Các hạn chế bảo hiểm\n"
+        "   - Các điều kiện bắt buộc không được trả\n\n"
+        "B. ĐỊNH NGHĨA (DEFINITIONS):\n"
+        "   - Định nghĩa các thuật ngữ y tế, bảo hiểm\n"
+        "   - Định nghĩa 'thuốc', 'vật tư y tế', 'dịch vụ y tế'\n"
+        "   - Định nghĩa 'bệnh có sẵn', 'bệnh mãn tính', 'cấp cứu'...\n\n"
+        "C. GIỚI HẠN TRẢ TIỀN (LIMITS):\n"
+        "   - Mức trả tối đa cho từng loại chi phí\n"
+        "   - Tỷ lệ trả (80%, 90%, 100%...)\n"
+        "   - Hạn mức trả cho từng loại thuốc / dịch vụ\n"
+        "   - Miễn thường (deductible)\n\n"
+        "Xuất kết quả theo cấu trúc:\n"
+        "A. MỤC LOẠI TRỪ:\n  ...\n"
+        "B. ĐỊNH NGHĨA:\n  ...\n"
+        "C. GIỚI HẠN TRẢ TIỀN:\n  ...\n\n"
+        "Nếu không có thông tin nào, ghi 'Không có' cho phần đó."
     )
 
 
@@ -424,7 +424,7 @@ def glm_analyze_invoice(invoice_text, claim_data):
     """GLM analyzes invoice. Returns analysis text."""
     prompt = build_invoice_analysis_prompt(invoice_text, claim_data)
     messages = [
-        {"role": "system", "content": "Ban la chuyen gia thanh tra bao hiem y te Viet Nam."},
+        {"role": "system", "content": "Bạn là chuyên gia thanh tra bảo hiểm y tế Việt Nam."},
         {"role": "user", "content": prompt},
     ]
     return call_analysis_model(messages, max_tokens=4000, timeout=120)
@@ -434,7 +434,7 @@ def glm_analyze_contract_chunk(chunk_text, page_start, page_end):
     """GLM analyzes a contract chunk. Returns analysis text."""
     prompt = build_contract_analysis_prompt(chunk_text, page_start, page_end)
     messages = [
-        {"role": "system", "content": "Ban la chuyen gia phan tich hop dong bao hiem y te Viet Nam."},
+        {"role": "system", "content": "Bạn là chuyên gia phân tích hợp đồng bảo hiểm y tế Việt Nam."},
         {"role": "user", "content": prompt},
     ]
     return call_analysis_model(messages, max_tokens=4000, timeout=120)
@@ -446,69 +446,73 @@ def glm_analyze_contract_chunk(chunk_text, page_start, page_end):
 
 def build_merge_prompt(claim_data, invoice_analysis, contract_analyses):
     """Build the final merge prompt for the GLM manager."""
-    claim_info = json.dumps(claim_data, ensure_ascii=False, indent=2) if claim_data else "Khong co"
-    contract_text = "\n\n".join(contract_analyses) if contract_analyses else "Khong co phan tich hop dong"
+    claim_info = json.dumps(claim_data, ensure_ascii=False, indent=2) if claim_data else "Không có"
+    contract_text = "\n\n".join(contract_analyses) if contract_analyses else "Không có phân tích hợp đồng"
 
     return (
-        "Ban la truong phong kiem toan bao hiem PJICO. "
-        "Cac nhan vien da phan tich hoa don va hop dong. "
-        "Bay gio ban tong hop tat ca, doi chieu hoa don voi hop dong, "
-        "tim cac khoan khau tru va xuat BANG DUY NHAT theo mau quy dinh.\n\n"
-        "=== THONG TIN HO SO ===\n"
+        "Bạn là trưởng phòng kiểm toán bảo hiểm PJICO. "
+        "Các nhân viên đã phân tích hóa đơn và hợp đồng. "
+        "Bây giờ bạn tổng hợp tất cả, đối chiếu hóa đơn với hợp đồng, "
+        "tìm các khoản khấu trừ và xuất BẢNG DUY NHẤT theo mẫu quy định.\n\n"
+        "=== THÔNG TIN HỒ SƠ ===\n"
         f"{claim_info}\n\n"
-        "=== BAO CAO PHAN TICH HOA DON ===\n"
+        "=== BÁO CÁO PHÂN TÍCH HÓA ĐƠN ===\n"
         f"{invoice_analysis}\n\n"
-        "=== CAC BAO CAO PHAN TICH HOP DONG ===\n"
+        "=== CÁC BÁO CÁO PHÂN TÍCH HỢP ĐỒNG ===\n"
         f"{contract_text}\n\n"
-        "=== NHIEM VU CUA BAN ===\n"
-        "Ban co 2 bao cao: hoa don da phan loai + hop dong da trich xuat dieu khoan.\n"
-        "Nhiem vu: doi chieu tung muc hoa don voi hop dong, tim khoan khau tru, xuat bang cuoi.\n\n"
-        "QUY TRINH SUY LUAN BAT BUOC:\n\n"
-        "Voi TUNG MUC trong hoa don:\n\n"
-        "BUOC A - TRA DIEU KHOAN LOAI TRU TRUC TIEP:\n"
-        "  - Muc co trung ten truc tiep voi dieu khoan loai tru khong?\n"
-        "  -> Co -> KHAU TRU. Ghi: ten + so tien + dieu khoan + trang.\n"
-        "  -> Khong -> sang BUOC B.\n\n"
-        "BUOC B - TRA KHAI NIEM/DINH NGHIA (KHAU TRU GIAN TIEP):\n"
-        "  - Muc co thuoc khai niem/dinh nghia nao trong hop dong khong?\n"
-        "  - Khai niem do co bi loai tru khong?\n"
-        "  -> CA HAI -> KHAU TRU gian tiep. Ghi: ten + so tien + khai niem trung gian + dieu khoan + trang.\n"
-        "  -> Khong -> sang BUOC C.\n\n"
-        "BUOC C - TRA HAN MUC CHI TRA:\n"
-        "  - Muc co han muc khong? Vuot han muc khong?\n"
-        "  -> Vuot -> phan vuot bi KHAU TRU.\n"
-        "  -> Khong -> khong khau tru.\n\n"
-        "NGUYEN TAC PHAN LOAI DOI TUONG - QUAN TRONG:\n"
-        "  - THUOC (co hoat chat dieu tri) != VAT TU Y TE (dung cu vat ly) != THIET BI Y TE != DICH VU\n"
-        "  - Duong dung KHONG xac dinh loai: thuoc nho mat van la THUOC\n"
-        "  - KHONG TU Y MO RONG khai niem: hop dong loai tru 'thiet bi y te' -> KHONG khau tru THUOC theo dieu khoan do\n"
-        "  - Chi khau tru khi hop dong THUC SU ap dung cho loai doi tuong do\n"
-        "  - KET NOI thong tin giua cac trang: loai tru o trang 4 + dinh nghia o trang 7 -> suy luan\n\n"
-        "XUAT BANG THEO MAU (BAT BUOC - lam dung mau):\n\n"
-        "**Tong chi phi theo hoa don:** [so tien] VND\n\n"
-        "| # | Tong tien ban dau | Muc bi khau tru | So tien bi khau tru (VND) | Li do bi khau tru | Nguon dieu khoan | Tien con lai |\n"
+        "=== NHIỆM VỤ CỦA BẠN ===\n"
+        "Bạn có 2 báo cáo: hóa đơn đã phân loại + hợp đồng đã trích xuất điều khoản.\n"
+        "Nhiệm vụ: đối chiếu từng mục hóa đơn với hợp đồng, tìm khoản khấu trừ, xuất bảng cuối.\n\n"
+        "QUY TRÌNH SUY LUẬN BẮT BUỘC:\n\n"
+        "Với TỪNG MỤC trong hóa đơn:\n\n"
+        "BƯỚC A - TRA ĐIỀU KHOẢN LOẠI TRỪ TRỰC TIẾP:\n"
+        "  - Mục có trùng tên trực tiếp với điều khoản loại trừ không?\n"
+        "  -> Có -> KHẤU TRỪ. Ghi: tên + số tiền + điều khoản + trang.\n"
+        "  -> Không -> sang BƯỚC B.\n\n"
+        "BƯỚC B - TRA KHÁI NIỆM/ĐỊNH NGHĨA (KHẤU TRỪ GIÁN TIẾP):\n"
+        "  - Mục có thuộc khái niệm/định nghĩa nào trong hợp đồng không?\n"
+        "  - Khái niệm đó có bị loại trừ không?\n"
+        "  -> CẢ HAI -> KHẤU TRỪ gián tiếp. Ghi: tên + số tiền + khái niệm trung gian + điều khoản + trang.\n"
+        "  -> Không -> sang BƯỚC C.\n\n"
+        "BƯỚC C - TRA HẠN MỨC CHI TRẢ:\n"
+        "  - Mục có hạn mức không? Vượt hạn mức không?\n"
+        "  -> Vượt -> phần vượt bị KHẤU TRỪ.\n"
+        "  -> Không -> không khấu trừ.\n\n"
+        "NGUYÊN TẮC PHÂN LOẠI ĐỐI TƯỢNG - QUAN TRỌNG:\n"
+        "  - THUỐC (có hoạt chất điều trị) != VẬT TƯ Y TẾ (dụng cụ vật lý) != THIẾT BỊ Y TẾ != DỊCH VỤ\n"
+        "  - Đường dùng KHÔNG xác định loại: thuốc nhỏ mắt vẫn là THUỐC\n"
+        "  - KHÔNG TÙY Y MỞ RỘNG khái niệm: hợp đồng loại trừ 'thiết bị y tế' -> KHÔNG khấu trừ THUỐC theo điều khoản đó\n"
+        "  - Chỉ khấu trừ khi hợp đồng THỰC SỰ áp dụng cho loại đối tượng đó\n"
+        "  - KẾT NỐI thông tin giữa các trang: loại trừ ở trang 4 + định nghĩa ở trang 7 -> suy luận\n\n"
+        "XUẤT BẢNG THEO MẪU (BẮT BUỘC - làm đúng mẫu):\n\n"
+        "**Tổng chi phí theo hóa đơn:** [số tiền] VND\n\n"
+        "| # | Tổng tiền ban đầu | Mục bị khấu trừ | Số tiền bị khấu trừ (VND) | Lí do bị khấu trừ | Nguồn điều khoản | Tiền còn lại |\n"
         "|---|---|---|---|---|---|---|\n"
-        "| 0 | [TONG] | - | - | - | - | [TONG] |\n"
-        "| 1 | | [ten] | [so] | [li do: dieu khoan + giai thich] | [Dieu khoan/trang] | [Tong - KH1] |\n"
-        "| 2 | | [ten] | [so] | [li do] | [Dieu khoan/trang] | [Tong-KH1-KH2] |\n"
-        "| **KQ** | | **TONG KHAU TRU** | **[tong]** | | | **[con lai]** |\n\n"
-        "**Tong khau tru:** [so] VND\n"
-        "**Tien boi thuong thuc nhan:** [Tong - Khau tru] = [so] VND\n\n"
-        "QUY TAC XUAT BANG:\n"
-        "  - Dong 0 = tong tien ban dau. Cot 'Tien con lai' = TONG.\n"
-        "  - Moi dong khau tru = 1 hang muc cu the trong hoa don bi khau tru.\n"
-        "  - Cot 'Li do' phai ghi: (a) dieu khoan gi, (b) vi sao khoan do bi khau tru.\n"
-        "  - Cot 'Tien con lai' chay tich luy: dong 1 = Tong - KH1; dong 2 = (Tong-KH1) - KH2.\n"
-        "  - So tien co dau phay (VD: 1.500.000). Don vi VND.\n"
-        "  - KHONG co khoan nao bi khau tru -> xuat dong 0 + KQ voi '0', ghi 'Khong co khoan khau tru, khach hang nhan toan bo [so] VND.'\n"
-        "  - Khong chac -> ghi '[!] Can xac nhan' o cot Li do.\n\n"
-        "NGUYEN TAC BAT BUOC:\n"
-        "  1. Chi xuat BANG - khong kem loi giai thich, khong kiem nghi, khong yeu cau bo sung ho so.\n"
-        "  2. Khong kiem tra nhan qua giua su kien bao hiem va chi phi y te - do khong phai nhiem vu cua ban.\n"
-        "  3. Ban chi lam 1 viec: doi chieu hoa don voi hop dong -> tim khoan khau tru -> xuat bang.\n"
-        "  4. Khong tu y mo rong khai niem: thuoc la thuoc, thiet bi la thiet bi, vat tu la vat tu.\n"
-        "  5. Chinh xac tuyet doi ve con so - khong lam tron, khong uoc luong.\n"
-        "  6. Neu hop dong khong co du dieu khoan (trich xuat that bai) -> khong khau tru, ghi 'Khong co du dieu khoan hop dong de khau tru'.\n"
+        "| 0 | [TỔNG] | - | - | - | - | [TỔNG] |\n"
+        "| 1 | | [tên] | [số] | [lí do: điều khoản + giải thích] | [Điều khoản/trang] | [Tổng - KH1] |\n"
+        "| 2 | | [tên] | [số] | [lí do] | [Điều khoản/trang] | [Tổng-KH1-KH2] |\n"
+        "| **KQ** | | **TỔNG KHẤU TRỪ** | **[tổng]** | | | **[còn lại]** |\n\n"
+        "**Tổng khấu trừ:** [số] VND\n"
+        "**Tiền bồi thường thực nhận:** [Tổng - Khấu trừ] = [số] VND\n\n"
+        "QUY TẮC XUẤT BẢNG:\n"
+        "  - Dòng 0 = tổng tiền ban đầu. Cột 'Tiền còn lại' = TỔNG.\n"
+        "  - Mỗi dòng khấu trừ = 1 hạng mục cụ thể trong hóa đơn bị khấu trừ.\n"
+        "  - Cột 'Lí do' phải ghi rõ: (a) điều khoản hợp đồng gì, (b) trích dẫn nguyên văn điều khoản, "
+        "(c) giải thích vì sao khoản trong hóa đơn bị khấu trừ theo điều khoản đó, "
+        "(d) nếu là khấu trừ gián tiếp thì ghi rõ khái niệm trung gian.\n"
+        "  - Lí do phải chi tiết, đầy đủ, để người đọc hiểu rõ vì sao khoản đó bị khấu trừ.\n"
+        "  - Cột 'Tiền còn lại' chạy tích lũy: dòng 1 = Tổng - KH1; dòng 2 = (Tổng-KH1) - KH2.\n"
+        "  - Số tiền có dấu phẩy (VD: 1.500.000). Đơn vị VND.\n"
+        "  - KHÔNG có khoản nào bị khấu trừ -> xuất dòng 0 + KQ với '0', ghi 'Không có khoản khấu trừ, khách hàng nhận toàn bộ [số] VND.'\n"
+        "  - Không chắc -> ghi '[!] Cần xác nhận' ở cột Lí do.\n\n"
+        "NGUYÊN TẮC BẮT BUỘC:\n"
+        "  1. Chỉ xuất BẢNG - không kèm lời giải thích, không kiểm nghị, không yêu cầu bổ sung hồ sơ.\n"
+        "  2. Không kiểm tra nhân quả giữa sự kiện bảo hiểm và chi phí y tế - đó không phải nhiệm vụ của bạn.\n"
+        "  3. Bạn chỉ làm 1 việc: đối chiếu hóa đơn với hợp đồng -> tìm khoản khấu trừ -> xuất bảng.\n"
+        "  4. Không tùy ý mở rộng khái niệm: thuốc là thuốc, thiết bị là thiết bị, vật tư là vật tư.\n"
+        "  5. Chính xác tuyệt đối về con số - không làm tròn, không ước lượng.\n"
+        "  6. Nếu hợp đồng không có đủ điều khoản (trích xuất thất bại) -> không khấu trừ, ghi 'Không có đủ điều khoản hợp đồng để khấu trừ'.\n"
+        "  7. Toàn bộ output phải bằng tiếng Việt có dấu (có diacritics).\n"
     )
 
 def glm_merge_analysis(claim_data, invoice_analysis, contract_analyses):
@@ -518,8 +522,8 @@ def glm_merge_analysis(claim_data, invoice_analysis, contract_analyses):
         {
             "role": "system",
             "content": (
-                "Ban la quan ly cap cao bo phan thanh tra bao hiem y te Viet Nam. "
-                "Ban tong hop cac bao cao va ra quyet dinh tra tien cuoi cung."
+                "Bạn là quản lý cấp cao bộ phận thanh tra bảo hiểm y tế Việt Nam. "
+                "Bạn tổng hợp các báo cáo và ra quyết định trả tiền cuối cùng."
             ),
         },
         {"role": "user", "content": prompt},
@@ -549,7 +553,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             return {
                 "success": False,
                 "response": "",
-                "error": "Khong co API key. Vui long cau hinh API_KEY.",
+                "error": "Không có API key. Vui lòng cấu hình API_KEY.",
             }
 
         # --- Prepare invoice images ---
@@ -667,12 +671,12 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 t.join(timeout=600)
 
             if t.is_alive():
-                errors_t1[name] = f"Timeout khi doc {name}"
+                errors_t1[name] = f"Timeout khi đọc {name}"
 
         # --- Collect Tier 1 results ---
         invoice_text = results_t1.get("invoice", "")
         if "invoice" in errors_t1 and not invoice_text:
-            invoice_text = f"[LOI DOC HOA DON: {errors_t1['invoice']}]"
+            invoice_text = f"[LỖI ĐỌC HÓA ĐƠN: {errors_t1['invoice']}]"
 
         # Collect contract texts in order
         num_contract_chunks = len(contract_chunks) if contract_is_scanned else len(contract_text_chunks)
@@ -685,7 +689,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 else:
                     contract_texts.append((val, 0, 0))
             elif key in errors_t1:
-                contract_texts.append((f"[LOI DOC HOP DONG CHUNK {idx}: {errors_t1[key]}]", 0, 0))
+                contract_texts.append((f"[LỖI ĐỌC HỢP ĐỒNG CHUNK {idx}: {errors_t1[key]}]", 0, 0))
 
         # ===================================================================
         # TIER 2 - REDUCE: GLM ANALYZES EACH CHUNK IN PARALLEL
@@ -699,7 +703,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         errors_t2 = {}
 
         # --- Invoice analysis thread ---
-        if invoice_text and not invoice_text.startswith("[LOI"):
+        if invoice_text and not invoice_text.startswith("[LỖI"):
             def _analyze_invoice():
                 try:
                     results_t2["invoice"] = glm_analyze_invoice(invoice_text, claim_data)
@@ -709,11 +713,11 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             t_ia = threading.Thread(target=_analyze_invoice, daemon=True)
             threads_t2.append(("invoice", t_ia))
         else:
-            results_t2["invoice"] = "[KHONG CO HOA DON DE PHAN TICH]"
+            results_t2["invoice"] = "[KHÔNG CÓ HÓA ĐƠN ĐỂ PHÂN TÍCH]"
 
         # --- Contract analysis threads ---
         for idx, (ctext, ps, pe) in enumerate(contract_texts):
-            if ctext and not ctext.startswith("[LOI"):
+            if ctext and not ctext.startswith("[LỖI"):
                 def _analyze_contract(_text=ctext, _ps=ps, _pe=pe, _idx=idx):
                     try:
                         results_t2[f"contract_{_idx}"] = glm_analyze_contract_chunk(_text, _ps, _pe)
@@ -723,7 +727,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 t = threading.Thread(target=_analyze_contract, daemon=True)
                 threads_t2.append((f"contract_{idx}", t))
             else:
-                results_t2[f"contract_{idx}"] = f"[KHONG CO NOI DUNG HOP DONG CHUNK {idx}]"
+                results_t2[f"contract_{idx}"] = f"[KHÔNG CÓ NỘI DUNG HỢP ĐỒNG CHUNK {idx}]"
 
         # --- Start all threads ---
         for name, t in threads_t2:
@@ -733,19 +737,19 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         for name, t in threads_t2:
             t.join(timeout=180)
             if t.is_alive():
-                errors_t2[name] = f"Timeout khi phan tich {name}"
+                errors_t2[name] = f"Timeout khi phân tích {name}"
 
         # --- Collect Tier 2 results ---
         invoice_analysis = results_t2.get("invoice", "")
         if "invoice" in errors_t2 and not invoice_analysis:
-            invoice_analysis = f"[LOI PHAN TICH HOA DON: {errors_t2['invoice']}]"
+            invoice_analysis = f"[LỖI PHÂN TÍCH HÓA ĐƠN: {errors_t2['invoice']}]"
 
         for idx in range(len(contract_texts)):
             key = f"contract_{idx}"
             if key in results_t2:
                 contract_analyses.append(results_t2[key])
             elif key in errors_t2:
-                contract_analyses.append(f"[LOI PHAN TICH HOP DONG CHUNK {idx}: {errors_t2[key]}]")
+                contract_analyses.append(f"[LỖI PHÂN TÍCH HỢP ĐỒNG CHUNK {idx}: {errors_t2[key]}]")
             else:
                 contract_analyses.append("")
 
@@ -757,7 +761,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             return {
                 "success": False,
                 "response": "",
-                "error": "Khong co du lieu de tong hop. Thu phan tich that bai o tat ca cac tang.",
+                "error": "Không có dữ liệu để tổng hợp. Thử phân tích thất bại ở tất cả các tầng.",
             }
 
         merge_response = glm_merge_analysis(claim_data, invoice_analysis, contract_analyses)
@@ -807,11 +811,11 @@ def save_reply(claim_data, ai_response, photo_names, contract_name):
     filepath = REPLY_DIR / filename
 
     lines = []
-    lines.append(f"# Ket Qua Phan Tich Deduction - {claim_id}")
+    lines.append(f"# Kết Quả Phân Tích Deduction - {claim_id}")
     lines.append("")
-    lines.append(f"**Thoi gian:** {time.strftime('%Y-%m-%d %H:%M:%S')}")
+    lines.append(f"**Thời gian:** {time.strftime('%Y-%m-%d %H:%M:%S')}")
     lines.append("")
-    lines.append("## Thong Tin Yeu Cau")
+    lines.append("## Thông Tin Yêu Cầu")
     lines.append("")
     if isinstance(claim_data, dict):
         for k, v in claim_data.items():
@@ -819,25 +823,25 @@ def save_reply(claim_data, ai_response, photo_names, contract_name):
     else:
         lines.append(str(claim_data))
     lines.append("")
-    lines.append("## File Dinh Kem")
+    lines.append("## File Đính Kèm")
     lines.append("")
-    lines.append(f"**Hop dong:** {contract_name}")
+    lines.append(f"**Hợp đồng:** {contract_name}")
     lines.append("")
     if photo_names:
-        lines.append("**Hoa don / Anh:**")
+        lines.append("**Hóa đơn / Ảnh:**")
         for name in photo_names:
             lines.append(f"- {name}")
     else:
-        lines.append("**Hoa don / Anh:** Khong co")
+        lines.append("**Hóa đơn / Ảnh:** Không có")
     lines.append("")
     lines.append("---")
     lines.append("")
-    lines.append("## Ket Qua Phan Tich AI")
+    lines.append("## Kết Quả Phân Tích AI")
     lines.append("")
     lines.append(ai_response)
     lines.append("")
     lines.append("---")
-    lines.append(f"*File duoc tao tu dong boi AI Deduction Pipeline*")
+    lines.append(f"*File được tạo tự động bởi AI Deduction Pipeline*")
 
     content = "\n".join(lines)
     filepath.write_text(content, encoding="utf-8")
