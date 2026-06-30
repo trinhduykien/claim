@@ -847,6 +847,10 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         # ============================================================
 
         contract_analyses_joined = "\n\n".join(contract_analyses)
+        
+        # Giới hạn text hợp đồng gửi cho GLM (tránh vượt context limit)
+        if len(contract_analyses_joined) > 30000:
+            contract_analyses_joined = contract_analyses_joined[:30000]
 
         prompt = build_analysis_prompt(claim_data, invoice_analysis, contract_analyses_joined)
 
@@ -860,7 +864,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         merge_result_box = {"result": None}
 
         def run_merge():
-            merge_result_box["result"] = call_analysis_model(messages, max_tokens=6000, timeout=240)
+            merge_result_box["result"] = call_analysis_model(messages, max_tokens=8000, timeout=300)
 
         t_merge = threading.Thread(target=run_merge)
         t_merge.start()
