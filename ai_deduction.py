@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 AI Deduction Analysis Module cho PJICO Claim Bot
-Pipeline 2 bước:
-  Bước 1: Kimi K2.6 (vision) -> đọc ảnh hóa đơn + ảnh hợp đồng -> trích xuất text có cấu trúc
-  Bước 2: GLM-5.2 (text) -> nhận text đã trích xuất -> phân tích khấu trừ -> xuất bảng
+Pipeline 3 tầng (Map-Reduce):
+  Tầng 1 (Map): N Kimi đọc ảnh song song — 1 Kimi đọc hóa đơn, N-1 Kimi chia trang hợp đồng
+  Tầng 2 (Reduce): N GLM phân tích song song — 1 GLM phân tích hóa đơn, N-1 GLM phân tích trang hợp đồng
+  Tầng 3 (Merge): 1 GLM "trưởng phòng" tổng hợp → xuất bảng khấu trừ cuối
 - Đọc API key từ: Streamlit secrets -> env var -> file local
 - Lưu câu trả lời vào thư mục "trả lời"
 """
@@ -14,6 +15,8 @@ import base64
 import re
 from datetime import datetime
 import requests
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ============================================================
 # CONFIG
@@ -43,16 +46,22 @@ if not API_KEY:
 
 OLLAMA_BASE_URL = "https://ollama.com/v1"
 
-# Model cho từng pipeline
-VISION_MODEL = "kimi-k2.6:cloud"     # Bước 1: đọc ảnh, trích xuất text
-ANALYSIS_MODEL = "glm-5.2:cloud"     # Bước 2: phân tích khấu trừ, xuất bảng
+VISION_MODEL = "kimi-k2.6:cloud"     # Tầng 1: đọc ảnh, trích xuất text
+ANALYSIS_MODEL = "glm-5.2:cloud"     # Tầng 2+3: phân tích + tổng hợp
 
 REPLY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trả lời")
+
+# Số trang hợp đồng mỗi Kimi/GLM xử lý
+CONTRACT_CHUNK_SIZE = 10
 
 
 def has_api_key():
     return bool(API_KEY)
 
+
+# ============================================================
+# UTILITY: IMAGE / PDF
+# ============================================================
 
 def encode_image_to_base64(image_path):
     with open(image_path, "rb") as f:
@@ -115,7 +124,7 @@ def extract_pdf_text(pdf_path):
     return None
 
 
-def pdf_pages_to_images(pdf_path, max_pages=20):
+def pdf_pages_to_images(pdf_path, max_pages=30):
     """Chuyển tối đa max_pages trang PDF thành ảnh base64."""
     try:
         import fitz
@@ -140,77 +149,10 @@ def pdf_pages_to_images(pdf_path, max_pages=20):
 
 
 # ============================================================
-# BƯỚC 1: KIMI K2.6 — ĐỌC ẢNH, TRÍCH XUẤT TEXT
+# API CALL HELPERS
 # ============================================================
 
-def build_extraction_prompt_invoice():
-    """Prompt cho Kimi đọc ảnh hóa đơn và trích xuất text có cấu trúc."""
-    return """Bạn là chuyên gia trích xuất dữ liệu từ ảnh hóa đơn/viện phí. Nhiệm vụ: ĐỌC ẢNH HÓA ĐƠN và trích xuất TOÀN BỘ nội dung thành text có cấu trúc.
-
-YÊU CẦU:
-1. Đọc từng dòng trên hóa đơn, không bỏ sót bất kỳ dòng nào.
-2. Với mỗi hạng mục, ghi rõ: tên mục, mô tả (nếu có), đơn vị tính, số lượng, đơn giá, thành tiền.
-3. Ghi rõ các khoản thuế, phí khác nếu có.
-4. Ghi rõ TỔNG CỘNG (tổng số tiền).
-5. Giữ nguyên số liệu chính xác - không làm tròn, không ước lượng.
-
-YÊU CẦU ĐẶC BIỆT VỀ TÊN THUỐC / HÀNG MỤC Y TẾ:
-- Tên thuốc phải được đọc CHÍNH XÁC từng chữ cái. Đặc biệt chú ý các ký tự dễ nhầm: b/d, n/h, m/n, l/i, o/a.
-- Nếu tên thuốc in trên hóa đơn có dấu hoặc không dấu, ghi nguyên văn như in.
-- Nếu không chắc về một chữ trong tên thuốc, ghi [?] sau chữ đó để đánh dấu cần kiểm tra.
-- Không được tự ý "sửa" tên thuốc theo ý hiểu - phải ghi đúng những gì in trên hóa đơn.
-- Phân loại rõ mỗi mục: thuốc, vật tư y tế, dịch vụ y tế, hay loại khác.
-
-ĐỊNH DẠNG XUẤT (bắt buộc theo mẫu):
-
-=== HÓA ĐƠN ===
-Tổng tiền: [số tổng cộng trên hóa đơn]
-
-DANH SÁCH MỤC:
-1. [Tên mục] | [Loại: thuốc/vật tư y tế/dịch vụ/khác] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
-2. [Tên mục] | [Loại: thuốc/vật tư y tế/dịch vụ/khác] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
-...
-N. [Tên mục] | [Loại: thuốc/vật tư y tế/dịch vụ/khác] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
-
-(thuế/phí nếu có)
-Thuế VAT: [số tiền]
-Tổng sau thuế: [số tiền]
-=== HẾT HÓA ĐƠN ===
-
-Chỉ xuất kết quả theo định dạng trên. Không thêm lời giải thích."""
-
-
-def build_extraction_prompt_contract(num_pages):
-    """Prompt cho Kimi đọc ảnh hợp đồng và trích xuất text có cấu trúc."""
-    return f"""Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Nhiệm vụ: ĐỌC TẤT CẢ {num_pages} TRANG ẢNH HỢP ĐỒNG và trích xuất TOÀN BỘ nội dung thành text có cấu trúc.
-
-YÊU CẦU:
-1. Đọc từng trang từ trang 1 đến trang {num_pages}, không bỏ sót trang nào.
-2. Với mỗi trang, trích xuất toàn bộ text trên trang đó.
-3. Giữ nguyên số điều khoản, số trang, định nghĩa, danh mục.
-4. Không tóm tắt, không rút gọn - ghi nguyên văn nội dung.
-
-ĐỊNH DẠNG XUẤT (bắt buộc theo mẫu):
-
-=== HỢP ĐỒNG ===
-
---- Trang 1 ---
-[nội dung nguyên văn trang 1]
-
---- Trang 2 ---
-[nội dung nguyên văn trang 2]
-
-...
-
---- Trang {num_pages} ---
-[nội dung nguyên văn trang {num_pages}]
-
-=== HẾT HỢP ĐỒNG ===
-
-Chỉ xuất kết quả theo định dạng trên. Không thêm lời giải thích."""
-
-
-def call_vision_model(messages, max_tokens=8000, timeout=300):
+def call_vision_model(messages, max_tokens=8000, timeout=180):
     """Gọi vision model (Kimi K2.6) qua Ollama Cloud API."""
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -241,20 +183,15 @@ def call_vision_model(messages, max_tokens=8000, timeout=300):
         if content_text.strip():
             return {"success": True, "text": content_text.strip(), "error": ""}
 
-        # Fallback: reasoning có nội dung — lọc thinking tiếng Anh, giữ text tiếng Việt
+        # Fallback: reasoning — lọc thinking tiếng Anh, giữ text tiếng Việt
         if reasoning.strip():
             lines = reasoning.split("\n")
-            # Kimi thường: thinking tiếng Anh ở đầu, text tiếng Việt ở sau
-            # Heuristic: tìm dòng đầu tiên có >= 3 ký tự tiếng Việt (có dấu)
-            # Ký tự tiếng Việt: 0x00C0-0x024F (Latin Extended), 0x1E00-0x1EFF
             start_idx = 0
             for i, line in enumerate(lines):
                 stripped = line.strip()
                 if not stripped or len(stripped) < 10:
                     continue
-                # Đếm ký tự tiếng Việt (có dấu)
                 viet_chars = sum(1 for c in stripped if 0x00C0 <= ord(c) <= 0x024F or 0x1E00 <= ord(c) <= 0x1EFF)
-                # Dòng có >= 3 ký tự tiếng Việt -> likely là nội dung trích xuất
                 if viet_chars >= 3:
                     start_idx = i
                     break
@@ -275,302 +212,7 @@ def call_vision_model(messages, max_tokens=8000, timeout=300):
         return {"success": False, "text": "", "error": str(e)}
 
 
-def extract_invoice_text(photo_paths):
-    """Bước 1a: Dùng Kimi K2.6 đọc ảnh hóa đơn -> trích xuất text."""
-    prompt = build_extraction_prompt_invoice()
-
-    content = [{"type": "text", "text": prompt}]
-    for photo_path in photo_paths:
-        if os.path.exists(photo_path):
-            try:
-                content.append({"type": "image_url", "image_url": {"url": encode_image_to_base64(photo_path)}})
-            except Exception as e:
-                content.append({"type": "text", "text": f"[Không thể đọc ảnh: {str(e)}]"})
-
-    messages = [
-        {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh. Đọc chính xác từng dòng. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng yêu cầu."},
-        {"role": "user", "content": content}
-    ]
-
-    return call_vision_model(messages, max_tokens=8000, timeout=180)
-
-
-def extract_contract_text_from_images(contract_images, num_pages, batch_size=4):
-    """Bước 1b: Dùng Kimi K2.6 đọc ảnh hợp đồng -> trích xuất text.
-    Chia thành batch để tránh bị cắt nội dung."""
-    all_extracted_text = []
-    total_images = len(contract_images)
-    
-    # Nếu ít trang, gửi 1 lần
-    if total_images <= batch_size:
-        prompt = build_extraction_prompt_contract(num_pages)
-        content = [{"type": "text", "text": prompt}]
-        for img_b64 in contract_images:
-            content.append({"type": "image_url", "image_url": {"url": img_b64}})
-        
-        messages = [
-            {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Đọc chính xác từng trang. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng yêu cầu. KHÔNG bỏ sót trang nào."},
-            {"role": "user", "content": content}
-        ]
-        
-        return call_vision_model(messages, max_tokens=10000, timeout=180)
-    
-    # Nếu nhiều trang, chia thành batch
-    num_batches = (total_images + batch_size - 1) // batch_size
-    
-    for batch_idx in range(num_batches):
-        start = batch_idx * batch_size
-        end = min(start + batch_size, total_images)
-        batch_images = contract_images[start:end]
-        batch_num_pages = end - start
-        page_start = start + 1
-        page_end = end
-        
-        prompt = f"""Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Nhiệm vụ: ĐỌC {batch_num_pages} TRANG ẢNH (từ trang {page_start} đến trang {page_end}) và trích xuất TOÀN BỘ nội dung.
-
-YÊU CẦU:
-1. Đọc từng trang, không bỏ sót.
-2. Giữ nguyên số điều khoản, định nghĩa, danh mục.
-3. Không tóm tắt - ghi nguyên văn.
-
-ĐỊNH DẠNG XUẤT:
---- Trang {page_start} ---
-[nội dung]
---- Trang {page_start + 1} ---
-[nội dung]
-...
---- Trang {page_end} ---
-[nội dung]
-
-Chỉ xuất kết quả. Không thêm giải thích."""
-        
-        content = [{"type": "text", "text": prompt}]
-        for img_b64 in batch_images:
-            content.append({"type": "image_url", "image_url": {"url": img_b64}})
-        
-        messages = [
-            {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Đọc chính xác từng trang. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng. KHÔNG bỏ sót trang nào."},
-            {"role": "user", "content": content}
-        ]
-        
-        result = call_vision_model(messages, max_tokens=8000, timeout=180)
-        
-        if result["success"]:
-            all_extracted_text.append(result["text"])
-        else:
-            # Nếu batch fail, ghi lỗi nhưng tiếp tục batch khác
-            all_extracted_text.append(f"[Batch {batch_idx + 1} (trang {page_start}-{page_end}) trích xuất thất bại: {result['error']}]")
-    
-    # Ghép tất cả batch lại
-    combined_text = "\n\n".join(all_extracted_text)
-    return {"success": True, "text": combined_text, "error": ""}
-
-
-# ============================================================
-# BƯỚC 2: GLM-5.2 — PHÂN TÍCH KHẤU TRỪ, XUẤT BẢNG
-# ============================================================
-
-def build_analysis_prompt(claim_data, invoice_text, contract_text):
-    """Xây prompt phân tích khấu trừ cho GLM-5.2 — chỉ nhận text, không nhận ảnh."""
-    product_name = claim_data.get("product", {}).get("name", "Không rõ")
-    answers = claim_data.get("answers", {})
-
-    prompt = f'''BẠN LÀ CHUYÊN GIA KIỂM TOÁN HỢP ĐỒNG BẢO HIỂM PJICO CAO CẤP.
-NHIỆM VỤ: Phân tích khấu trừ bồi thường bằng cách đối chiếu hóa đơn với hợp đồng, suy luận logic (kể cả khấu trừ gián tiếp/nhúng), rồi xuất ra MỘT BẢNG DUY NHẤT theo mẫu quy định.
-
-Bạn làm việc theo 3 BƯỚC BẮT BUỘC, không bỏ qua bước nào, không rút gọn, không tóm tắt - đọc TOÀN VĂN tài liệu.
-
-THÔNG TIN HỒ SƠ:
-- Sản phẩm bảo hiểm: {product_name}
-- Khách hàng: {claim_data.get('customer_name', 'Không rõ')}
-- Loại sự cố: {answers.get('incident_type', 'Không rõ')}
-
-===============================================
-BƯỚC 1 - ĐỌC VÀ GHI NHỚ TOÀN BỘ HÓA ĐƠN
-===============================================
-
-Dưới đây là nội dung hóa đơn đã được trích xuất từ ảnh:
-
-{invoice_text}
-
-Đọc TOÀN BỘ hóa đơn. Với MỖI mục, ghi nhớ:
-- Tên mục / hạng mục
-- Mô tả chi tiết (nếu có)
-- Đơn vị tính và số lượng (nếu có)
-- Đơn giá (nếu có)
-- Thành tiền
-
-Tính và ghi nhớ:
-- TỔNG TIỀN TRƯỚC THUẾ (nếu có)
-- TIỀN THUẾ (nếu có)
-- TỔNG TIỀN SAU THUẾ (= TỔNG CỘNG)
-
-[!] Bạn phải ghi nhớ CHÍNH XÁC TỪNG CON SỐ. Không được tóm tắt, không được gộp mục nếu không chắc chắn.
-
-===============================================
-BƯỚC 2 - ĐỌC TOÀN BỘ HỢP ĐỒNG & XÂY BẢNG TRA CỨU
-===============================================
-
-Dưới đây là nội dung hợp đồng đã được trích xuất từ ảnh:
-
-{contract_text}
-
-Đọc TOÀN BỘ hợp đồng - mọi điều khoản, phụ lục, đính chính. Không được bỏ qua bất kỳ điều khoản nào.
-
-[!] ĐIỀU QUAN TRỌNG NHẤT: Thông tin loại trừ và thông tin định nghĩa THƯỜNG NẰM Ở CÁC TRANG KHÁC NHAU. Bạn KHÔNG ĐƯỢC chỉ đọc từng trang riêng lẻ. Bạn PHẢI tổng hợp thông tin từ TẤT CẢ các trang, kết nối chúng lại, rồi mới suy luận.
-
-2.1. XÂY DỰNG 3 DANH SÁCH BẮT BUỘC (làm trong đầu, không xuất ra)
-
-DANH SÁCH A - ĐIỀU KHOẢN LOẠI TRỪ:
-Mọi điều khoản nói về việc KHÔNG bồi thường / loại trừ / không chi trả.
-Hạng mục bị loại trừ có thể là:
-  - Tên trực tiếp: 'Không bồi thường thuốc ngoài danh mục'
-  - Tên nhóm/khái niệm: 'Không bồi thường thiết bị y tế hỗ trợ điều trị'
-  -> Với tên nhóm, bạn PHẢI tra trong DANH SÁCH B để xem nhóm đó bao gồm những hạng mục cụ thể nào.
-
-DANH SÁCH B - KHÁI NIỆM / ĐỊNH NGHĨA / DANH MỤC:
-Mọi trang định nghĩa thuật ngữ, liệt kê danh mục, giải thích khái niệm.
-VD: 'Thiết bị y tế hỗ trợ điều trị bao gồm: ...'
--> Mỗi khái niệm trong DANH SÁCH A (loại trừ) PHẢI được tra trong DANH SÁCH B để tìm các hạng mục con cụ thể.
--> Lưu ý: định nghĩa trong hợp đồng có thể KHÔNG bao gồm thuốc. Phải đọc kỹ xem định nghĩa ghi gì.
-
-DANH SÁCH C - HẠN MỨC CHI TRẢ:
-Mọi giới hạn chi trả: tối đa X VNĐ/năm, tối đa Y VNĐ/lần, tối đa Z% giá trị...
-
-2.2. QUY TRÌNH SUY LUẬN BẮT BUỘC - MAP HÓA ĐƠN VÀO 3 DANH SÁCH
-
-Với TỪNG MỖI MỤC trong hóa đơn, thực hiện:
-
-BƯỚC 2(A) - TRA DANH SÁCH A (điều khoản loại trừ):
-  - Mục trong hóa đơn có trùng tên trực tiếp với bất kỳ hạng mục nào trong DANH SÁCH A không?
-    -> Có -> KHẤU TRỪ. Ghi rõ: tên mục + số tiền + điều khoản + trang.
-    -> Không -> chuyển sang BƯỚC 2(B).
-
-BƯỚC 2(B) - TRA DANH SÁCH B (khái niệm/định nghĩa) - KIỂM TRA KHẤU TRỪ GIÁN TIẾP:
-  - Mục trong hóa đơn có thuộc bất kỳ khái niệm/định nghĩa nào trong DANH SÁCH B không?
-    -> DUYỆT TỪNG khái niệm trong DANH SÁCH B:
-      - Khái niệm này có liệt kê/bao gồm mục trong hóa đơn không?
-      - Khái niệm này có bị NHẮC ĐẾN trong DANH SÁCH A (tức là khái niệm đó bị loại trừ) không?
-      -> NẾU CẢ HAI ĐỀU CÓ: mục trong hóa đơn thuộc khái niệm bị loại trừ -> KHẤU TRỪ (gián tiếp).
-        Ghi rõ: tên mục + số tiền + khái niệm trung gian + điều khoản loại trừ + trang.
-      -> Chỉ có 1/2: không đủ cơ sở, chuyển sang khái niệm tiếp theo.
-  - Sau khi duyệt hết DANH SÁCH B mà vẫn không tìm thấy -> chuyển sang BƯỚC 2(C).
-
-BƯỚC 2(C) - TRA DANH SÁCH C (hạn mức chi trả):
-  - Mục trong hóa đơn có thuộc một hạng mục có hạn mức trong DANH SÁCH C không?
-  - Số tiền có vượt hạn mức không?
-    -> Vượt -> phần vượt bị KHẤU TRỪ.
-    -> Không vượt -> không khấu trừ.
-
-BƯỚC 2(D) - KẾT LUẬN:
-  - Nếu mục bị khấu trừ qua bất kỳ bước 2(A)/2(B)/2(C) nào -> đưa vào bảng kết quả.
-  - Nếu không bị khấu trừ qua bất kỳ bước nào -> KHÔNG đưa vào bảng.
-
-2.3. NGUYÊN TẮC PHÂN LOẠI ĐỐI TƯỢNG — QUAN TRỌNG NHẤT
-
-Khi đối chiếu mục trong hóa đơn với khái niệm trong hợp đồng, bạn PHẢI xác định ĐÚNG LOẠI của đối tượng:
-
-  a) THUỐC (medicine/pharmaceutical drug):
-     - Là chế phẩm có hoạt chất y tế được dùng qua đường uống, nhỏ mắt, nhỏ tai, bôi da, tiêm, truyền...
-     - Bao gồm: thuốc nhỏ mắt, thuốc mỡ bôi ngoài da, thuốc uống, thuốc tiêm, gel bôi trơn mắt (nếu có hoạt chất điều trị)...
-     - Đặc điểm: thường có tên thương mại + hàm lượng hoạt chất + dạng bào chế (vd: 'Ofloxacin 0.3% nhỏ mắt 5ml', 'Sanlein 0.3% nhỏ mắt 5ml').
-     - Nếu hợp đồng nói 'không bồi thường thuốc ngoài danh mục' -> kiểm tra thuốc có trong danh mục không.
-     - Nếu hợp đồng nói 'không bồi thường thiết bị y tế' -> THUỐC KHÔNG PHẢI THIẾT BỊ Y TẾ. Không được khấu trừ thuốc theo điều khoản loại trừ thiết bị y tế.
-
-  b) VẬT TƯ Y TẾ (medical device/supplies):
-     - Là dụng cụ/hàng lo dùng trong y tế KHÔNG có hoạt chất điều trị: băng gạc, ống tiêm, kim tiêm, catheter, găng tay y tế, máy đo huyết áp, nhiệt kế...
-     - Đặc điểm: là vật lý, không phải chế phẩm dược phẩm.
-     - Nếu hợp đồng nói 'không bồi thường thiết bị y tế' -> vật tư y tế MỚI bị khấu trừ.
-
-  c) DỊCH VỤ Y TẾ (medical service):
-     - Khám bệnh, xét nghiệm, phẫu thuật, vật lý trị liệu, chụp X-quang, siêu âm...
-     - Là quy trình/dịch vụ do nhân viên y tế thực hiện.
-
-  d) CÁC LOẠI KHÁC: thực phẩm chức năng, mỹ phẩm, hàng hóa...
-
-NGUYÊN TẮC XÁC ĐỊNH:
-- XÉT THEO BẢN CHẤT CỦA ĐỐI TƯỢNG, KHÔNG XÉT THEO ĐƯỜNG DÙNG.
-  VD: Thuốc nhỏ mắt là THUỐC (có hoạt chất điều trị), KHÔNG PHẢI vật tư y tế, KHÔNG PHẢI thiết bị y tế.
-  VD: Gel bôi trơn mắt (nếu có hoạt chất điều trị) là THUỐC. Nếu KHÔNG có hoạt chất điều trị (chỉ là gel bôi trơn) thì là vật tư y tế.
-- KHI HỢP ĐỒNG LIỆT KÊ 'thiết bị y tế hỗ trợ điều trị', bạn PHẢI tra trong DANH SÁCH B để xem định nghĩa cụ thể: hợp đồng ghi rõ 'thiết bị y tế' gồm những gì. Nếu định nghĩa không nhắc đến thuốc -> thuốc KHÔNG bị khấu trừ theo điều khoản đó.
-- KHÔNG ĐƯỢC TỰ Ý MỞ RỘNG khái niệm: nếu hợp đồng nói 'thiết bị y tế' mà hóa đơn là 'thuốc' -> KHÔNG KHẤU TRỪ theo điều khoản thiết bị y tế. Phải tìm điều khoản khác áp dụng trực tiếp cho thuốc.
-- ĐƯỜNG DÙNG KHÔNG XÁC ĐỊNH LOẠI: thuốc nhỏ mắt vẫn là thuốc, thuốc mỡ bôi da vẫn là thuốc. Không được gọi thuốc là 'thiết bị y tế' chỉ vì cùng đường dùng với vật tư.
-
-2.4. VÍ DỤ MINH HỌA (để hiểu cách suy luận, KHÔNG được dùng ví dụ này làm khuôn cố định):
-
-  Tình huống 1 — Khấu trừ gián tiếp HỢP LỆ:
-  - Hóa đơn có: 'Băng gạc y tế - 50.000 VNĐ' (vật tư y tế)
-  - DANH SÁCH A: 'Không bồi thường vật tư y tế tiêu hao' (trang 4)
-  - DANH SÁCH B: 'Vật tư y tế tiêu hao bao gồm: băng gạc, bông y tế, ống tiêm...' (trang 7)
-  -> Bước 2(A): 'Băng gạc' không trùng trực tiếp với 'vật tư y tế tiêu hao' -> Không trùng trực tiếp.
-  -> Bước 2(B): Duyệt DANH SÁCH B -> khái niệm 'vật tư y tế tiêu hao' có chứa 'băng gạc'? CÓ. Khái niệm này có bị loại trừ trong DANH SÁCH A? CÓ.
-  -> KẾT LUẬN: Băng gạc bị KHẤU TRỪ gián tiếp. Đúng loại đối tượng.
-
-  Tình huống 2 — KHÔNG khấu trừ vì sai loại đối tượng:
-  - Hóa đơn có: 'Thuốc Ofloxacin 0.3% nhỏ mắt 5ml - 60.000 VNĐ' (THUỐC)
-  - DANH SÁCH A: 'Không bồi thường thiết bị y tế hỗ trợ điều trị' (trang 4)
-  - DANH SÁCH B: 'Thiết bị y tế hỗ trợ điều trị bao gồm: băng gạc, ống tiêm, catheter...' (trang 7) — KHÔNG nhắc đến thuốc
-  -> Bước 2(A): 'Ofloxacin' không trùng trực tiếp với 'thiết bị y tế' -> Không trùng trực tiếp.
-  -> Bước 2(B): Duyệt DANH SÁCH B -> 'thiết bị y tế' có chứa 'Ofloxacin'? KHÔNG. Định nghĩa không nhắc đến thuốc.
-  -> Ofloxacin là THUỐC, không phải thiết bị y tế -> KHÔNG KHẤU TRỪ theo điều khoản thiết bị y tế.
-  -> Tiếp tục tra các điều khoản khác (có điều khoản nào nói rõ 'không bồi thường thuốc ngoài danh mục' không?).
-
-  [!] Đây chỉ là ví dụ về cách suy luận. Bạn PHẢI áp dụng cho TỪNG MỤC trong hóa đơn, với TỪNG KHÁI NIỆM trong hợp đồng — dựa trên NỘI DUNG THỰC TẾ của hợp đồng, không dựa trên ví dụ.
-
-2.5. NGUYÊN TẮC SUY LUẬN
-
-- KHÔNG BỎ SÓT: Đọc hết mọi điều khoản, tìm hết mọi khoản khấu trừ.
-- TRUY CHUỖI ĐẾN TẬN CẤP LÁ: A bị khấu trừ chứa B, C -> kiểm tra B, C. B chứa B1, B2 -> tiếp tục. Đi đến tận cùng.
-- THAM CHIẾU CHÉO: Điều X dẫn đến Điều Y -> phải đọc cả Y.
-- KHÔNG SUY ĐOÁN: Chỉ khấu trừ khi có cơ sở rõ ràng. Nếu không chắc, đánh dấu '[!] Cần xác nhận'.
-- KHÔNG TỰ Ý MỞ RỘNG KHÁI NIỆM: Khấu trừ theo đúng loại đối tượng. Thuốc ≠ thiết bị y tế ≠ vật tư y tế. Chỉ khấu trừ khi hợp đồng THỰC SỰ áp dụng cho loại đối tượng đó.
-- GHI NGUỒN: Mỗi kết luận khấu trừ phải kèm số điều khoản + số trang trong hợp đồng.
-- KIỂM TRA CHÉO BẮT BUỘC: MỖI MỤC trong hóa đơn PHẢI kiểm tra cả 3 danh sách A, B, C.
-
-===============================================
-BƯỚC 3 - XUẤT BẢNG KẾT QUẢ
-===============================================
-
-Xuất DUY NHẤT MỘT BẢNG theo đúng mẫu bên dưới. Không viết thêm lời dẫn, không giải thích bên ngoài bảng. Chỉ hiện bảng.
-
-ĐỊNH DẠNG BẢNG (BẮT BUỘC - làm đúng mẫu):
-
-**Tổng chi phí theo hóa đơn:** [số tiền] VNĐ
-
-| # | Tổng tiền ban đầu | Mục bị khấu trừ | Số tiền bị khấu trừ (VNĐ) | Lí do bị khấu trừ | Nguồn điều khoản | Tiền còn lại |
-|---|---|---|---|---|---|---|
-| 0 | [TỔNG CỘNG từ hóa đơn] | - | - | - | - | [TỔNG CỘNG] |
-| 1 | | [tên hạng mục] | [số tiền] | [lí do: trích dẫn điều khoản + giải thích vì sao khoản trong hóa đơn bị khấu trừ] | [Điều khoản/trang] | [Tổng - KH1] |
-| 2 | | [tên hạng mục] | [số tiền] | [lí do: trích dẫn điều khoản + giải thích] | [Điều khoản/trang] | [Tổng-KH1 - KH2] |
-| ... | | | | | | |
-| **KQ** | | **TỔNG KHẤU TRỪ** | **[tổng cộng]** | | | **[tiền cuối cùng còn lại]** |
-
-**Tổng khấu trừ:** [số tiền] VNĐ
-**Tiền bồi thường thực nhận:** [Tổng - Khấu trừ] = [số tiền] VNĐ
-
-QUY TẮC XUẤT BẢNG:
-- Dòng 0 = tổng tiền ban đầu. Cột 'Tiền còn lại' = TỔNG CỘNG.
-- Mỗi dòng khấu trừ = một hạng mục cụ thể trong hóa đơn bị khấu trừ.
-- Cột 'Lí do' PHẢI ghi rõ: (a) điều khoản hợp đồng gì, (b) vì sao khoản trong hóa đơn bị khấu trừ theo điều khoản đó.
-- Cột 'Nguồn điều khoản' = số điều khoản + số trang (nếu có).
-- Cột 'Tiền còn lại' = chạy tích lũy: dòng 1 = Tổng - KH1; dòng 2 = (Tổng-KH1) - KH2; v.v.
-- Dòng cuối (KQ) = tổng cộng khấu trừ và số tiền cuối cùng còn lại.
-- Số tiền: định dạng có dấu phẩy (VD: 1.500.000.000). Đơn vị VNĐ.
-- Nếu KHÔNG có khoản nào bị khấu trừ: chỉ xuất dòng 0 và dòng KQ với '0' cho tổng khấu trừ, ghi 'Không có khoản khấu trừ, khách hàng nhận toàn bộ [số tiền] VNĐ.'
-- Nếu CÓ khoản không chắc chắn: vẫn đưa vào bảng nhưng ghi '[!] Cần xác nhận' ở cột Lí do.
-
-NGUYÊN TẮC TỔNG QUÁT:
-1. Đọc hết, nhớ hết - không bỏ sót bất kỳ dòng nào trong hóa đơn hay điều khoản nào trong hợp đồng.
-2. Suy luận đến tận gốc - khấu trừ gián tiếp, khấu trừ nhúng, khấu trừ theo điều kiện, vượt hạn mức đều phải kiểm tra.
-3. KHÔNG TỰ Ý MỞ RỘNG KHÁI NIỆM - khấu trừ đúng loại đối tượng: thuốc là thuốc, thiết bị là thiết bị, vật tư là vật tư. Chỉ khấu trừ khi hợp đồng thực sự áp dụng cho loại đối tượng đó.
-4. Trích dẫn nguồn - mọi kết luận phải có điều khoản hợp đồng làm căn cứ.
-5. Chính xác tuyệt đối về con số - không làm tròn, không ước lượng, không 'khoảng'.
-6. Chỉ xuất bảng - kết quả cuối cùng là một bảng duy nhất, không kèm lời giải thích bên ngoài.
-'''
-    return prompt
-
-
-def call_analysis_model(messages, max_tokens=6000, timeout=240):
+def call_analysis_model(messages, max_tokens=6000, timeout=180):
     """Gọi analysis model (GLM-5.2) qua Ollama Cloud API."""
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -597,35 +239,27 @@ def call_analysis_model(messages, max_tokens=6000, timeout=240):
         content_text = msg.get("content", "") or ""
         reasoning = msg.get("reasoning", "") or ""
 
-        # Ưu tiên content
         if content_text.strip():
             return {"success": True, "text": content_text.strip(), "error": ""}
 
-        # Fallback: reasoning có nội dung -> tìm bảng cuối cùng
+        # Fallback: reasoning
         if reasoning.strip():
-            markers = ["**Tổng chi phí", "| # |", "| STT |", "**Tổng khấu trừ", "Không có khoản khấu trừ", "Tổng chi phí theo", "Tiền bồi thường thực nhận"]
-            last_match_idx = -1
-            for marker in markers:
-                idx = reasoning.rfind(marker)
-                if idx > last_match_idx:
-                    last_match_idx = idx
-            if last_match_idx >= 0:
-                return {"success": True, "text": reasoning[last_match_idx:][:5000].strip(), "error": ""}
-
-            # Fallback: tìm phần cuối có dấu hiệu trả lời (bảng)
             lines = reasoning.split("\n")
-            answer_lines = []
-            in_answer = False
-            for line in lines:
-                if any(m in line for m in ["**Tổng", "| # |", "| STT", "| 1 ", "| 1  ", "Không có khoản", "Tiền bồi thường", "Tiền còn lại"]):
-                    in_answer = True
-                if in_answer:
-                    answer_lines.append(line)
-
-            if answer_lines:
-                return {"success": True, "text": "\n".join(answer_lines)[:5000], "error": ""}
-
-            return {"success": True, "text": reasoning[-2000:].strip(), "error": ""}
+            start_idx = 0
+            for i, line in enumerate(lines):
+                stripped = line.strip()
+                if not stripped or len(stripped) < 10:
+                    continue
+                viet_chars = sum(1 for c in stripped if 0x00C0 <= ord(c) <= 0x024F or 0x1E00 <= ord(c) <= 0x1EFF)
+                if viet_chars >= 3:
+                    start_idx = i
+                    break
+            result_text = "\n".join(lines[start_idx:]).strip()
+            if not result_text or len(result_text) < 50:
+                result_text = reasoning.strip()
+            if len(result_text) > 8000:
+                result_text = result_text[:8000]
+            return {"success": True, "text": result_text, "error": ""}
 
         return {"success": False, "text": "", "error": "AI không trả về nội dung."}
 
@@ -638,11 +272,303 @@ def call_analysis_model(messages, max_tokens=6000, timeout=240):
 
 
 # ============================================================
-# PIPELINE CHÍNH: 2 BƯỚC
+# TẦNG 1: KIMI ĐỌC ẢNH (MAP)
+# ============================================================
+
+def build_invoice_prompt():
+    return """Bạn là chuyên gia trích xuất dữ liệu từ ảnh hóa đơn/viện phí. Nhiệm vụ: ĐỌC ẢNH HÓA ĐƠN và trích xuất TOÀN BỘ nội dung thành text có cấu trúc.
+
+YÊU CẦU:
+1. Đọc từng dòng trên hóa đơn, không bỏ sót bất kỳ dòng nào.
+2. Với mỗi hạng mục, ghi rõ: tên mục, mô tả, đơn vị tính, số lượng, đơn giá, thành tiền.
+3. Ghi rõ các khoản thuế, phí khác nếu có.
+4. Ghi rõ TỔNG CỘNG (tổng số tiền).
+5. Giữ nguyên số liệu chính xác - không làm tròn, không ước lượng.
+
+YÊU CẦU ĐẶC BIỆT VỀ TÊN THUỐC / HÀNG MỤC Y TẾ:
+- Tên thuốc phải được đọc CHÍNH XÁC từng chữ cái. Đặc biệt chú ý các ký tự dễ nhầm: b/d, n/h, m/n, l/i, o/a.
+- Nếu không chắc về một chữ trong tên thuốc, ghi [?] sau chữ đó.
+- Không được tự ý "sửa" tên thuốc theo ý hiểu - phải ghi đúng những gì in trên hóa đơn.
+- Phân loại rõ mỗi mục: thuốc, vật tư y tế, dịch vụ y tế, hay loại khác.
+
+ĐỊNH DẠNG XUẤT:
+
+=== HÓA ĐƠN ===
+Tổng tiền: [số tổng cộng trên hóa đơn]
+
+DANH SÁCH MỤC:
+1. [Tên mục] | [Loại: thuốc/vật tư y tế/dịch vụ/khác] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
+2. [Tên mục] | [Loại] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
+...
+
+Thuế VAT: [số tiền] (nếu có)
+Tổng sau thuế: [số tiền] (nếu có)
+=== HẾT HÓA ĐƠN ===
+
+Chỉ xuất kết quả theo định dạng trên. Không thêm lời giải thích."""
+
+
+def build_contract_chunk_prompt(page_start, page_end, num_pages):
+    return f"""Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Nhiệm vụ: ĐỌC {page_end - page_start + 1} TRANG ẢNH (trang {page_start} đến trang {page_end}) và trích xuất TOÀN BỘ nội dung.
+
+YÊU CẦU:
+1. Đọc từng trang, không bỏ sót.
+2. Giữ nguyên số điều khoản, định nghĩa, danh mục.
+3. Không tóm tắt - ghi nguyên văn nội dung.
+
+ĐỊNH DẠNG XUẤT:
+--- Trang {page_start} ---
+[nội dung nguyên văn]
+--- Trang {page_start + 1} ---
+[nội dung nguyên văn]
+...
+--- Trang {page_end} ---
+[nội dung nguyên văn]
+
+Chỉ xuất kết quả. Không thêm giải thích."""
+
+
+def kimi_read_invoice(photo_paths):
+    """Kimi đọc ảnh hóa đơn."""
+    if not photo_paths:
+        return {"success": False, "text": "", "error": "Không có ảnh hóa đơn"}
+    any_photo = [p for p in photo_paths if os.path.exists(p)]
+    if not any_photo:
+        return {"success": False, "text": "", "error": "Không tìm thấy file ảnh"}
+
+    prompt = build_invoice_prompt()
+    content = [{"type": "text", "text": prompt}]
+    for photo_path in any_photo:
+        try:
+            content.append({"type": "image_url", "image_url": {"url": encode_image_to_base64(photo_path)}})
+        except Exception as e:
+            content.append({"type": "text", "text": f"[Không thể đọc ảnh: {str(e)}]"})
+
+    messages = [
+        {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh. Đọc chính xác từng dòng. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng yêu cầu."},
+        {"role": "user", "content": content}
+    ]
+    return call_vision_model(messages, max_tokens=8000, timeout=180)
+
+
+def kimi_read_contract_chunk(chunk_images, page_start, page_end):
+    """Kimi đọc 1 chunk trang hợp đồng."""
+    prompt = build_contract_chunk_prompt(page_start, page_end, page_end)
+    content = [{"type": "text", "text": prompt}]
+    for img_b64 in chunk_images:
+        content.append({"type": "image_url", "image_url": {"url": img_b64}})
+
+    messages = [
+        {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Đọc chính xác từng trang. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng. KHÔNG bỏ sót trang nào."},
+        {"role": "user", "content": content}
+    ]
+    return call_vision_model(messages, max_tokens=8000, timeout=180)
+
+
+# ============================================================
+# TẦNG 2: GLM PHÂN TÍCH (REDUCE)
+# ============================================================
+
+def build_invoice_analysis_prompt(invoice_text, claim_data):
+    """GLM phân tích hóa đơn — liệt kê mục, phân loại, ghi rõ số tiền."""
+    product_name = claim_data.get("product", {}).get("name", "Không rõ")
+    return f'''Bạn là chuyên gia phân tích hóa đơn y tế. Đọc hóa đơn dưới đây và xuất danh sách cấu trúc.
+
+Sản phẩm bảo hiểm: {product_name}
+Khách hàng: {claim_data.get("customer_name", "Không rõ")}
+
+NỘI DUNG HÓA ĐƠN:
+{invoice_text}
+
+NHIỆM VỤ: Với TỪNG mục trong hóa đơn, xác định:
+1. Tên chính xác
+2. Loại đối tượng: THUỐC (có hoạt chất điều trị) / VẬT TƯ Y TẾ (dụng cụ vật lý) / DỊCH VỤ Y TẾ / KHÁC
+3. Số tiền
+4. Ghi chú nếu tên có khả năng bị OCR sai (ghi [?])
+
+NGUYÊN TẮC PHÂN LOẠI:
+- THUỐC: có hoạt chất y tế, dạng bào chế (viên, nhỏ mắt, mỡ, tiêm...). VD: Ofloxacin 0.3% nhỏ mắt, Paracetamol 500mg
+- VẬT TƯ Y TẾ: dụng cụ vật lý không có hoạt chất. VD: băng gạc, ống tiêm, catheter, găng tay
+- DỊCH VỤ Y TẾ: quy trình do nhân viên y tế thực hiện. VD: khám bệnh, xét nghiệm, phẫu thuật
+- Đường dùng KHÔNG xác định loại: thuốc nhỏ mắt vẫn là THUỐC, không phải vật tư
+
+XUẤT ĐỊNH DẠNG:
+=== PHÂN TÍCH HÓA ĐƠN ===
+Tổng tiền: [số]
+Số mục: [số]
+
+1. Tên: [tên] | Loại: [THUỐC/VẬT TƯ/DỊCH VỤ/KHÁC] | Số tiền: [số] | Ghi chú: [nếu có]
+2. Tên: [tên] | Loại: [loại] | Số tiền: [số] | Ghi chú: [nếu có]
+...
+=== HẾT PHÂN TÍCH ===
+
+Chỉ xuất kết quả theo định dạng trên.'''
+
+
+def build_contract_analysis_prompt(contract_chunk_text, page_start, page_end):
+    """GLM phân tích 1 chunk hợp đồng — tìm loại trừ, định nghĩa, hạn mức."""
+    return f'''Bạn là chuyên gia pháp lý bảo hiểm. Đọc đoạn hợp đồng dưới đây (trang {page_start}-{page_end}) và trích xuất 3 loại thông tin:
+
+NỘI DUNG HỢP ĐỒNG (trang {page_start}-{page_end}):
+{contract_chunk_text}
+
+NHIỆM VỤ: Tìm và liệt kê:
+
+A. ĐIỀU KHOẢN LOẠI TRỪ (không bồi thường / không chi trả):
+- Trích dẫn nguyên văn điều khoản
+- Ghi rõ số điều khoản + trang
+
+B. KHÁI NIỆM / ĐỊNH NGHĨA / DANH MỤC:
+- Mọi định nghĩa thuật ngữ, liệt kê danh mục, giải thích khái niệm
+- Trích dẫn nguyên văn + trang
+- Đặc biệt chú ý: định nghĩa nào liệt kê hạng mục cụ thể (VD: "thiết bị y tế bao gồm: ...")
+
+C. HẠN MỨC CHI TRẢ:
+- Mọi giới hạn: tối đa X VNĐ/năm, Y VNĐ/lần, Z%...
+- Ghi rõ điều khoản + trang
+
+XUẤT ĐỊNH DẠNG:
+=== PHÂN TÍCH HỢP ĐỒNG (trang {page_start}-{page_end}) ===
+
+[A] ĐIỀU KHOẢN LOẠI TRỪ:
+1. [trích dẫn nguyên văn] — Điều khoản: [số], Trang: [số]
+2. ...
+
+[B] KHÁI NIỆM / ĐỊNH NGHĨA:
+1. [khái niệm]: [trích dẫn nguyên văn] — Trang: [số]
+2. ...
+
+[C] HẠN MỨC CHI TRẢ:
+1. [hạn mức] — Điều khoản: [số], Trang: [số]
+2. ...
+
+(không có mục nào thì ghi "không có")
+=== HẾT PHÂN TÍCH ===
+
+Chỉ xuất kết quả theo định dạng trên.'''
+
+
+def glm_analyze_invoice(invoice_text, claim_data):
+    """GLM phân tích hóa đơn."""
+    prompt = build_invoice_analysis_prompt(invoice_text, claim_data)
+    messages = [
+        {"role": "system", "content": "Bạn là chuyên gia phân tích hóa đơn y tế bảo hiểm. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng."},
+        {"role": "user", "content": prompt}
+    ]
+    return call_analysis_model(messages, max_tokens=4000, timeout=120)
+
+
+def glm_analyze_contract_chunk(chunk_text, page_start, page_end):
+    """GLM phân tích 1 chunk hợp đồng."""
+    prompt = build_contract_analysis_prompt(chunk_text, page_start, page_end)
+    messages = [
+        {"role": "system", "content": "Bạn là chuyên gia pháp lý bảo hiểm PJICO. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng. Trích dẫn nguyên văn điều khoản."},
+        {"role": "user", "content": prompt}
+    ]
+    return call_analysis_model(messages, max_tokens=4000, timeout=120)
+
+
+# ============================================================
+# TẦNG 3: GLM TRƯỞNG PHÒNG TỔNG HỢP (MERGE)
+# ============================================================
+
+def build_merge_prompt(claim_data, invoice_analysis, contract_analyses):
+    """GLM trưởng phòng nhận tất cả báo cáo → xuất bảng khấu trừ cuối."""
+    product_name = claim_data.get("product", {}).get("name", "Không rõ")
+    answers = claim_data.get("answers", {})
+
+    # Ghép các báo cáo hợp đồng
+    contract_reports = "\n\n".join(contract_analyses)
+
+    return f'''BẠN LÀ TRƯỞNG PHÒNG KIỂM TOÁN BẢO HIỂM PJICO. Bạn nhận báo cáo từ các nhân viên phân tích và phải xuất bảng khấu trừ bồi thường cuối cùng.
+
+THÔNG TIN HỒ SƠ:
+- Sản phẩm bảo hiểm: {product_name}
+- Khách hàng: {claim_data.get("customer_name", "Không rõ")}
+- Loại sự cố: {answers.get("incident_type", "Không rõ")}
+
+===============================================
+BÁO CÁO 1: PHÂN TÍCH HÓA ĐƠN
+===============================================
+{invoice_analysis}
+
+===============================================
+BÁO CÁO 2: PHÂN TÍCH HỢP ĐỒNG (từ các nhân viên)
+===============================================
+{contract_reports}
+
+===============================================
+NHIỆM VỤ CỦA BẠN (TRƯỞNG PHÒNG)
+===============================================
+
+Bạn có 2 báo cáo: hóa đơn đã phân loại + hợp đồng đã trích xuất điều khoản. Nhiệm vụ: đối chiếu từng mục hóa đơn với hợp đồng, tìm khoản khấu trừ, xuất bảng cuối.
+
+QUY TRÌNH SUY LUẬN BẮT BUỘC:
+
+Với TỪNG MỤC trong hóa đơn:
+
+BƯỚC A - TRA ĐIỀU KHOẢN LOẠI TRỪ TRỰC TIẾP:
+- Mục có trùng tên trực tiếp với điều khoản loại trừ không?
+-> Có → KHẤU TRỪ. Ghi: tên + số tiền + điều khoản + trang.
+-> Không → sang BƯỚC B.
+
+BƯỚC B - TRA KHÁI NIỆM/ĐỊNH NGHĨA (KHẤU TRỪ GIÁN TIẾP):
+- Mục có thuộc khái niệm/định nghĩa nào trong hợp đồng không?
+- Khái niệm đó có bị loại trừ không?
+-> CẢ HAI → KHẤU TRỪ gián tiếp. Ghi: tên + số tiền + khái niệm trung gian + điều khoản + trang.
+-> Không → sang BƯỚC C.
+
+BƯỚC C - TRA HẠN MỨC CHI TRẢ:
+- Mục có hạn mức không? Vượt hạn mức không?
+-> Vượt → phần vượt bị KHẤU TRỪ.
+-> Không → không khấu trừ.
+
+NGUYÊN TẮC PHÂN LOẠI ĐỐI TƯỢNG — QUAN TRỌNG:
+- THUỐC (có hoạt chất điều trị) ≠ VẬT TƯ Y TẾ (dụng cụ vật lý) ≠ THIẾT BỊ Y TẾ ≠ DỊCH VỤ
+- Đường dùng KHÔNG xác định loại: thuốc nhỏ mắt vẫn là THUỐC
+- KHÔNG TỰ Ý MỞ RỘNG khái niệm: hợp đồng loại trừ "thiết bị y tế" → KHÔNG khấu trừ THUỐC theo điều khoản đó
+- Chỉ khấu trừ khi hợp đồng THỰC SỰ áp dụng cho loại đối tượng đó
+- KẾT NỐI thông tin giữa các trang: loại trừ ở trang 4 + định nghĩa ở trang 7 → suy luận
+
+XUẤT BẢNG THEO MẪU:
+
+**Tổng chi phí theo hóa đơn:** [số tiền] VNĐ
+
+| # | Tổng tiền ban đầu | Mục bị khấu trừ | Số tiền bị khấu trừ (VNĐ) | Lí do bị khấu trừ | Nguồn điều khoản | Tiền còn lại |
+|---|---|---|---|---|---|---|
+| 0 | [TỔNG] | - | - | - | - | [TỔNG] |
+| 1 | | [tên] | [số] | [lí do: điều khoản + giải thích] | [Điều khoản/trang] | [Tổng - KH1] |
+| 2 | | [tên] | [số] | [lí do] | [Điều khoản/trang] | [Tổng-KH1-KH2] |
+| **KQ** | | **TỔNG KHẤU TRỪ** | **[tổng]** | | | **[còn lại]** |
+
+**Tổng khấu trừ:** [số] VNĐ
+**Tiền bồi thường thực nhận:** [Tổng - Khấu trừ] = [số] VNĐ
+
+QUY TẮC:
+- Dòng 0 = tổng tiền. Cột 'Tiền còn lại' = TỔNG.
+- Cột 'Tiền còn lại' chạy tích lũy.
+- Số tiền có dấu phẩy (VD: 1.500.000). Đơn vị VNĐ.
+- Không có khấu trừ → dòng 0 + KQ với '0', ghi 'Không có khoản khấu trừ, khách hàng nhận toàn bộ [số] VNĐ.'
+- Không chắc → ghi '[!] Cần xác nhận' ở Lí do.
+- Chỉ xuất bảng, không kèm lời giải thích bên ngoài.'''
+
+
+def glm_merge_analysis(claim_data, invoice_analysis, contract_analyses):
+    """GLM trưởng phòng tổng hợp tất cả báo cáo → xuất bảng cuối."""
+    prompt = build_merge_prompt(claim_data, invoice_analysis, contract_analyses)
+    messages = [
+        {"role": "system", "content": "Bạn là trưởng phòng kiểm toán bảo hiểm PJICO. Nhận báo cáo từ nhân viên, đối chiếu hóa đơn với hợp đồng, xuất bảng khấu trừ. Trả lời bằng tiếng Việt. PHÂN BIỆT ĐÚNG LOẠI ĐỐI TƯỢNG: thuốc ≠ thiết bị y tế ≠ vật tư. KHÔNG tự ý mở rộng khái niệm. Chỉ xuất bảng kết quả."},
+        {"role": "user", "content": prompt}
+    ]
+    return call_analysis_model(messages, max_tokens=6000, timeout=240)
+
+
+# ============================================================
+# PIPELINE CHÍNH: 3 TẦNG (MAP-REDUCE-MERGE)
 # ============================================================
 
 def analyze_deduction(claim_data, photo_paths, contract_path):
-    """Pipeline 2 bước: Kimi đọc ảnh -> GLM phân tích khấu trừ."""
+    """Pipeline 3 tầng song song."""
 
     if not has_api_key():
         return {
@@ -652,108 +578,65 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         }
 
     # ============================================================
-    # BƯỚC 1: KIMI ĐỌC ẢNH HÓA ĐƠN + HỢP ĐỒNG (SONG SONG)
+    # TẦNG 1: KIMI ĐỌC ẢNH (MAP) — song song
     # ============================================================
-    import threading
+    # Chuẩn bị dữ liệu
+    invoice_images = []
+    contract_images = []
+    total_contract_pages = 0
 
-    invoice_result_box = {"result": None}
-    contract_result_box = {"result": None}
+    # Hóa đơn
+    if photo_paths:
+        invoice_images = [p for p in photo_paths if os.path.exists(p)]
 
-    def read_invoice():
-        if not photo_paths:
-            invoice_result_box["result"] = {"success": False, "text": "", "error": "Không có ảnh"}
-            return
-        any_photo = [p for p in photo_paths if os.path.exists(p)]
-        if not any_photo:
-            invoice_result_box["result"] = {"success": False, "text": "", "error": "Không tìm thấy file ảnh"}
-            return
-        invoice_result_box["result"] = extract_invoice_text(any_photo)
-
-    def read_contract():
-        if not contract_path or not os.path.exists(contract_path):
-            contract_result_box["result"] = {"success": False, "text": "", "error": "Không có hợp đồng"}
-            return
+    # Hợp đồng
+    if contract_path and os.path.exists(contract_path):
         ext = os.path.splitext(contract_path)[1].lower().lstrip(".")
         if ext == "pdf":
             pdf_text = extract_pdf_text(contract_path)
             if pdf_text:
-                contract_result_box["result"] = {"success": True, "text": pdf_text[:50000], "error": ""}
-                return
-            contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=20)
-            if contract_images:
-                result = extract_contract_text_from_images(contract_images, len(contract_images))
-                if result["success"]:
-                    contract_result_box["result"] = result
-                else:
-                    contract_result_box["result"] = {"success": True, "text": f"(Hợp đồng PDF gồm {total_pages} trang ảnh, trích xuất thất bại: {result['error']})", "error": ""}
-                return
-            contract_result_box["result"] = {"success": False, "text": "", "error": "Không thể đọc PDF"}
-            return
+                # PDF có text → không cần Kimi, dùng trực tiếp
+                contract_text_raw = pdf_text[:50000]
+                contract_images = []  # không cần đọc ảnh
+            else:
+                contract_images, total_contract_pages = pdf_pages_to_images(contract_path, max_pages=30)
         elif ext in ("jpg", "jpeg", "png", "gif", "webp"):
-            img_b64 = encode_image_to_base64(contract_path)
-            result = extract_contract_text_from_images([img_b64], 1)
-            contract_result_box["result"] = result
-            return
-        contract_result_box["result"] = {"success": False, "text": "", "error": f"Định dạng không hỗ trợ: {ext}"}
+            contract_images = [encode_image_to_base64(contract_path)]
+            total_contract_pages = 1
 
-    # Chạy 2 thread song song
-    t_invoice = threading.Thread(target=read_invoice)
-    t_contract = threading.Thread(target=read_contract)
-    t_invoice.start()
-    t_contract.start()
-    # Hóa đơn nhanh (1-3 ảnh), chờ tối đa 200s
-    t_invoice.join(timeout=200)
-    # Hợp đồng có thể 16+ trang scan, chờ tối đa 600s
-    t_contract.join(timeout=600)
+    # Chia trang hợp đồng thành các chunk (mỗi chunk = CONTRACT_CHUNK_SIZE trang)
+    contract_chunks = []
+    if contract_images:
+        chunk_size = CONTRACT_CHUNK_SIZE
+        for i in range(0, len(contract_images), chunk_size):
+            chunk_imgs = contract_images[i:i + chunk_size]
+            page_start = i + 1
+            page_end = min(i + chunk_size, len(contract_images))
+            contract_chunks.append({
+                "images": chunk_imgs,
+                "page_start": page_start,
+                "page_end": page_end
+            })
 
-    # Xử lý kết quả hóa đơn
-    invoice_text = "(Không có hóa đơn)"
-    inv_result = invoice_result_box["result"]
-    if inv_result and inv_result.get("success") and inv_result.get("text"):
-        invoice_text = inv_result["text"]
-    elif inv_result and not inv_result.get("success") and photo_paths:
-        return {
-            "success": False,
-            "response": "",
-            "error": f"Bước 1 (đọc hóa đơn) thất bại: {inv_result.get('error', 'unknown')}"
-        }
-
-    # Xử lý kết quả hợp đồng
-    contract_text = "(Không có hợp đồng đính kèm)"
-    con_result = contract_result_box["result"]
-    if con_result and con_result.get("success") and con_result.get("text"):
-        contract_text = con_result["text"]
-    elif con_result and not con_result.get("success") and contract_path and os.path.exists(contract_path):
-        contract_text = f"(Hợp đồng trích xuất thất bại: {con_result.get('error', 'unknown')})"
-    elif con_result is None and contract_path and os.path.exists(contract_path):
-        contract_text = "(Hợp đồng đang được trích xuất, vui lòng đợi hoặc thử lại)"
-
-    # ============================================================
-    # BƯỚC 2: GLM-5.2 PHÂN TÍCH KHẤU TRỪ
-    # ============================================================
-    prompt = build_analysis_prompt(claim_data, invoice_text, contract_text)
-
-    system_msg = {
-        "role": "system",
-        "content": "Bạn là chuyên gia kiểm toán hợp đồng bảo hiểm PJICO cao cấp. LUÔN trả lời bằng tiếng Việt. Nhiệm vụ: ĐỌC TOÀN BỘ text hóa đơn (ghi nhớ từng dòng, từng con số) -> ĐỌC TOÀN BỘ text hợp đồng (mọi điều khoản, phụ lục, đính chính) -> XÂY DỰNG 3 DANH SÁCH TRONG ĐẦU: (A) Điều khoản loại trừ, (B) Khái niệm/định nghĩa/danh mục, (C) Hạn mức chi trả -> MAP TỪNG MỤC trong hóa đơn vào 3 danh sách theo quy trình 2(A) -> 2(B) -> 2(C). ĐẶC BIỆT: khoản trong hóa đơn có thể KHÔNG TRÙNG TÊN trực tiếp với điều khoản loại trừ, nhưng có THUỘC một khái niệm/định nghĩa bị loại trừ (khấu trừ gián tiếp). Phải KẾT NỐI thông tin giữa các trang. QUAN TRỌNG: PHẢI PHÂN BIỆT ĐÚNG LOẠI ĐỐI TƯỢNG — thuốc là thuốc (có hoạt chất điều trị), thiết bị y tế là thiết bị (dụng cụ vật lý), vật tư y tế là vật tư (băng gạc, ống tiêm...). KHÔNG ĐƯỢC tự ý mở rộng khái niệm: nếu hợp đồng loại trừ 'thiết bị y tế' thì KHÔNG được khấu trừ THUỐC theo điều khoản đó. Chỉ khấu trừ khi hợp đồng THỰC SỰ áp dụng cho loại đối tượng đó. Mọi kết luận phải có điều khoản hợp đồng làm căn cứ. CHÍNH XÁC TUYỆT ĐỐI về con số - không làm tròn, không ước lượng. Output cuối cùng là MỘT BẢNG DUY NHẤT theo mẫu, không kèm lời giải thích bên ngoài. KHÔNG trả lời 'không có khấu trừ' nếu chưa kiểm tra kỹ tất cả điều khoản hợp đồng."
-    }
-    user_msg = {"role": "user", "content": prompt}
-    messages = [system_msg, user_msg]
-
-    analysis_result = call_analysis_model(messages, max_tokens=6000, timeout=240)
-
-    if analysis_result["success"]:
-        return {"success": True, "response": analysis_result["text"], "error": ""}
-    else:
-        return {"success": False, "response": "", "error": f"Bước 2 (phân tích) thất bại: {analysis_result['error']}"}
-
-
+    # Nếu PDF có text sẵn → 1 chunk text
+    if not contract_chunks and contract_path and os.path.exists(contract_path):
+        ext = os.path.splitext(contract_path)[1].lower().lstrip(".")
+        if ext == "pdf":
+            pdf_text = extract_pdf_text(contract_path)
+            if pdf_text:
+                # Chia text theo trang
+                pages = re.split(r'--- Trang \d+ ---', pdf_text)
+                pages = [p.strip() for p in pages if p.strip()]
+                chunk_size = CONTRACT_CHUNK_SIZE
+                for i in range(0, len(pages), chunk_size):
+                    chunk_pages = pages[i:i + chunk_size]
+   
 # ============================================================
-# LƯU KẾT QUẢ
+# LUU KET QUA
 # ============================================================
 
 def save_reply(claim_data, ai_response, photo_names, contract_name):
-    """Lưu câu trả lời AI vào thư mục trả lời."""
+    """Luu cau tra loi AI vao thu muc tra loi."""
     os.makedirs(REPLY_DIR, exist_ok=True)
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -763,22 +646,22 @@ def save_reply(claim_data, ai_response, photo_names, contract_name):
     filename = f"reply_{safe_name}_{product_id}_{ts}.md"
     filepath = os.path.join(REPLY_DIR, filename)
 
-    content = f"""# Phân tích khoản khấu trừ bồi thường
+    content = f"""# Phan tich khoan khau tru boi thuong
 
-**Khách hàng:** {claim_data.get('customer_name', 'Không rõ')}
-**Sản phẩm:** {claim_data.get('product', {}).get('name', 'Không rõ')}
-**Thời gian:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+**Khach hang:** {claim_data.get('customer_name', 'Khong ro')}
+**San pham:** {claim_data.get('product', {}).get('name', 'Khong ro')}
+**Thoi gian:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
 
-## Ảnh thiệt hại đính kèm:
+## Anh thiet hai dinh kem:
 """
     for name in photo_names:
         content += f"- {name}\n"
 
     content += f"""
-## Hợp đồng đính kèm:
-- {contract_name or 'Không có'}
+## Hop dong dinh kem:
+- {contract_name or 'Khong co'}
 
-## Phân tích AI:
+## Phan tich AI:
 {ai_response}
 """
 
