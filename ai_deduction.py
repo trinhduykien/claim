@@ -182,7 +182,10 @@ def _is_real_text(text):
 
 
 def extract_pdf_text_and_image_pages(pdf_path, max_pages=100):
-    """Tách PDF thành 2 nhóm: trang có text thật (dùng luôn) và trang ảnh/placeholder (gửi Kimi).
+    """Tách PDF thành 2 nhóm: trang có text (dùng luôn) và trang cần Kimi đọc ảnh.
+    
+    Trang có text (dù ít/placeholder) → giữ text VẪN gửi ảnh cho Kimi → gộp cả hai.
+    Trang hoàn toàn rỗng → chỉ gửi ảnh cho Kimi.
     
     Returns:
         (text_pages: dict {page_num: text}, image_page_indices: list [0-based indices])
@@ -197,10 +200,11 @@ def extract_pdf_text_and_image_pages(pdf_path, max_pages=100):
             if i >= max_pages:
                 break
             page_text = page.get_text().strip()
-            if _is_real_text(page_text):
+            if page_text:
+                # Có text → giữ text lại
                 text_pages[i + 1] = page_text  # 1-based page number
-            else:
-                image_page_indices.append(i)  # 0-based index for image conversion
+            # Luôn gửi ảnh cho Kimi để đọc nội dung ảnh (kể cả trang có text)
+            image_page_indices.append(i)  # 0-based index for image conversion
         doc.close()
     except Exception:
         pass
@@ -871,10 +875,12 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                         chunk_size = 5
                         for i in range(0, len(contract_images), chunk_size):
                             batch = contract_images[i:i + chunk_size]
-                            contract_chunks_images.append((batch, len(batch)))
+                            # Lưu page indices (0-based) của chunk này để gộp text sau
+                            batch_page_indices = image_page_indices[i:i + chunk_size]
+                            contract_chunks_images.append((batch, len(batch), batch_page_indices))
             elif ext in ("jpg", "jpeg", "png", "gif", "webp"):
                 img_b64 = encode_image_to_base64(contract_path)
-                contract_chunks_images.append(([img_b64], 1))
+                contract_chunks_images.append(([img_b64], 1, [0]))
 
         n_contract_chunks = len(contract_chunks_images)
         has_invoice = bool(photo_paths)
@@ -907,7 +913,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             fut_invoice = ex.submit(_read_invoice) if has_invoice else None
             fut_contracts = {
                 ex.submit(_read_contract_chunk, imgs, np): idx
-                for idx, (imgs, np) in enumerate(contract_chunks_images)
+                for idx, (imgs, np, _) in enumerate(contract_chunks_images)
             }
 
             # Chờ invoice (timeout 200s)
@@ -953,23 +959,29 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 "error": f"Tier 1 (đọc hóa đơn) thất bại: {invoice_result.get('error', 'unknown')}"
             }
 
-        # Xử lý kết quả contract — gộp text pages + image chunks
+        # Xử lý kết quả contract — gộp text pages + image chunks theo đúng thứ tự trang
         contract_chunk_texts = []
 
-        # 1. Trang có text sẵn → thêm trực tiếp (không cần Kimi)
-        if contract_text_pages:
-            for page_num in sorted(contract_text_pages.keys()):
-                contract_chunk_texts.append(f"\n--- Trang {page_num} ---\n{contract_text_pages[page_num]}")
-
-        # 2. Trang ảnh scan → kết quả từ Kimi
         if contract_chunks_images:
-            for idx, res in enumerate(contract_chunk_results):
+            for idx, (imgs, np, batch_page_indices) in enumerate(contract_chunks_images):
+                chunk_parts = []
+                
+                # Thêm text từ các trang có text trong chunk này (trước khi thêm text Kimi)
+                for page_idx_0based in batch_page_indices:
+                    page_num_1based = page_idx_0based + 1
+                    if page_num_1based in contract_text_pages:
+                        chunk_parts.append(f"\n--- Trang {page_num_1based} (text PDF) ---\n{contract_text_pages[page_num_1based]}")
+                
+                # Thêm kết quả Kimi đọc ảnh cho chunk này
+                res = contract_chunk_results[idx] if idx < len(contract_chunk_results) else None
                 if res and res.get("success") and res.get("text"):
-                    contract_chunk_texts.append(res["text"])
+                    chunk_parts.append(res["text"])
                 elif res and not res.get("success"):
-                    contract_chunk_texts.append(f"[Chunk {idx + 1} trích xuất thất bại: {res.get('error', 'unknown')}]")
+                    chunk_parts.append(f"[Chunk {idx + 1} trích xuất thất bại: {res.get('error', 'unknown')}]")
                 else:
-                    contract_chunk_texts.append(f"[Chunk {idx + 1} không có kết quả (timeout)]")
+                    chunk_parts.append(f"[Chunk {idx + 1} không có kết quả (timeout)]")
+                
+                contract_chunk_texts.append("\n".join(chunk_parts))
         elif not contract_text_pages and contract_path and os.path.exists(contract_path):
             contract_chunk_texts.append("(Hợp đồng trích xuất thất bại hoặc không thể đọc)")
         else:
