@@ -151,36 +151,6 @@ def extract_pdf_text(pdf_path):
     return None
 
 
-def _is_real_text(text):
-    """Kiểm tra text có phải nội dung thật không phải placeholder/rác."""
-    if not text or len(text) < 50:
-        return False
-    # Phát hiện placeholder tiếng Anh (Word template)
-    placeholder_markers = [
-        "grab your reader",
-        "quote from the document",
-        "drag it",
-        "place this text box",
-        "emphasize a key point",
-        "lorem ipsum",
-        "click here",
-        "type here",
-        "placeholder",
-    ]
-    text_lower = text.lower()
-    for marker in placeholder_markers:
-        if marker in text_lower:
-            return False
-    # Nếu text quá ngắn (< 100 chars) và chỉ có 1-2 từ tiếng Việt → có thể là text rác
-    # Phải có ít nhất 100 chars HOẶC chứa dấu câu tiếng Việt (>5 ký tự có dấu)
-    if len(text) < 100:
-        import unicodedata
-        viet_chars = sum(1 for c in text if 0x00C0 <= ord(c) <= 0x024F or 0x1E00 <= ord(c) <= 0x1EFF)
-        if viet_chars < 5:
-            return False
-    return True
-
-
 def extract_pdf_text_and_image_pages(pdf_path, max_pages=100):
     """Tách PDF thành 2 nhóm: trang có text (dùng luôn) và trang cần Kimi đọc ảnh.
     
@@ -789,6 +759,20 @@ NGUYÊN TẮC XÁC ĐỊNH:
 - GHI NGUỒN: Mỗi kết luận khấu trừ phải kèm số điều khoản + số trang trong hợp đồng.
 - KIỂM TRA CHÉO BẮT BUỘC: MỖI MỤC trong hóa đơn PHẢI kiểm tra cả 3 danh sách A, B, C.
 
+2.6. NGUYÊN TẮC ĐỌC NGÀY — QUAN TRỌNG
+
+- ĐỌC NGÀY CHÍNH XÁC: Phải đọc đúng ngày/tháng/năm trên hóa đơn và hợp đồng. Không được hoán đổi ngày/tháng, không được sửa năm.
+  VD: '26/06/2025' phải đọc là 26 tháng 06 năm 2025, KHÔNG phải '25/06/2026' hay '06/26/2025'.
+- KIỂM TRA ĐỊNH DẠNG NGÀY: Hóa đơn Việt Nam dùng định dạng dd/mm/yyyy. Nếu thấy số > 12 ở vị trí đầu → đó là ngày, không phải tháng.
+- KHI SO SÁNH THỜI HẠN: Đọc chính xác ngày bắt đầu hiệu lực bảo hiểm và ngày điều trị. Chỉ khấu trừ khi ngày điều trị THỰC SỰ nằm ngoài thời hạn bảo hiểm. Không được đoán hay sửa ngày.
+
+2.7. NGUYÊN TẮC ĐỘC LẬP MỖI MỤC — KHÔNG KÉO THEO
+
+- MỖI MỤC trong hóa đơn PHẢI được đánh giá ĐỘC LẬP. Không được kéo theo một mục khác vào khấu trừ chỉ vì chúng cùng xuất hiện trong hóa đơn hoặc cùng trang hợp đồng.
+- VD: Nếu 'Sanlein' xuất hiện trong định nghĩa 'thiết bị y tế' ở hợp đồng → chỉ đánh giá Sanlein theo định nghĩa đó. KHÔNG được kéo thêm Oflevid, Sancoba, Liposic vào khấu trừ cùng Sanlein nếu chúng KHÔNG được nhắc đến trong cùng định nghĩa.
+- MỖI MỤC PHẢI qua đủ 3 bước 2(A) → 2(B) → 2(C) độc lập. Kết quả khấu trừ/không khấu trừ của mục này KHÔNG ảnh hưởng đến mục khác.
+- CHỈ KHẤU TRỪ khi tìm thấy cơ sở rõ ràng cho MỤC ĐÓ. Không khấu trừ theo nhóm nếu hợp đồng không nói rõ cả nhóm bị loại trừ.
+
 ===============================================
 BƯỚC 3 - XUẤT BẢNG KẾT QUẢ
 ===============================================
@@ -827,7 +811,9 @@ NGUYÊN TẮC TỔNG QUÁT:
 3. KHÔNG TỰ Ý MỞ RỘNG KHÁI NIỆM - khấu trừ đúng loại đối tượng: thuốc là thuốc, thiết bị là thiết bị, vật tư là vật tư. Chỉ khấu trừ khi hợp đồng thực sự áp dụng cho loại đối tượng đó.
 4. Trích dẫn nguồn - mọi kết luận phải có điều khoản hợp đồng làm căn cứ.
 5. Chính xác tuyệt đối về con số - không làm tròn, không ước lượng, không 'khoảng'.
-6. Chỉ xuất bảng - kết quả cuối cùng là một bảng duy nhất, không kèm lời giải thích bên ngoài.
+6. ĐỌC NGÀY CHÍNH XÁC - dd/mm/yyyy, không hoán đổi, không sửa năm. Chỉ khấu trừ khi THỰC SỰ ngoài thời hạn.
+7. MỖI MỤC ĐỘC LẬP - không kéo theo mục khác vào khấu trừ. Mỗi mục phải tự có cơ sở riêng.
+8. Chỉ xuất bảng - kết quả cuối cùng là một bảng duy nhất, không kèm lời giải thích bên ngoài.
 '''
     return prompt
 
@@ -1006,7 +992,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
 
         system_msg = {
             "role": "system",
-            "content": "Bạn là chuyên gia kiểm toán hợp đồng bảo hiểm PJICO cao cấp. LUÔN trả lời bằng tiếng Việt. Nhiệm vụ: ĐỌC TOÀN BỘ text hóa đơn (ghi nhớ từng dòng, từng con số) -> ĐỌC TOÀN BỘ text hợp đồng (mọi điều khoản, phụ lục, đính chính) -> XÂY DỰNG 3 DANH SÁCH TRONG ĐẦU: (A) Điều khoản loại trừ, (B) Khái niệm/định nghĩa/danh mục, (C) Hạn mức chi trả -> MAP TỪNG MỤC trong hóa đơn vào 3 danh sách theo quy trình 2(A) -> 2(B) -> 2(C). ĐẶC BIỆT: khoản trong hóa đơn có thể KHÔNG TRÙNG TÊN trực tiếp với điều khoản loại trừ, nhưng có THUỘC một khái niệm/định nghĩa bị loại trừ (khấu trừ gián tiếp). Phải KẾT NỐI thông tin giữa các trang. QUAN TRỌNG: PHẢI PHÂN BIỆT ĐÚNG LOẠI ĐỐI TƯỢNG — thuốc là thuốc (có hoạt chất điều trị), thiết bị y tế là thiết bị (dụng cụ vật lý), vật tư y tế là vật tư (băng gạc, ống tiêm...). KHÔNG ĐƯỢC tự ý mở rộng khái niệm: nếu hợp đồng loại trừ 'thiết bị y tế' thì KHÔNG được khấu trừ THUỐC theo điều khoản đó. Chỉ khấu trừ khi hợp đồng THỰC SỰ áp dụng cho loại đối tượng đó. Mọi kết luận phải có điều khoản hợp đồng làm căn cứ. CHÍNH XÁC TUYỆT ĐỐI về con số - không làm tròn, không ước lượng. Output cuối cùng là MỘT BẢNG DUY NHẤT theo mẫu, không kèm lời giải thích bên ngoài. KHÔNG trả lời 'không có khấu trừ' nếu chưa kiểm tra kỹ tất cả điều khoản hợp đồng."
+            "content": "Bạn là chuyên gia kiểm toán hợp đồng bảo hiểm PJICO cao cấp. LUÔN trả lời bằng tiếng Việt. Nhiệm vụ: ĐỌC TOÀN BỘ text hóa đơn (ghi nhớ từng dòng, từng con số) -> ĐỌC TOÀN BỘ text hợp đồng (mọi điều khoản, phụ lục, đính chính) -> XÂY DỰNG 3 DANH SÁCH TRONG ĐẦU: (A) Điều khoản loại trừ, (B) Khái niệm/định nghĩa/danh mục, (C) Hạn mức chi trả -> MAP TỪNG MỤC trong hóa đơn vào 3 danh sách theo quy trình 2(A) -> 2(B) -> 2(C). ĐẶC BIỆT: khoản trong hóa đơn có thể KHÔNG TRÙNG TÊN trực tiếp với điều khoản loại trừ, nhưng có THUỘC một khái niệm/định nghĩa bị loại trừ (khấu trừ gián tiếp). Phải KẾT NỐI thông tin giữa các trang. QUAN TRỌNG: PHẢI PHÂN BIỆT ĐÚNG LOẠI ĐỐI TƯỢNG — thuốc là thuốc (có hoạt chất điều trị), thiết bị y tế là thiết bị (dụng cụ vật lý), vật tư y tế là vật tư (băng gạc, ống tiêm...). KHÔNG ĐƯỢC tự ý mở rộng khái niệm: nếu hợp đồng loại trừ 'thiết bị y tế' thì KHÔNG được khấu trừ THUỐC theo điều khoản đó. Chỉ khấu trừ khi hợp đồng THỰC SỰ áp dụng cho loại đối tượng đó. Mọi kết luận phải có điều khoản hợp đồng làm căn cứ. CHÍNH XÁC TUYỆT ĐỐI về con số - không làm tròn, không ước lượng. ĐỌC NGÀY CHÍNH XÁC: hóa đơn Việt Nam dùng định dạng dd/mm/yyyy, không được hoán đổi ngày/tháng hay sửa năm. MỖI MỤC trong hóa đơn PHẢI được đánh giá ĐỘC LẬP - KHÔNG được kéo theo mục khác vào khấu trừ chỉ vì cùng xuất hiện. Output cuối cùng là MỘT BẢNG DUY NHẤT theo mẫu, không kèm lời giải thích bên ngoài. KHÔNG trả lời 'không có khấu trừ' nếu chưa kiểm tra kỹ tất cả điều khoản hợp đồng."
         }
         user_msg = {"role": "user", "content": prompt}
         messages = [system_msg, user_msg]
