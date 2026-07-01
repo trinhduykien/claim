@@ -116,7 +116,7 @@ def extract_pdf_text(pdf_path):
     return None
 
 
-def pdf_pages_to_images(pdf_path, max_pages=20):
+def pdf_pages_to_images(pdf_path, max_pages=100):
     """Chuyển tối đa max_pages trang PDF thành ảnh base64."""
     try:
         import fitz
@@ -760,7 +760,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                     contract_pdf_text = pdf_text[:50000]
                 else:
                     # Chuyển trang PDF thành ảnh rồi chia chunk 10 trang/Kimi
-                    contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=20)
+                    contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=100)
                     if contract_images:
                         chunk_size = 10
                         for i in range(0, len(contract_images), chunk_size):
@@ -849,8 +849,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         contract_analyses_joined = "\n\n".join(contract_analyses)
         
         # Giới hạn text hợp đồng gửi cho GLM (tránh vượt context limit)
-        if len(contract_analyses_joined) > 30000:
-            contract_analyses_joined = contract_analyses_joined[:30000]
+        # Bỏ giới hạn text — gửi toàn bộ text hợp đồng cho GLM phân tích
 
         prompt = build_analysis_prompt(claim_data, invoice_analysis, contract_analyses_joined)
 
