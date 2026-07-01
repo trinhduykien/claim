@@ -126,7 +126,7 @@ def pdf_pages_to_images(pdf_path, max_pages=100):
         for i, page in enumerate(doc):
             if i >= max_pages:
                 break
-            mat = fitz.Matrix(150/72, 150/72)
+            mat = fitz.Matrix(80/72, 80/72)
             pix = page.get_pixmap(matrix=mat)
             img_bytes = pix.tobytes("jpeg")
             img_b64 = base64.b64encode(img_bytes).decode("utf-8")
