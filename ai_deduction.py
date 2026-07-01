@@ -151,6 +151,56 @@ def extract_pdf_text(pdf_path):
     return None
 
 
+def extract_pdf_text_and_image_pages(pdf_path, max_pages=100):
+    """Tách PDF thành 2 nhóm: trang có text (dùng luôn) và trang chỉ có ảnh (gửi Kimi).
+    
+    Returns:
+        (text_pages: dict {page_num: text}, image_page_indices: list [0-based indices])
+    """
+    text_pages = {}
+    image_page_indices = []
+    
+    try:
+        import fitz
+        doc = fitz.open(pdf_path)
+        for i, page in enumerate(doc):
+            if i >= max_pages:
+                break
+            page_text = page.get_text().strip()
+            if page_text and len(page_text) >= 50:
+                text_pages[i + 1] = page_text  # 1-based page number
+            else:
+                image_page_indices.append(i)  # 0-based index for image conversion
+        doc.close()
+    except Exception:
+        pass
+    
+    return text_pages, image_page_indices
+
+
+def pdf_pages_to_images_by_indices(pdf_path, page_indices):
+    """Chỉ chuyển các trang được chỉ định (0-based index) thành ảnh base64."""
+    try:
+        import fitz
+        doc = fitz.open(pdf_path)
+        images = []
+        for idx in page_indices:
+            if idx >= len(doc):
+                break
+            page = doc[idx]
+            mat = fitz.Matrix(80/72, 80/72)
+            pix = page.get_pixmap(matrix=mat)
+            img_bytes = pix.tobytes("jpeg")
+            img_b64 = base64.b64encode(img_bytes).decode("utf-8")
+            images.append(f"data:image/jpeg;base64,{img_b64}")
+        total_pages = len(doc)
+        doc.close()
+        return images, total_pages
+    except Exception:
+        pass
+    return [], 0
+
+
 def pdf_pages_to_images(pdf_path, max_pages=100):
     """Chuyển tối đa max_pages trang PDF thành ảnh base64."""
     try:
@@ -774,18 +824,19 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
 
         # Chuẩn bị chunks hợp đồng cho Kimi
         contract_chunks_images = []  # list of (images_batch, num_pages_in_batch)
-        contract_pdf_text = None  # nếu PDF có text sẵn
+        # Dùng cho trang có text (không cần Kimi)
+        contract_text_pages = {}  # {page_num: text}
 
         if contract_path and os.path.exists(contract_path):
             ext = os.path.splitext(contract_path)[1].lower().lstrip(".")
             if ext == "pdf":
-                # Thử đọc text trước
-                pdf_text = extract_pdf_text(contract_path)
-                if pdf_text:
-                    contract_pdf_text = pdf_text[:50000]
-                else:
-                    # Chuyển trang PDF thành ảnh rồi chia chunk 5 trang/Kimi
-                    contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=100)
+                # Tách trang có text và trang chỉ có ảnh
+                text_pages, image_page_indices = extract_pdf_text_and_image_pages(contract_path, max_pages=100)
+                contract_text_pages = text_pages
+
+                if image_page_indices:
+                    # Có trang ảnh scan → chuyển sang ảnh cho Kimi đọc
+                    contract_images, total_pages = pdf_pages_to_images_by_indices(contract_path, image_page_indices)
                     if contract_images:
                         chunk_size = 5
                         for i in range(0, len(contract_images), chunk_size):
@@ -811,8 +862,10 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
 
         t_tier1 = time.perf_counter()
         tier1_label = "Đang đọc ảnh hợp đồng & hóa đơn (Tier 1)..."
-        if contract_pdf_text:
+        if contract_text_pages and not n_contract_chunks:
             tier1_label = "Hợp đồng có sẵn text — đang đọc hóa đơn (Tier 1)..."
+        elif contract_text_pages and n_contract_chunks:
+            tier1_label = "Đang đọc text + ảnh hợp đồng & hóa đơn (Tier 1)..."
         elif not n_contract_chunks:
             tier1_label = "Đang đọc hóa đơn (Tier 1)..."
 
@@ -852,7 +905,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             tier1_elapsed = time.perf_counter() - t_tier1
             _log(f"Tier 1 xong sau {tier1_elapsed:.1f}s "
                  f"(invoice={'có' if has_invoice else 'không'}, contract_chunks={n_contract_chunks}, "
-                 f"pdf_text={'có' if contract_pdf_text else 'không'})")
+                 f"text_pages={len(contract_text_pages)})")
             if status is not None and hasattr(status, "update"):
                 try:
                     status.update(label=f"Đã đọc xong Tier 1 ({tier1_elapsed:.1f}s)")
@@ -870,16 +923,16 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 "error": f"Tier 1 (đọc hóa đơn) thất bại: {invoice_result.get('error', 'unknown')}"
             }
 
-        # Xử lý kết quả contract chunks
+        # Xử lý kết quả contract — gộp text pages + image chunks
         contract_chunk_texts = []
-        if contract_pdf_text:
-            # PDF có text sẵn — chia text thành chunks cho Tier 2
-            # Chia theo ~10000 ký tự/chunk
-            chunk_size_chars = 10000
-            for i in range(0, len(contract_pdf_text), chunk_size_chars):
-                contract_chunk_texts.append(contract_pdf_text[i:i + chunk_size_chars])
-        elif contract_chunks_images:
-            # Có ảnh chunks đã qua Kimi
+
+        # 1. Trang có text sẵn → thêm trực tiếp (không cần Kimi)
+        if contract_text_pages:
+            for page_num in sorted(contract_text_pages.keys()):
+                contract_chunk_texts.append(f"\n--- Trang {page_num} ---\n{contract_text_pages[page_num]}")
+
+        # 2. Trang ảnh scan → kết quả từ Kimi
+        if contract_chunks_images:
             for idx, res in enumerate(contract_chunk_results):
                 if res and res.get("success") and res.get("text"):
                     contract_chunk_texts.append(res["text"])
@@ -887,7 +940,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                     contract_chunk_texts.append(f"[Chunk {idx + 1} trích xuất thất bại: {res.get('error', 'unknown')}]")
                 else:
                     contract_chunk_texts.append(f"[Chunk {idx + 1} không có kết quả (timeout)]")
-        elif contract_path and os.path.exists(contract_path):
+        elif not contract_text_pages and contract_path and os.path.exists(contract_path):
             contract_chunk_texts.append("(Hợp đồng trích xuất thất bại hoặc không thể đọc)")
         else:
             contract_chunk_texts.append("(Không có hợp đồng đính kèm)")
