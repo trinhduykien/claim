@@ -13,7 +13,9 @@ import os
 import json
 import base64
 import re
+import time
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 
 # ============================================================
@@ -22,12 +24,20 @@ import requests
 
 API_KEY = ""
 
+# Streamlit availability — dùng cho st.status (perceived wait). Fallback im lặng nếu không có.
+_ST = None
+try:
+    import streamlit as _st_module
+    _ST = _st_module
+except Exception:
+    _ST = None
+
 # Cách 1: Streamlit Cloud Secrets
 try:
-    import streamlit as st
-    _secrets_key = st.secrets.get("ollama_api_key", None)
-    if _secrets_key:
-        API_KEY = _secrets_key.strip()
+    if _ST is not None:
+        _secrets_key = _ST.secrets.get("ollama_api_key", None)
+        if _secrets_key:
+            API_KEY = _secrets_key.strip()
 except Exception:
     pass
 
@@ -49,6 +59,31 @@ VISION_MODEL = "kimi-k2.6:cloud"     # Tier 1: đọc ảnh, trích xuất text
 ANALYSIS_MODEL = "glm-5.2:cloud"     # Tier 2, 3: phân tích khấu trừ, xuất bảng
 
 REPLY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trả lời")
+
+
+def _log(msg):
+    """Log timing/progress ra console — không ảnh hưởng kết quả."""
+    print(f"[ai_deduction] {msg}", flush=True)
+
+
+class _NoopStatus:
+    """Fallback context manager khi không có Streamlit (chạy headless/CLI)."""
+    def __enter__(self):
+        return self
+    def __exit__(self, *exc):
+        return False
+    def update(self, *a, **k):
+        pass
+
+
+def _status(label):
+    """Trả về context manager hiển thị tiến trình pha (st.status) nếu có Streamlit."""
+    if _ST is None:
+        return _NoopStatus()
+    try:
+        return _ST.status(label)
+    except Exception:
+        return _NoopStatus()
 
 
 def has_api_key():
@@ -729,23 +764,13 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
 
     try:
         import threading
+        t_total = time.perf_counter()
 
         # ============================================================
         # TIER 1 (MAP): KIMI ĐỌC ẢNH HÓA ĐƠN + CHUNKS HỢP ĐỒNG SONG SONG
+        # Chunk 5 trang/call + ThreadPoolExecutor(max_workers=6) để cap concurrency.
+        # Tổng text trích xuất KHÔNG đổi -> accuracy giữ nguyên.
         # ============================================================
-
-        invoice_result_box = {"result": None}
-        contract_chunk_results = []  # list of {"result": None} boxes
-
-        def read_invoice():
-            if not photo_paths:
-                invoice_result_box["result"] = {"success": False, "text": "", "error": "Không có ảnh"}
-                return
-            any_photo = [p for p in photo_paths if os.path.exists(p)]
-            if not any_photo:
-                invoice_result_box["result"] = {"success": False, "text": "", "error": "Không tìm thấy file ảnh"}
-                return
-            invoice_result_box["result"] = extract_invoice_text(any_photo)
 
         # Chuẩn bị chunks hợp đồng cho Kimi
         contract_chunks_images = []  # list of (images_batch, num_pages_in_batch)
@@ -759,10 +784,10 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 if pdf_text:
                     contract_pdf_text = pdf_text[:50000]
                 else:
-                    # Chuyển trang PDF thành ảnh rồi chia chunk 10 trang/Kimi
+                    # Chuyển trang PDF thành ảnh rồi chia chunk 5 trang/Kimi
                     contract_images, total_pages = pdf_pages_to_images(contract_path, max_pages=100)
                     if contract_images:
-                        chunk_size = 10
+                        chunk_size = 5
                         for i in range(0, len(contract_images), chunk_size):
                             batch = contract_images[i:i + chunk_size]
                             contract_chunks_images.append((batch, len(batch)))
@@ -770,45 +795,79 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 img_b64 = encode_image_to_base64(contract_path)
                 contract_chunks_images.append(([img_b64], 1))
 
-        # Tạo thread cho invoice
-        threads_tier1 = []
-        t_invoice = threading.Thread(target=read_invoice)
-        threads_tier1.append(t_invoice)
+        n_contract_chunks = len(contract_chunks_images)
+        has_invoice = bool(photo_paths)
 
-        # Tạo thread cho từng contract chunk
-        def read_contract_chunk(idx, images_batch, num_pages_batch):
-            result = extract_contract_text_from_images(images_batch, num_pages_batch, batch_size=10)
-            contract_chunk_results[idx]["result"] = result
+        def _read_invoice():
+            if not photo_paths:
+                return {"success": False, "text": "", "error": "Không có ảnh"}
+            any_photo = [p for p in photo_paths if os.path.exists(p)]
+            if not any_photo:
+                return {"success": False, "text": "", "error": "Không tìm thấy file ảnh"}
+            return extract_invoice_text(any_photo)
 
-        contract_threads = []
-        for idx, (images_batch, num_pages_batch) in enumerate(contract_chunks_images):
-            box = {"result": None}
-            contract_chunk_results.append(box)
-            t = threading.Thread(target=read_contract_chunk, args=(idx, images_batch, num_pages_batch))
-            contract_threads.append(t)
-            threads_tier1.append(t)
+        def _read_contract_chunk(images_batch, num_pages_batch):
+            return extract_contract_text_from_images(images_batch, num_pages_batch, batch_size=5)
 
-        # Khởi động tất cả threads Tier 1
-        for t in threads_tier1:
-            t.start()
+        t_tier1 = time.perf_counter()
+        tier1_label = "Đang đọc ảnh hợp đồng & hóa đơn (Tier 1)..."
+        if contract_pdf_text:
+            tier1_label = "Hợp đồng có sẵn text — đang đọc hóa đơn (Tier 1)..."
+        elif not n_contract_chunks:
+            tier1_label = "Đang đọc hóa đơn (Tier 1)..."
 
-        # Chờ invoice (timeout 200s)
-        t_invoice.join(timeout=200)
+        with _status(tier1_label) as status:
+            invoice_result = None
+            contract_chunk_results = [None] * n_contract_chunks
 
-        # Chờ contract chunks (timeout 600s mỗi thread)
-        for t in contract_threads:
-            t.join(timeout=600)
+            ex = ThreadPoolExecutor(max_workers=6)
+            fut_invoice = ex.submit(_read_invoice) if has_invoice else None
+            fut_contracts = {
+                ex.submit(_read_contract_chunk, imgs, np): idx
+                for idx, (imgs, np) in enumerate(contract_chunks_images)
+            }
+
+            # Chờ invoice (timeout 200s)
+            if fut_invoice is not None:
+                try:
+                    invoice_result = fut_invoice.result(timeout=200)
+                except Exception as e:
+                    invoice_result = {"success": False, "text": "", "error": f"Tier 1 invoice timeout/error: {e}"}
+
+            # Chờ contract chunks (timeout tổng 600s)
+            try:
+                for fut in as_completed(fut_contracts, timeout=600):
+                    idx = fut_contracts[fut]
+                    try:
+                        contract_chunk_results[idx] = fut.result()
+                    except Exception as e:
+                        contract_chunk_results[idx] = {"success": False, "text": "", "error": f"Tier 1 chunk {idx + 1}: {e}"}
+            except Exception:
+                # timeout tổng -> các chunk chưa xong giữ None -> xử lý như timeout bên dưới
+                pass
+
+            # Không chờ thêm các future đang chạy (giữ timeout cap như bản cũ).
+            ex.shutdown(wait=False)
+
+            tier1_elapsed = time.perf_counter() - t_tier1
+            _log(f"Tier 1 xong sau {tier1_elapsed:.1f}s "
+                 f"(invoice={'có' if has_invoice else 'không'}, contract_chunks={n_contract_chunks}, "
+                 f"pdf_text={'có' if contract_pdf_text else 'không'})")
+            if status is not None and hasattr(status, "update"):
+                try:
+                    status.update(label=f"Đã đọc xong Tier 1 ({tier1_elapsed:.1f}s)")
+                except Exception:
+                    pass
 
         # Xử lý kết quả invoice
         invoice_text = "(Không có hóa đơn)"
-        inv_result = invoice_result_box["result"]
-        if inv_result and inv_result.get("success") and inv_result.get("text"):
-            invoice_text = inv_result["text"]
-        elif inv_result and not inv_result.get("success") and photo_paths:
+        if invoice_result and invoice_result.get("success") and invoice_result.get("text"):
+            invoice_text = invoice_result["text"]
+        elif invoice_result and not invoice_result.get("success") and photo_paths:
             return {
                 "success": False,
                 "response": "",
-                "error": f"Tier 1 (đọc hóa đơn) thất bại: {inv_result.get('error', 'unknown')}"
+                "error": f"Tier 1 (đọc hóa đơn) thất bại: {invoice_result.get('error', 'unknown')}"
             }
 
         # Xử lý kết quả contract chunks
@@ -821,8 +880,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 contract_chunk_texts.append(contract_pdf_text[i:i + chunk_size_chars])
         elif contract_chunks_images:
             # Có ảnh chunks đã qua Kimi
-            for idx, box in enumerate(contract_chunk_results):
-                res = box["result"]
+            for idx, res in enumerate(contract_chunk_results):
                 if res and res.get("success") and res.get("text"):
                     contract_chunk_texts.append(res["text"])
                 elif res and not res.get("success"):
@@ -836,7 +894,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
 
         # ============================================================
         # TIER 2 (BỎ): Truyền thẳng text từ Tier 1 sang Tier 3
-        # (Như v0.6 gốc - GLM nhận raw text, đọc trực tiếp)
+        # (Như v0.6 gốc - GLM nhận raw text, đọc trực tiếp -> giữ accuracy)
         # ============================================================
 
         invoice_analysis = invoice_text
@@ -847,10 +905,8 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         # ============================================================
 
         contract_analyses_joined = "\n\n".join(contract_analyses)
-        
-        # Giới hạn text hợp đồng gửi cho GLM (tránh vượt context limit)
-        # Bỏ giới hạn text — gửi toàn bộ text hợp đồng cho GLM phân tích
 
+        # Bỏ giới hạn text — gửi toàn bộ text hợp đồng cho GLM phân tích
         prompt = build_analysis_prompt(claim_data, invoice_analysis, contract_analyses_joined)
 
         system_msg = {
@@ -865,11 +921,22 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         def run_merge():
             merge_result_box["result"] = call_analysis_model(messages, max_tokens=16000, timeout=600)
 
-        t_merge = threading.Thread(target=run_merge)
-        t_merge.start()
-        t_merge.join(timeout=620)
+        t_tier3 = time.perf_counter()
+        with _status("Đang tổng hợp & xuất bảng khấu trừ (Tier 3)...") as status:
+            t_merge = threading.Thread(target=run_merge)
+            t_merge.start()
+            t_merge.join(timeout=620)
+
+            tier3_elapsed = time.perf_counter() - t_tier3
+            _log(f"Tier 3 xong sau {tier3_elapsed:.1f}s")
+            if status is not None and hasattr(status, "update"):
+                try:
+                    status.update(label=f"Đã tổng hợp xong Tier 3 ({tier3_elapsed:.1f}s)")
+                except Exception:
+                    pass
 
         analysis_result = merge_result_box["result"]
+        _log(f"Tổng thời gian analyze_deduction: {time.perf_counter() - t_total:.1f}s")
 
         if analysis_result and analysis_result.get("success") and analysis_result.get("text"):
             return {"success": True, "response": analysis_result["text"], "error": ""}
