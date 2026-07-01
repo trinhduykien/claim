@@ -151,8 +151,38 @@ def extract_pdf_text(pdf_path):
     return None
 
 
+def _is_real_text(text):
+    """Kiểm tra text có phải nội dung thật không phải placeholder/rác."""
+    if not text or len(text) < 50:
+        return False
+    # Phát hiện placeholder tiếng Anh (Word template)
+    placeholder_markers = [
+        "grab your reader",
+        "quote from the document",
+        "drag it",
+        "place this text box",
+        "emphasize a key point",
+        "lorem ipsum",
+        "click here",
+        "type here",
+        "placeholder",
+    ]
+    text_lower = text.lower()
+    for marker in placeholder_markers:
+        if marker in text_lower:
+            return False
+    # Nếu text quá ngắn (< 100 chars) và chỉ có 1-2 từ tiếng Việt → có thể là text rác
+    # Phải có ít nhất 100 chars HOẶC chứa dấu câu tiếng Việt (>5 ký tự có dấu)
+    if len(text) < 100:
+        import unicodedata
+        viet_chars = sum(1 for c in text if 0x00C0 <= ord(c) <= 0x024F or 0x1E00 <= ord(c) <= 0x1EFF)
+        if viet_chars < 5:
+            return False
+    return True
+
+
 def extract_pdf_text_and_image_pages(pdf_path, max_pages=100):
-    """Tách PDF thành 2 nhóm: trang có text (dùng luôn) và trang chỉ có ảnh (gửi Kimi).
+    """Tách PDF thành 2 nhóm: trang có text thật (dùng luôn) và trang ảnh/placeholder (gửi Kimi).
     
     Returns:
         (text_pages: dict {page_num: text}, image_page_indices: list [0-based indices])
@@ -167,7 +197,7 @@ def extract_pdf_text_and_image_pages(pdf_path, max_pages=100):
             if i >= max_pages:
                 break
             page_text = page.get_text().strip()
-            if page_text and len(page_text) >= 50:
+            if _is_real_text(page_text):
                 text_pages[i + 1] = page_text  # 1-based page number
             else:
                 image_page_indices.append(i)  # 0-based index for image conversion
