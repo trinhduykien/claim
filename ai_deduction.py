@@ -442,7 +442,7 @@ DANH SÁCH C - HẠN MỨC CHI TRẢ:
 Chỉ xuất kết quả theo định dạng trên. Không thêm lời giải thích."""
 
 
-def call_analysis_model(messages, max_tokens=6000, timeout=240):
+def call_analysis_model(messages, max_tokens=12000, timeout=600):
     """Gọi analysis model (GLM-5.2) qua Ollama Cloud API."""
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -864,11 +864,11 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         merge_result_box = {"result": None}
 
         def run_merge():
-            merge_result_box["result"] = call_analysis_model(messages, max_tokens=8000, timeout=300)
+            merge_result_box["result"] = call_analysis_model(messages, max_tokens=16000, timeout=600)
 
         t_merge = threading.Thread(target=run_merge)
         t_merge.start()
-        t_merge.join(timeout=240)
+        t_merge.join(timeout=620)
 
         analysis_result = merge_result_box["result"]
 
