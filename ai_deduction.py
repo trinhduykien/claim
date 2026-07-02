@@ -1,12 +1,12 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 AI Deduction Analysis Module cho Claim Bot
-Pipeline 3 táº§ng (Map-Reduce-Merge):
-  TIER 1 (MAP):    Kimi K2.6 Ä‘á»c áº£nh hÃ³a Ä‘Æ¡n + chunks há»£p Ä‘á»“ng song song (threading)
-  TIER 2 (REDUCE): GLM-5.2 phÃ¢n tÃ­ch tá»«ng chunk song song (threading)
-  TIER 3 (MERGE):  GLM-5.2 tá»•ng há»£p káº¿t quáº£ -> xuáº¥t báº£ng kháº¥u trá»« cuá»‘i cÃ¹ng
-- Äá»c API key tá»«: Streamlit secrets -> env var -> file local
-- LÆ°u cÃ¢u tráº£ lá»i vÃ o thÆ° má»¥c "tráº£ lá»i"
+Pipeline 3 tầng (Map-Reduce-Merge):
+  TIER 1 (MAP):    Kimi K2.6 đọc ảnh hóa đơn + chunks hợp đồng song song (threading)
+  TIER 2 (REDUCE): GLM-5.2 phân tích từng chunk song song (threading)
+  TIER 3 (MERGE):  GLM-5.2 tổng hợp kết quả -> xuất bảng khấu trừ cuối cùng
+- Đọc API key từ: Streamlit secrets -> env var -> file local
+- Lưu câu trả lời vào thư mục "trả lời"
 """
 
 import os
@@ -24,7 +24,7 @@ import requests
 
 API_KEY = ""
 
-# Streamlit availability â€” dÃ¹ng cho st.status (perceived wait). Fallback im láº·ng náº¿u khÃ´ng cÃ³.
+# Streamlit availability — dùng cho st.status (perceived wait). Fallback im lặng nếu không có.
 _ST = None
 try:
     import streamlit as _st_module
@@ -32,7 +32,7 @@ try:
 except Exception:
     _ST = None
 
-# CÃ¡ch 1: Streamlit Cloud Secrets
+# Cách 1: Streamlit Cloud Secrets
 try:
     if _ST is not None:
         _secrets_key = _ST.secrets.get("ollama_api_key", None)
@@ -41,11 +41,11 @@ try:
 except Exception:
     pass
 
-# CÃ¡ch 2: Environment variable
+# Cách 2: Environment variable
 if not API_KEY:
     API_KEY = os.environ.get("OLLAMA_API_KEY", "")
 
-# CÃ¡ch 3: File local
+# Cách 3: File local
 if not API_KEY:
     _key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".kimi_api_key")
     if os.path.exists(_key_file):
@@ -54,20 +54,20 @@ if not API_KEY:
 
 OLLAMA_BASE_URL = "https://ollama.com/v1"
 
-# Model cho tá»«ng pipeline
-VISION_MODEL = "kimi-k2.6:cloud"     # Tier 1: Ä‘á»c áº£nh, trÃ­ch xuáº¥t text
-ANALYSIS_MODEL = "glm-5.2:cloud"     # Tier 2, 3: phÃ¢n tÃ­ch kháº¥u trá»«, xuáº¥t báº£ng
+# Model cho từng pipeline
+VISION_MODEL = "kimi-k2.6:cloud"     # Tier 1: đọc ảnh, trích xuất text
+ANALYSIS_MODEL = "glm-5.2:cloud"     # Tier 2, 3: phân tích khấu trừ, xuất bảng
 
-REPLY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tráº£ lá»i")
+REPLY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trả lời")
 
 
 def _log(msg):
-    """Log timing/progress ra console â€” khÃ´ng áº£nh hÆ°á»Ÿng káº¿t quáº£."""
+    """Log timing/progress ra console — không ảnh hưởng kết quả."""
     print(f"[ai_deduction] {msg}", flush=True)
 
 
 class _NoopStatus:
-    """Fallback context manager khi khÃ´ng cÃ³ Streamlit (cháº¡y headless/CLI)."""
+    """Fallback context manager khi không có Streamlit (chạy headless/CLI)."""
     def __enter__(self):
         return self
     def __exit__(self, *exc):
@@ -77,7 +77,7 @@ class _NoopStatus:
 
 
 def _status(label):
-    """Tráº£ vá» context manager hiá»ƒn thá»‹ tiáº¿n trÃ¬nh pha (st.status) náº¿u cÃ³ Streamlit."""
+    """Trả về context manager hiển thị tiến trình pha (st.status) nếu có Streamlit."""
     if _ST is None:
         return _NoopStatus()
     try:
@@ -99,7 +99,7 @@ def encode_image_to_base64(image_path):
 
 
 def extract_pdf_text(pdf_path):
-    """Äá»c text tá»« PDF. Tráº£ vá» None náº¿u lÃ  áº£nh scan hoáº·c text quÃ¡ Ã­t."""
+    """Đọc text từ PDF. Trả về None nếu là ảnh scan hoặc text quá ít."""
     try:
         import fitz
         doc = fitz.open(pdf_path)
@@ -152,10 +152,10 @@ def extract_pdf_text(pdf_path):
 
 
 def extract_pdf_text_and_image_pages(pdf_path, max_pages=100):
-    """TÃ¡ch PDF thÃ nh 2 nhÃ³m: trang cÃ³ text (dÃ¹ng luÃ´n) vÃ  trang cáº§n Kimi Ä‘á»c áº£nh.
+    """Tách PDF thành 2 nhóm: trang có text (dùng luôn) và trang cần Kimi đọc ảnh.
     
-    Trang cÃ³ text (dÃ¹ Ã­t/placeholder) â†’ giá»¯ text VáºªN gá»­i áº£nh cho Kimi â†’ gá»™p cáº£ hai.
-    Trang hoÃ n toÃ n rá»—ng â†’ chá»‰ gá»­i áº£nh cho Kimi.
+    Trang có text (dù ít/placeholder) → giữ text VẪN gửi ảnh cho Kimi → gộp cả hai.
+    Trang hoàn toàn rỗng → chỉ gửi ảnh cho Kimi.
     
     Returns:
         (text_pages: dict {page_num: text}, image_page_indices: list [0-based indices])
@@ -171,9 +171,9 @@ def extract_pdf_text_and_image_pages(pdf_path, max_pages=100):
                 break
             page_text = page.get_text().strip()
             if page_text:
-                # CÃ³ text â†’ giá»¯ text láº¡i
+                # Có text → giữ text lại
                 text_pages[i + 1] = page_text  # 1-based page number
-            # LuÃ´n gá»­i áº£nh cho Kimi Ä‘á»ƒ Ä‘á»c ná»™i dung áº£nh (ká»ƒ cáº£ trang cÃ³ text)
+            # Luôn gửi ảnh cho Kimi để đọc nội dung ảnh (kể cả trang có text)
             image_page_indices.append(i)  # 0-based index for image conversion
         doc.close()
     except Exception:
@@ -183,7 +183,7 @@ def extract_pdf_text_and_image_pages(pdf_path, max_pages=100):
 
 
 def pdf_pages_to_images_by_indices(pdf_path, page_indices):
-    """Chá»‰ chuyá»ƒn cÃ¡c trang Ä‘Æ°á»£c chá»‰ Ä‘á»‹nh (0-based index) thÃ nh áº£nh base64."""
+    """Chỉ chuyển các trang được chỉ định (0-based index) thành ảnh base64."""
     try:
         import fitz
         doc = fitz.open(pdf_path)
@@ -206,7 +206,7 @@ def pdf_pages_to_images_by_indices(pdf_path, page_indices):
 
 
 def pdf_pages_to_images(pdf_path, max_pages=100):
-    """Chuyá»ƒn tá»‘i Ä‘a max_pages trang PDF thÃ nh áº£nh base64."""
+    """Chuyển tối đa max_pages trang PDF thành ảnh base64."""
     try:
         import fitz
         doc = fitz.open(pdf_path)
@@ -230,78 +230,78 @@ def pdf_pages_to_images(pdf_path, max_pages=100):
 
 
 # ============================================================
-# TIER 1: KIMI K2.6 â€” Äá»ŒC áº¢NH, TRÃCH XUáº¤T TEXT
+# TIER 1: KIMI K2.6 — ĐỌC ẢNH, TRÍCH XUẤT TEXT
 # ============================================================
 
 def build_extraction_prompt_invoice():
-    """Prompt cho Kimi Ä‘á»c áº£nh hÃ³a Ä‘Æ¡n vÃ  trÃ­ch xuáº¥t text cÃ³ cáº¥u trÃºc."""
-    return """Báº¡n lÃ  chuyÃªn gia trÃ­ch xuáº¥t dá»¯ liá»‡u tá»« áº£nh hÃ³a Ä‘Æ¡n/viá»‡n phÃ­. Nhiá»‡m vá»¥: Äá»ŒC áº¢NH HÃ“A ÄÆ N vÃ  trÃ­ch xuáº¥t TOÃ€N Bá»˜ ná»™i dung thÃ nh text cÃ³ cáº¥u trÃºc.
+    """Prompt cho Kimi đọc ảnh hóa đơn và trích xuất text có cấu trúc."""
+    return """Bạn là chuyên gia trích xuất dữ liệu từ ảnh hóa đơn/viện phí. Nhiệm vụ: ĐỌC ẢNH HÓA ĐƠN và trích xuất TOÀN BỘ nội dung thành text có cấu trúc.
 
-YÃŠU Cáº¦U:
-1. Äá»c tá»«ng dÃ²ng trÃªn hÃ³a Ä‘Æ¡n, khÃ´ng bá» sÃ³t báº¥t ká»³ dÃ²ng nÃ o.
-2. Vá»›i má»—i háº¡ng má»¥c, ghi rÃµ: tÃªn má»¥c, mÃ´ táº£ (náº¿u cÃ³), Ä‘Æ¡n vá»‹ tÃ­nh, sá»‘ lÆ°á»£ng, Ä‘Æ¡n giÃ¡, thÃ nh tiá»n.
-3. Ghi rÃµ cÃ¡c khoáº£n thuáº¿, phÃ­ khÃ¡c náº¿u cÃ³.
-4. Ghi rÃµ Tá»”NG Cá»˜NG (tá»•ng sá»‘ tiá»n).
-5. Giá»¯ nguyÃªn sá»‘ liá»‡u chÃ­nh xÃ¡c - khÃ´ng lÃ m trÃ²n, khÃ´ng Æ°á»›c lÆ°á»£ng.
+YÊU CẦU:
+1. Đọc từng dòng trên hóa đơn, không bỏ sót bất kỳ dòng nào.
+2. Với mỗi hạng mục, ghi rõ: tên mục, mô tả (nếu có), đơn vị tính, số lượng, đơn giá, thành tiền.
+3. Ghi rõ các khoản thuế, phí khác nếu có.
+4. Ghi rõ TỔNG CỘNG (tổng số tiền).
+5. Giữ nguyên số liệu chính xác - không làm tròn, không ước lượng.
 
-YÃŠU Cáº¦U Äáº¶C BIá»†T Vá»€ TÃŠN THUá»C / HÃ€NG Má»¤C Y Táº¾:
-- TÃªn thuá»‘c pháº£i Ä‘Æ°á»£c Ä‘á»c CHÃNH XÃC tá»«ng chá»¯ cÃ¡i. Äáº·c biá»‡t chÃº Ã½ cÃ¡c kÃ½ tá»± dá»… nháº§m: b/d, n/h, m/n, l/i, o/a.
-- Náº¿u tÃªn thuá»‘c in trÃªn hÃ³a Ä‘Æ¡n cÃ³ dáº¥u hoáº·c khÃ´ng dáº¥u, ghi nguyÃªn vÄƒn nhÆ° in.
-- Náº¿u khÃ´ng cháº¯c vá» má»™t chá»¯ trong tÃªn thuá»‘c, ghi [?] sau chá»¯ Ä‘Ã³ Ä‘á»ƒ Ä‘Ã¡nh dáº¥u cáº§n kiá»ƒm tra.
-- KhÃ´ng Ä‘Æ°á»£c tá»± Ã½ "sá»­a" tÃªn thuá»‘c theo Ã½ hiá»ƒu - pháº£i ghi Ä‘Ãºng nhá»¯ng gÃ¬ in trÃªn hÃ³a Ä‘Æ¡n.
-- PhÃ¢n loáº¡i rÃµ má»—i má»¥c: thuá»‘c, váº­t tÆ° y táº¿, dá»‹ch vá»¥ y táº¿, hay loáº¡i khÃ¡c.
+YÊU CẦU ĐẶC BIỆT VỀ TÊN THUỐC / HÀNG MỤC Y TẾ:
+- Tên thuốc phải được đọc CHÍNH XÁC từng chữ cái. Đặc biệt chú ý các ký tự dễ nhầm: b/d, n/h, m/n, l/i, o/a.
+- Nếu tên thuốc in trên hóa đơn có dấu hoặc không dấu, ghi nguyên văn như in.
+- Nếu không chắc về một chữ trong tên thuốc, ghi [?] sau chữ đó để đánh dấu cần kiểm tra.
+- Không được tự ý "sửa" tên thuốc theo ý hiểu - phải ghi đúng những gì in trên hóa đơn.
+- Phân loại rõ mỗi mục: thuốc, vật tư y tế, dịch vụ y tế, hay loại khác.
 
-Äá»ŠNH Dáº NG XUáº¤T (báº¯t buá»™c theo máº«u):
+ĐỊNH DẠNG XUẤT (bắt buộc theo mẫu):
 
-=== HÃ“A ÄÆ N ===
-Tá»•ng tiá»n: [sá»‘ tá»•ng cá»™ng trÃªn hÃ³a Ä‘Æ¡n]
+=== HÓA ĐƠN ===
+Tổng tiền: [số tổng cộng trên hóa đơn]
 
-DANH SÃCH Má»¤C:
-1. [TÃªn má»¥c] | [Loáº¡i: thuá»‘c/váº­t tÆ° y táº¿/dá»‹ch vá»¥/khÃ¡c] | [MÃ´ táº£] | [Sá»‘ lÆ°á»£ng] | [ÄÆ¡n giÃ¡] | [ThÃ nh tiá»n]
-2. [TÃªn má»¥c] | [Loáº¡i: thuá»‘c/váº­t tÆ° y táº¿/dá»‹ch vá»¥/khÃ¡c] | [MÃ´ táº£] | [Sá»‘ lÆ°á»£ng] | [ÄÆ¡n giÃ¡] | [ThÃ nh tiá»n]
+DANH SÁCH MỤC:
+1. [Tên mục] | [Loại: thuốc/vật tư y tế/dịch vụ/khác] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
+2. [Tên mục] | [Loại: thuốc/vật tư y tế/dịch vụ/khác] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
 ...
-N. [TÃªn má»¥c] | [Loáº¡i: thuá»‘c/váº­t tÆ° y táº¿/dá»‹ch vá»¥/khÃ¡c] | [MÃ´ táº£] | [Sá»‘ lÆ°á»£ng] | [ÄÆ¡n giÃ¡] | [ThÃ nh tiá»n]
+N. [Tên mục] | [Loại: thuốc/vật tư y tế/dịch vụ/khác] | [Mô tả] | [Số lượng] | [Đơn giá] | [Thành tiền]
 
-(thuáº¿/phÃ­ náº¿u cÃ³)
-Thuáº¿ VAT: [sá»‘ tiá»n]
-Tá»•ng sau thuáº¿: [sá»‘ tiá»n]
-=== Háº¾T HÃ“A ÄÆ N ===
+(thuế/phí nếu có)
+Thuế VAT: [số tiền]
+Tổng sau thuế: [số tiền]
+=== HẾT HÓA ĐƠN ===
 
-Chá»‰ xuáº¥t káº¿t quáº£ theo Ä‘á»‹nh dáº¡ng trÃªn. KhÃ´ng thÃªm lá»i giáº£i thÃ­ch."""
+Chỉ xuất kết quả theo định dạng trên. Không thêm lời giải thích."""
 
 
 def build_extraction_prompt_contract(num_pages):
-    """Prompt cho Kimi Ä‘á»c áº£nh há»£p Ä‘á»“ng vÃ  trÃ­ch xuáº¥t text cÃ³ cáº¥u trÃºc."""
-    return f"""Báº¡n lÃ  chuyÃªn gia trÃ­ch xuáº¥t dá»¯ liá»‡u tá»« áº£nh há»£p Ä‘á»“ng báº£o hiá»ƒm. Nhiá»‡m vá»¥: Äá»ŒC Táº¤T Cáº¢ {num_pages} TRANG áº¢NH Há»¢P Äá»’NG vÃ  trÃ­ch xuáº¥t TOÃ€N Bá»˜ ná»™i dung thÃ nh text cÃ³ cáº¥u trÃºc.
+    """Prompt cho Kimi đọc ảnh hợp đồng và trích xuất text có cấu trúc."""
+    return f"""Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Nhiệm vụ: ĐỌC TẤT CẢ {num_pages} TRANG ẢNH HỢP ĐỒNG và trích xuất TOÀN BỘ nội dung thành text có cấu trúc.
 
-YÃŠU Cáº¦U:
-1. Äá»c tá»«ng trang tá»« trang 1 Ä‘áº¿n trang {num_pages}, khÃ´ng bá» sÃ³t trang nÃ o.
-2. Vá»›i má»—i trang, trÃ­ch xuáº¥t toÃ n bá»™ text trÃªn trang Ä‘Ã³.
-3. Giá»¯ nguyÃªn sá»‘ Ä‘iá»u khoáº£n, sá»‘ trang, Ä‘á»‹nh nghÄ©a, danh má»¥c.
-4. KhÃ´ng tÃ³m táº¯t, khÃ´ng rÃºt gá»n - ghi nguyÃªn vÄƒn ná»™i dung.
+YÊU CẦU:
+1. Đọc từng trang từ trang 1 đến trang {num_pages}, không bỏ sót trang nào.
+2. Với mỗi trang, trích xuất toàn bộ text trên trang đó.
+3. Giữ nguyên số điều khoản, số trang, định nghĩa, danh mục.
+4. Không tóm tắt, không rút gọn - ghi nguyên văn nội dung.
 
-Äá»ŠNH Dáº NG XUáº¤T (báº¯t buá»™c theo máº«u):
+ĐỊNH DẠNG XUẤT (bắt buộc theo mẫu):
 
-=== Há»¢P Äá»’NG ===
+=== HỢP ĐỒNG ===
 
 --- Trang 1 ---
-[ná»™i dung nguyÃªn vÄƒn trang 1]
+[nội dung nguyên văn trang 1]
 
 --- Trang 2 ---
-[ná»™i dung nguyÃªn vÄƒn trang 2]
+[nội dung nguyên văn trang 2]
 
 ...
 
 --- Trang {num_pages} ---
-[ná»™i dung nguyÃªn vÄƒn trang {num_pages}]
+[nội dung nguyên văn trang {num_pages}]
 
-=== Háº¾T Há»¢P Äá»’NG ===
+=== HẾT HỢP ĐỒNG ===
 
-Chá»‰ xuáº¥t káº¿t quáº£ theo Ä‘á»‹nh dáº¡ng trÃªn. KhÃ´ng thÃªm lá»i giáº£i thÃ­ch."""
+Chỉ xuất kết quả theo định dạng trên. Không thêm lời giải thích."""
 
 
 def call_vision_model(messages, max_tokens=8000, timeout=300):
-    """Gá»i vision model (Kimi K2.6) qua Ollama Cloud API."""
+    """Gọi vision model (Kimi K2.6) qua Ollama Cloud API."""
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
@@ -327,24 +327,24 @@ def call_vision_model(messages, max_tokens=8000, timeout=300):
         content_text = msg.get("content", "") or ""
         reasoning = msg.get("reasoning", "") or ""
 
-        # Æ¯u tiÃªn content
+        # Ưu tiên content
         if content_text.strip():
             return {"success": True, "text": content_text.strip(), "error": ""}
 
-        # Fallback: reasoning cÃ³ ná»™i dung â€” lá»c thinking tiáº¿ng Anh, giá»¯ text tiáº¿ng Viá»‡t
+        # Fallback: reasoning có nội dung — lọc thinking tiếng Anh, giữ text tiếng Việt
         if reasoning.strip():
             lines = reasoning.split("\n")
-            # Kimi thÆ°á»ng: thinking tiáº¿ng Anh á»Ÿ Ä‘áº§u, text tiáº¿ng Viá»‡t á»Ÿ sau
-            # Heuristic: tÃ¬m dÃ²ng Ä‘áº§u tiÃªn cÃ³ >= 3 kÃ½ tá»± tiáº¿ng Viá»‡t (cÃ³ dáº¥u)
-            # KÃ½ tá»± tiáº¿ng Viá»‡t: 0x00C0-0x024F (Latin Extended), 0x1E00-0x1EFF
+            # Kimi thường: thinking tiếng Anh ở đầu, text tiếng Việt ở sau
+            # Heuristic: tìm dòng đầu tiên có >= 3 ký tự tiếng Việt (có dấu)
+            # Ký tự tiếng Việt: 0x00C0-0x024F (Latin Extended), 0x1E00-0x1EFF
             start_idx = 0
             for i, line in enumerate(lines):
                 stripped = line.strip()
                 if not stripped or len(stripped) < 10:
                     continue
-                # Äáº¿m kÃ½ tá»± tiáº¿ng Viá»‡t (cÃ³ dáº¥u)
+                # Đếm ký tự tiếng Việt (có dấu)
                 viet_chars = sum(1 for c in stripped if 0x00C0 <= ord(c) <= 0x024F or 0x1E00 <= ord(c) <= 0x1EFF)
-                # DÃ²ng cÃ³ >= 3 kÃ½ tá»± tiáº¿ng Viá»‡t -> likely lÃ  ná»™i dung trÃ­ch xuáº¥t
+                # Dòng có >= 3 ký tự tiếng Việt -> likely là nội dung trích xuất
                 if viet_chars >= 3:
                     start_idx = i
                     break
@@ -355,7 +355,7 @@ def call_vision_model(messages, max_tokens=8000, timeout=300):
                 result_text = result_text[:15000]
             return {"success": True, "text": result_text, "error": ""}
 
-        return {"success": False, "text": "", "error": "AI khÃ´ng tráº£ vá» ná»™i dung."}
+        return {"success": False, "text": "", "error": "AI không trả về nội dung."}
 
     except requests.exceptions.Timeout:
         return {"success": False, "text": "", "error": f"Vision model timeout ({timeout}s)"}
@@ -366,7 +366,7 @@ def call_vision_model(messages, max_tokens=8000, timeout=300):
 
 
 def extract_invoice_text(photo_paths):
-    """Tier 1a: DÃ¹ng Kimi K2.6 Ä‘á»c áº£nh hÃ³a Ä‘Æ¡n -> trÃ­ch xuáº¥t text."""
+    """Tier 1a: Dùng Kimi K2.6 đọc ảnh hóa đơn -> trích xuất text."""
     prompt = build_extraction_prompt_invoice()
 
     content = [{"type": "text", "text": prompt}]
@@ -375,10 +375,10 @@ def extract_invoice_text(photo_paths):
             try:
                 content.append({"type": "image_url", "image_url": {"url": encode_image_to_base64(photo_path)}})
             except Exception as e:
-                content.append({"type": "text", "text": f"[KhÃ´ng thá»ƒ Ä‘á»c áº£nh: {str(e)}]"})
+                content.append({"type": "text", "text": f"[Không thể đọc ảnh: {str(e)}]"})
 
     messages = [
-        {"role": "system", "content": "Báº¡n lÃ  chuyÃªn gia trÃ­ch xuáº¥t dá»¯ liá»‡u tá»« áº£nh. Äá»c chÃ­nh xÃ¡c tá»«ng dÃ²ng. Tráº£ lá»i báº±ng tiáº¿ng Viá»‡t. Chá»‰ xuáº¥t káº¿t quáº£ theo Ä‘á»‹nh dáº¡ng yÃªu cáº§u."},
+        {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh. Đọc chính xác từng dòng. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng yêu cầu."},
         {"role": "user", "content": content}
     ]
 
@@ -386,12 +386,12 @@ def extract_invoice_text(photo_paths):
 
 
 def extract_contract_text_from_images(contract_images, num_pages, batch_size=4):
-    """Tier 1b: DÃ¹ng Kimi K2.6 Ä‘á»c áº£nh há»£p Ä‘á»“ng -> trÃ­ch xuáº¥t text.
-    Chia thÃ nh batch Ä‘á»ƒ trÃ¡nh bá»‹ cáº¯t ná»™i dung."""
+    """Tier 1b: Dùng Kimi K2.6 đọc ảnh hợp đồng -> trích xuất text.
+    Chia thành batch để tránh bị cắt nội dung."""
     all_extracted_text = []
     total_images = len(contract_images)
 
-    # Náº¿u Ã­t trang, gá»­i 1 láº§n
+    # Nếu ít trang, gửi 1 lần
     if total_images <= batch_size:
         prompt = build_extraction_prompt_contract(num_pages)
         content = [{"type": "text", "text": prompt}]
@@ -399,13 +399,13 @@ def extract_contract_text_from_images(contract_images, num_pages, batch_size=4):
             content.append({"type": "image_url", "image_url": {"url": img_b64}})
 
         messages = [
-            {"role": "system", "content": "Báº¡n lÃ  chuyÃªn gia trÃ­ch xuáº¥t dá»¯ liá»‡u tá»« áº£nh há»£p Ä‘á»“ng báº£o hiá»ƒm. Äá»c chÃ­nh xÃ¡c tá»«ng trang. Tráº£ lá»i báº±ng tiáº¿ng Viá»‡t. Chá»‰ xuáº¥t káº¿t quáº£ theo Ä‘á»‹nh dáº¡ng yÃªu cáº§u. KHÃ”NG bá» sÃ³t trang nÃ o."},
+            {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Đọc chính xác từng trang. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng yêu cầu. KHÔNG bỏ sót trang nào."},
             {"role": "user", "content": content}
         ]
 
         return call_vision_model(messages, max_tokens=10000, timeout=180)
 
-    # Náº¿u nhiá»u trang, chia thÃ nh batch
+    # Nếu nhiều trang, chia thành batch
     num_batches = (total_images + batch_size - 1) // batch_size
 
     for batch_idx in range(num_batches):
@@ -416,30 +416,30 @@ def extract_contract_text_from_images(contract_images, num_pages, batch_size=4):
         page_start = start + 1
         page_end = end
 
-        prompt = f"""Báº¡n lÃ  chuyÃªn gia trÃ­ch xuáº¥t dá»¯ liá»‡u tá»« áº£nh há»£p Ä‘á»“ng báº£o hiá»ƒm. Nhiá»‡m vá»¥: Äá»ŒC {batch_num_pages} TRANG áº¢NH (tá»« trang {page_start} Ä‘áº¿n trang {page_end}) vÃ  trÃ­ch xuáº¥t TOÃ€N Bá»˜ ná»™i dung.
+        prompt = f"""Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Nhiệm vụ: ĐỌC {batch_num_pages} TRANG ẢNH (từ trang {page_start} đến trang {page_end}) và trích xuất TOÀN BỘ nội dung.
 
-YÃŠU Cáº¦U:
-1. Äá»c tá»«ng trang, khÃ´ng bá» sÃ³t.
-2. Giá»¯ nguyÃªn sá»‘ Ä‘iá»u khoáº£n, Ä‘á»‹nh nghÄ©a, danh má»¥c.
-3. KhÃ´ng tÃ³m táº¯t - ghi nguyÃªn vÄƒn.
+YÊU CẦU:
+1. Đọc từng trang, không bỏ sót.
+2. Giữ nguyên số điều khoản, định nghĩa, danh mục.
+3. Không tóm tắt - ghi nguyên văn.
 
-Äá»ŠNH Dáº NG XUáº¤T:
+ĐỊNH DẠNG XUẤT:
 --- Trang {page_start} ---
-[ná»™i dung]
+[nội dung]
 --- Trang {page_start + 1} ---
-[ná»™i dung]
+[nội dung]
 ...
 --- Trang {page_end} ---
-[ná»™i dung]
+[nội dung]
 
-Chá»‰ xuáº¥t káº¿t quáº£. KhÃ´ng thÃªm giáº£i thÃ­ch."""
+Chỉ xuất kết quả. Không thêm giải thích."""
 
         content = [{"type": "text", "text": prompt}]
         for img_b64 in batch_images:
             content.append({"type": "image_url", "image_url": {"url": img_b64}})
 
         messages = [
-            {"role": "system", "content": "Báº¡n lÃ  chuyÃªn gia trÃ­ch xuáº¥t dá»¯ liá»‡u tá»« áº£nh há»£p Ä‘á»“ng báº£o hiá»ƒm. Äá»c chÃ­nh xÃ¡c tá»«ng trang. Tráº£ lá»i báº±ng tiáº¿ng Viá»‡t. Chá»‰ xuáº¥t káº¿t quáº£ theo Ä‘á»‹nh dáº¡ng. KHÃ”NG bá» sÃ³t trang nÃ o."},
+            {"role": "system", "content": "Bạn là chuyên gia trích xuất dữ liệu từ ảnh hợp đồng bảo hiểm. Đọc chính xác từng trang. Trả lời bằng tiếng Việt. Chỉ xuất kết quả theo định dạng. KHÔNG bỏ sót trang nào."},
             {"role": "user", "content": content}
         ]
 
@@ -448,91 +448,91 @@ Chá»‰ xuáº¥t káº¿t quáº£. KhÃ´ng thÃªm giáº£i thÃ­ch."""
         if result["success"]:
             all_extracted_text.append(result["text"])
         else:
-            # Náº¿u batch fail, ghi lá»—i nhÆ°ng tiáº¿p tá»¥c batch khÃ¡c
-            all_extracted_text.append(f"[Batch {batch_idx + 1} (trang {page_start}-{page_end}) trÃ­ch xuáº¥t tháº¥t báº¡i: {result['error']}]")
+            # Nếu batch fail, ghi lỗi nhưng tiếp tục batch khác
+            all_extracted_text.append(f"[Batch {batch_idx + 1} (trang {page_start}-{page_end}) trích xuất thất bại: {result['error']}]")
 
-    # GhÃ©p táº¥t cáº£ batch láº¡i
+    # Ghép tất cả batch lại
     combined_text = "\n\n".join(all_extracted_text)
     return {"success": True, "text": combined_text, "error": ""}
 
 
 # ============================================================
-# TIER 2: GLM-5.2 â€” PHÃ‚N TÃCH Tá»ªNG CHUNK (REDUCE)
+# TIER 2: GLM-5.2 — PHÂN TÍCH TỪNG CHUNK (REDUCE)
 # ============================================================
 
 def build_invoice_analysis_prompt(invoice_text):
-    """Prompt Ä‘Æ¡n giáº£n cho GLM phÃ¢n tÃ­ch hÃ³a Ä‘Æ¡n â€” phÃ¢n loáº¡i tá»«ng má»¥c."""
-    return f"""Báº¡n lÃ  chuyÃªn gia phÃ¢n tÃ­ch hÃ³a Ä‘Æ¡n y táº¿. Äá»c ná»™i dung hÃ³a Ä‘Æ¡n dÆ°á»›i Ä‘Ã¢y vÃ  phÃ¢n loáº¡i tá»«ng háº¡ng má»¥c.
+    """Prompt đơn giản cho GLM phân tích hóa đơn — phân loại từng mục."""
+    return f"""Bạn là chuyên gia phân tích hóa đơn y tế. Đọc nội dung hóa đơn dưới đây và phân loại từng hạng mục.
 
-Ná»˜I DUNG HÃ“A ÄÆ N:
+NỘI DUNG HÓA ĐƠN:
 {invoice_text}
 
-YÃŠU Cáº¦U:
-1. Äá»c toÃ n bá»™ hÃ³a Ä‘Æ¡n.
-2. Vá»›i Má»–I má»¥c, xÃ¡c Ä‘á»‹nh loáº¡i thuá»™c má»™t trong: THUOC (thuá»‘c - cÃ³ hoáº¡t cháº¥t Ä‘iá»u trá»‹), VAT TU Y TE (váº­t tÆ° y táº¿ - bÄƒng gáº¡c, á»‘ng tiÃªm, dá»¥ng cá»¥ váº­t lÃ½), DICH VU Y TE (dá»‹ch vá»¥ y táº¿ - khÃ¡m, xÃ©t nghiá»‡m, pháº«u thuáº­t), KHAC (loáº¡i khÃ¡c - thá»±c pháº©m chá»©c nÄƒng, má»¹ pháº©m...).
-3. Liá»‡t kÃª tá»«ng má»¥c vá»›i: tÃªn má»¥c, sá»‘ tiá»n thÃ nh tiá»n, loáº¡i Ä‘Ã£ phÃ¢n loáº¡i.
-4. Ghi rÃµ tá»•ng tiá»n hÃ³a Ä‘Æ¡n.
+YÊU CẦU:
+1. Đọc toàn bộ hóa đơn.
+2. Với MỖI mục, xác định loại thuộc một trong: THUOC (thuốc - có hoạt chất điều trị), VAT TU Y TE (vật tư y tế - băng gạc, ống tiêm, dụng cụ vật lý), DICH VU Y TE (dịch vụ y tế - khám, xét nghiệm, phẫu thuật), KHAC (loại khác - thực phẩm chức năng, mỹ phẩm...).
+3. Liệt kê từng mục với: tên mục, số tiền thành tiền, loại đã phân loại.
+4. Ghi rõ tổng tiền hóa đơn.
 
-Äá»ŠNH Dáº NG XUáº¤T:
-=== PHÃ‚N TÃCH HÃ“A ÄÆ N ===
-Tá»•ng tiá»n: [sá»‘ tá»•ng]
+ĐỊNH DẠNG XUẤT:
+=== PHÂN TÍCH HÓA ĐƠN ===
+Tổng tiền: [số tổng]
 
-1. [TÃªn má»¥c] | [ThÃ nh tiá»n] | [Loáº¡i: THUOC/VAT TU Y TE/DICH VU Y TE/KHAC]
-2. [TÃªn má»¥c] | [ThÃ nh tiá»n] | [Loáº¡i: THUOC/VAT TU Y TE/DICH VU Y TE/KHAC]
+1. [Tên mục] | [Thành tiền] | [Loại: THUOC/VAT TU Y TE/DICH VU Y TE/KHAC]
+2. [Tên mục] | [Thành tiền] | [Loại: THUOC/VAT TU Y TE/DICH VU Y TE/KHAC]
 ...
 
-=== Háº¾T PHÃ‚N TÃCH ===
+=== HẾT PHÂN TÍCH ===
 
-Chá»‰ xuáº¥t káº¿t quáº£ theo Ä‘á»‹nh dáº¡ng trÃªn. KhÃ´ng thÃªm lá»i giáº£i thÃ­ch."""
+Chỉ xuất kết quả theo định dạng trên. Không thêm lời giải thích."""
 
 
 def build_contract_analysis_prompt(contract_chunk_text, chunk_idx):
-    """Prompt Ä‘Æ¡n giáº£n cho GLM phÃ¢n tÃ­ch 1 chunk há»£p Ä‘á»“ng â€” trÃ­ch xuáº¥t A, B, C."""
-    return f"""Báº¡n lÃ  chuyÃªn gia phÃ¢n tÃ­ch há»£p Ä‘á»“ng báº£o hiá»ƒm y táº¿. Äá»c Ä‘oáº¡n há»£p Ä‘á»“ng dÆ°á»›i Ä‘Ã¢y vÃ  trÃ­ch xuáº¥t 3 loáº¡i thÃ´ng tin.
+    """Prompt đơn giản cho GLM phân tích 1 chunk hợp đồng — trích xuất A, B, C."""
+    return f"""Bạn là chuyên gia phân tích hợp đồng bảo hiểm y tế. Đọc đoạn hợp đồng dưới đây và trích xuất 3 loại thông tin.
 
-ÄOáº N Há»¢P Äá»’NG (Pháº§n {chunk_idx + 1}):
+ĐOẠN HỢP ĐỒNG (Phần {chunk_idx + 1}):
 {contract_chunk_text}
 
-YÃŠU Cáº¦U: TrÃ­ch xuáº¥t 3 danh sÃ¡ch sau tá»« Ä‘oáº¡n há»£p Ä‘á»“ng nÃ y:
+YÊU CẦU: Trích xuất 3 danh sách sau từ đoạn hợp đồng này:
 
-DANH SÃCH A - ÄIá»€U KHOáº¢N LOáº I TRá»ª:
-Má»i Ä‘iá»u khoáº£n nÃ³i vá» viá»‡c KHÃ”NG bá»“i thÆ°á»ng / loáº¡i trá»« / khÃ´ng chi tráº£.
-Ghi rÃµ: ná»™i dung Ä‘iá»u khoáº£n, sá»‘ Ä‘iá»u khoáº£n, sá»‘ trang.
+DANH SÁCH A - ĐIỀU KHOẢN LOẠI TRỪ:
+Mọi điều khoản nói về việc KHÔNG bồi thường / loại trừ / không chi trả.
+Ghi rõ: nội dung điều khoản, số điều khoản, số trang.
 
-DANH SÃCH B - KHÃI NIá»†M / Äá»ŠNH NGHÄ¨A / DANH Má»¤C:
-Má»i Ä‘á»‹nh nghÄ©a thuáº­t ngá»¯, liá»‡t kÃª danh má»¥c, giáº£i thÃ­ch khÃ¡i niá»‡m.
-VD: 'Thiáº¿t bá»‹ y táº¿ há»— trá»£ Ä‘iá»u trá»‹ bao gá»“m: ...'
-Ghi rÃµ: khÃ¡i niá»‡m Ä‘Æ°á»£c Ä‘á»‹nh nghÄ©a, ná»™i dung Ä‘á»‹nh nghÄ©a, sá»‘ trang.
+DANH SÁCH B - KHÁI NIỆM / ĐỊNH NGHĨA / DANH MỤC:
+Mọi định nghĩa thuật ngữ, liệt kê danh mục, giải thích khái niệm.
+VD: 'Thiết bị y tế hỗ trợ điều trị bao gồm: ...'
+Ghi rõ: khái niệm được định nghĩa, nội dung định nghĩa, số trang.
 
-DANH SÃCH C - Háº N Má»¨C CHI TRáº¢:
-Má»i giá»›i háº¡n chi tráº£: tá»‘i Ä‘a X VNÄ/nÄƒm, tá»‘i Ä‘a Y VNÄ/láº§n, tá»‘i Ä‘a Z%...
-Ghi rÃµ: ná»™i dung háº¡n má»©c, sá»‘ Ä‘iá»u khoáº£n, sá»‘ trang.
+DANH SÁCH C - HẠN MỨC CHI TRẢ:
+Mọi giới hạn chi trả: tối đa X VNĐ/năm, tối đa Y VNĐ/lần, tối đa Z%...
+Ghi rõ: nội dung hạn mức, số điều khoản, số trang.
 
-Äá»ŠNH Dáº NG XUáº¤T:
-=== PHÃ‚N TÃCH Há»¢P Äá»’NG (Pháº§n {chunk_idx + 1}) ===
+ĐỊNH DẠNG XUẤT:
+=== PHÂN TÍCH HỢP ĐỒNG (Phần {chunk_idx + 1}) ===
 
-DANH SÃCH A - ÄIá»€U KHOáº¢N LOáº I TRá»ª:
-- [Ná»™i dung] | Äiá»u khoáº£n: [sá»‘] | Trang: [sá»‘]
-- [Ná»™i dung] | Äiá»u khoáº£n: [sá»‘] | Trang: [sá»‘]
-(náº¿u khÃ´ng cÃ³, ghi: KhÃ´ng phÃ¡t hiá»‡n)
+DANH SÁCH A - ĐIỀU KHOẢN LOẠI TRỪ:
+- [Nội dung] | Điều khoản: [số] | Trang: [số]
+- [Nội dung] | Điều khoản: [số] | Trang: [số]
+(nếu không có, ghi: Không phát hiện)
 
-DANH SÃCH B - KHÃI NIá»†M / Äá»ŠNH NGHÄ¨A:
-- [KhÃ¡i niá»‡m]: [Ná»™i dung Ä‘á»‹nh nghÄ©a] | Trang: [sá»‘]
-- [KhÃ¡i niá»‡m]: [Ná»™i dung Ä‘á»‹nh nghÄ©a] | Trang: [sá»‘]
-(náº¿u khÃ´ng cÃ³, ghi: KhÃ´ng phÃ¡t hiá»‡n)
+DANH SÁCH B - KHÁI NIỆM / ĐỊNH NGHĨA:
+- [Khái niệm]: [Nội dung định nghĩa] | Trang: [số]
+- [Khái niệm]: [Nội dung định nghĩa] | Trang: [số]
+(nếu không có, ghi: Không phát hiện)
 
-DANH SÃCH C - Háº N Má»¨C CHI TRáº¢:
-- [Ná»™i dung háº¡n má»©c] | Äiá»u khoáº£n: [sá»‘] | Trang: [sá»‘]
-- [Ná»™i dung háº¡n má»©c] | Äiá»u khoáº£n: [sá»‘] | Trang: [sá»‘]
-(náº¿u khÃ´ng cÃ³, ghi: KhÃ´ng phÃ¡t hiá»‡n)
+DANH SÁCH C - HẠN MỨC CHI TRẢ:
+- [Nội dung hạn mức] | Điều khoản: [số] | Trang: [số]
+- [Nội dung hạn mức] | Điều khoản: [số] | Trang: [số]
+(nếu không có, ghi: Không phát hiện)
 
-=== Háº¾T PHÃ‚N TÃCH ===
+=== HẾT PHÂN TÍCH ===
 
-Chá»‰ xuáº¥t káº¿t quáº£ theo Ä‘á»‹nh dáº¡ng trÃªn. KhÃ´ng thÃªm lá»i giáº£i thÃ­ch."""
+Chỉ xuất kết quả theo định dạng trên. Không thêm lời giải thích."""
 
 
 def call_analysis_model(messages, max_tokens=12000, timeout=600):
-    """Gá»i analysis model (GLM-5.2) qua Ollama Cloud API."""
+    """Gọi analysis model (GLM-5.2) qua Ollama Cloud API."""
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
@@ -558,13 +558,13 @@ def call_analysis_model(messages, max_tokens=12000, timeout=600):
         content_text = msg.get("content", "") or ""
         reasoning = msg.get("reasoning", "") or ""
 
-        # Æ¯u tiÃªn content
+        # Ưu tiên content
         if content_text.strip():
             return {"success": True, "text": content_text.strip(), "error": ""}
 
-        # Fallback: reasoning cÃ³ ná»™i dung -> tÃ¬m báº£ng cuá»‘i cÃ¹ng
+        # Fallback: reasoning có nội dung -> tìm bảng cuối cùng
         if reasoning.strip():
-            markers = ["**Tá»•ng chi phÃ­", "| # |", "| STT |", "**Tá»•ng kháº¥u trá»«", "KhÃ´ng cÃ³ khoáº£n kháº¥u trá»«", "Tá»•ng chi phÃ­ theo", "Tiá»n bá»“i thÆ°á»ng thá»±c nháº­n"]
+            markers = ["**Tổng chi phí", "| # |", "| STT |", "**Tổng khấu trừ", "Không có khoản khấu trừ", "Tổng chi phí theo", "Tiền bồi thường thực nhận"]
             last_match_idx = -1
             for marker in markers:
                 idx = reasoning.rfind(marker)
@@ -573,12 +573,12 @@ def call_analysis_model(messages, max_tokens=12000, timeout=600):
             if last_match_idx >= 0:
                 return {"success": True, "text": reasoning[last_match_idx:][:5000].strip(), "error": ""}
 
-            # Fallback: tÃ¬m pháº§n cuá»‘i cÃ³ dáº¥u hiá»‡u tráº£ lá»i (báº£ng)
+            # Fallback: tìm phần cuối có dấu hiệu trả lời (bảng)
             lines = reasoning.split("\n")
             answer_lines = []
             in_answer = False
             for line in lines:
-                if any(m in line for m in ["**Tá»•ng", "| # |", "| STT", "| 1 ", "| 1  ", "KhÃ´ng cÃ³ khoáº£n", "Tiá»n bá»“i thÆ°á»ng", "Tiá»n cÃ²n láº¡i"]):
+                if any(m in line for m in ["**Tổng", "| # |", "| STT", "| 1 ", "| 1  ", "Không có khoản", "Tiền bồi thường", "Tiền còn lại"]):
                     in_answer = True
                 if in_answer:
                     answer_lines.append(line)
@@ -588,7 +588,7 @@ def call_analysis_model(messages, max_tokens=12000, timeout=600):
 
             return {"success": True, "text": reasoning[-2000:].strip(), "error": ""}
 
-        return {"success": False, "text": "", "error": "AI khÃ´ng tráº£ vá» ná»™i dung."}
+        return {"success": False, "text": "", "error": "AI không trả về nội dung."}
 
     except requests.exceptions.Timeout:
         return {"success": False, "text": "", "error": f"Analysis model timeout ({timeout}s)"}
@@ -599,255 +599,255 @@ def call_analysis_model(messages, max_tokens=12000, timeout=600):
 
 
 # ============================================================
-# TIER 3: GLM-5.2 â€” MERGE & XUáº¤T Báº¢NG CUá»I CÃ™NG
+# TIER 3: GLM-5.2 — MERGE & XUẤT BẢNG CUỐI CÙNG
 # ============================================================
 
 def build_analysis_prompt(claim_data, invoice_text, contract_text):
-    """XÃ¢y prompt phÃ¢n tÃ­ch kháº¥u trá»« cho GLM-5.2 â€” chá»‰ nháº­n text, khÃ´ng nháº­n áº£nh."""
-    product_name = claim_data.get("product", {}).get("name", "KhÃ´ng rÃµ")
+    """Xây prompt phân tích khấu trừ cho GLM-5.2 — chỉ nhận text, không nhận ảnh."""
+    product_name = claim_data.get("product", {}).get("name", "Không rõ")
     answers = claim_data.get("answers", {})
 
-    prompt = f'''Báº N LÃ€ CHUYÃŠN GIA KIá»‚M TOÃN Há»¢P Äá»’NG Báº¢O HIá»‚M CAO Cáº¤P.
-NHIá»†M Vá»¤: PhÃ¢n tÃ­ch kháº¥u trá»« bá»“i thÆ°á»ng báº±ng cÃ¡ch Ä‘á»‘i chiáº¿u hÃ³a Ä‘Æ¡n vá»›i há»£p Ä‘á»“ng, suy luáº­n logic (ká»ƒ cáº£ kháº¥u trá»« giÃ¡n tiáº¿p/nhÃºng), rá»“i xuáº¥t ra Má»˜T Báº¢NG DUY NHáº¤T theo máº«u quy Ä‘á»‹nh.
+    prompt = f'''BẠN LÀ CHUYÊN GIA KIỂM TOÁN HỢP ĐỒNG BẢO HIỂM CAO CẤP.
+NHIỆM VỤ: Phân tích khấu trừ bồi thường bằng cách đối chiếu hóa đơn với hợp đồng, suy luận logic (kể cả khấu trừ gián tiếp/nhúng), rồi xuất ra MỘT BẢNG DUY NHẤT theo mẫu quy định.
 
-Báº¡n lÃ m viá»‡c theo 3 BÆ¯á»šC Báº®T BUá»˜C, khÃ´ng bá» qua bÆ°á»›c nÃ o, khÃ´ng rÃºt gá»n, khÃ´ng tÃ³m táº¯t - Ä‘á»c TOÃ€N VÄ‚N tÃ i liá»‡u.
+Bạn làm việc theo 3 BƯỚC BẮT BUỘC, không bỏ qua bước nào, không rút gọn, không tóm tắt - đọc TOÀN VĂN tài liệu.
 
-THÃ”NG TIN Há»’ SÆ :
-- Sáº£n pháº©m báº£o hiá»ƒm: {product_name}
-- KhÃ¡ch hÃ ng: {claim_data.get('customer_name', 'KhÃ´ng rÃµ')}
-- Loáº¡i sá»± cá»‘: {answers.get('incident_type', 'KhÃ´ng rÃµ')}
+THÔNG TIN HỒ SƠ:
+- Sản phẩm bảo hiểm: {product_name}
+- Khách hàng: {claim_data.get('customer_name', 'Không rõ')}
+- Loại sự cố: {answers.get('incident_type', 'Không rõ')}
 
 ===============================================
-BÆ¯á»šC 1 - Äá»ŒC VÃ€ GHI NHá»š TOÃ€N Bá»˜ HÃ“A ÄÆ N
+BƯỚC 1 - ĐỌC VÀ GHI NHỚ TOÀN BỘ HÓA ĐƠN
 ===============================================
 
-DÆ°á»›i Ä‘Ã¢y lÃ  ná»™i dung hÃ³a Ä‘Æ¡n Ä‘Ã£ Ä‘Æ°á»£c trÃ­ch xuáº¥t tá»« áº£nh:
+Dưới đây là nội dung hóa đơn đã được trích xuất từ ảnh:
 
 {invoice_text}
 
-Äá»c TOÃ€N Bá»˜ hÃ³a Ä‘Æ¡n. Vá»›i Má»–I má»¥c, ghi nhá»›:
-- TÃªn má»¥c / háº¡ng má»¥c
-- MÃ´ táº£ chi tiáº¿t (náº¿u cÃ³)
-- ÄÆ¡n vá»‹ tÃ­nh vÃ  sá»‘ lÆ°á»£ng (náº¿u cÃ³)
-- ÄÆ¡n giÃ¡ (náº¿u cÃ³)
-- ThÃ nh tiá»n
+Đọc TOÀN BỘ hóa đơn. Với MỖI mục, ghi nhớ:
+- Tên mục / hạng mục
+- Mô tả chi tiết (nếu có)
+- Đơn vị tính và số lượng (nếu có)
+- Đơn giá (nếu có)
+- Thành tiền
 
-TÃ­nh vÃ  ghi nhá»›:
-- Tá»”NG TIá»€N TRÆ¯á»šC THUáº¾ (náº¿u cÃ³)
-- TIá»€N THUáº¾ (náº¿u cÃ³)
-- Tá»”NG TIá»€N SAU THUáº¾ (= Tá»”NG Cá»˜NG)
+Tính và ghi nhớ:
+- TỔNG TIỀN TRƯỚC THUẾ (nếu có)
+- TIỀN THUẾ (nếu có)
+- TỔNG TIỀN SAU THUẾ (= TỔNG CỘNG)
 
-[!] Báº¡n pháº£i ghi nhá»› CHÃNH XÃC Tá»ªNG CON Sá». KhÃ´ng Ä‘Æ°á»£c tÃ³m táº¯t, khÃ´ng Ä‘Æ°á»£c gá»™p má»¥c náº¿u khÃ´ng cháº¯c cháº¯n.
+[!] Bạn phải ghi nhớ CHÍNH XÁC TỪNG CON SỐ. Không được tóm tắt, không được gộp mục nếu không chắc chắn.
 
 ===============================================
-BÆ¯á»šC 2 - Äá»ŒC TOÃ€N Bá»˜ Há»¢P Äá»’NG & XÃ‚Y Báº¢NG TRA Cá»¨U
+BƯỚC 2 - ĐỌC TOÀN BỘ HỢP ĐỒNG & XÂY BẢNG TRA CỨU
 ===============================================
 
-DÆ°á»›i Ä‘Ã¢y lÃ  ná»™i dung há»£p Ä‘á»“ng Ä‘Ã£ Ä‘Æ°á»£c trÃ­ch xuáº¥t tá»« áº£nh:
+Dưới đây là nội dung hợp đồng đã được trích xuất từ ảnh:
 
 {contract_text}
 
-Äá»c TOÃ€N Bá»˜ há»£p Ä‘á»“ng - má»i Ä‘iá»u khoáº£n, phá»¥ lá»¥c, Ä‘Ã­nh chÃ­nh. KhÃ´ng Ä‘Æ°á»£c bá» qua báº¥t ká»³ Ä‘iá»u khoáº£n nÃ o.
+Đọc TOÀN BỘ hợp đồng - mọi điều khoản, phụ lục, đính chính. Không được bỏ qua bất kỳ điều khoản nào.
 
-[!] ÄIá»€U QUAN TRá»ŒNG NHáº¤T: ThÃ´ng tin loáº¡i trá»« vÃ  thÃ´ng tin Ä‘á»‹nh nghÄ©a THÆ¯á»œNG Náº°M á»ž CÃC TRANG KHÃC NHAU. Báº¡n KHÃ”NG ÄÆ¯á»¢C chá»‰ Ä‘á»c tá»«ng trang riÃªng láº». Báº¡n PHáº¢I tá»•ng há»£p thÃ´ng tin tá»« Táº¤T Cáº¢ cÃ¡c trang, káº¿t ná»‘i chÃºng láº¡i, rá»“i má»›i suy luáº­n.
+[!] ĐIỀU QUAN TRỌNG NHẤT: Thông tin loại trừ và thông tin định nghĩa THƯỜNG NẰM Ở CÁC TRANG KHÁC NHAU. Bạn KHÔNG ĐƯỢC chỉ đọc từng trang riêng lẻ. Bạn PHẢI tổng hợp thông tin từ TẤT CẢ các trang, kết nối chúng lại, rồi mới suy luận.
 
-2.1. XÃ‚Y Dá»°NG 3 DANH SÃCH Báº®T BUá»˜C (lÃ m trong Ä‘áº§u, khÃ´ng xuáº¥t ra)
+2.1. XÂY DỰNG 3 DANH SÁCH BẮT BUỘC (làm trong đầu, không xuất ra)
 
-DANH SÃCH A - ÄIá»€U KHOáº¢N LOáº I TRá»ª:
-Má»i Ä‘iá»u khoáº£n nÃ³i vá» viá»‡c KHÃ”NG bá»“i thÆ°á»ng / loáº¡i trá»« / khÃ´ng chi tráº£.
-Háº¡ng má»¥c bá»‹ loáº¡i trá»« cÃ³ thá»ƒ lÃ :
-  - TÃªn trá»±c tiáº¿p: 'KhÃ´ng bá»“i thÆ°á»ng thuá»‘c ngoÃ i danh má»¥c'
-  - TÃªn nhÃ³m/khÃ¡i niá»‡m: 'KhÃ´ng bá»“i thÆ°á»ng thiáº¿t bá»‹ y táº¿ há»— trá»£ Ä‘iá»u trá»‹'
-  -> Vá»›i tÃªn nhÃ³m, báº¡n PHáº¢I tra trong DANH SÃCH B Ä‘á»ƒ xem nhÃ³m Ä‘Ã³ bao gá»“m nhá»¯ng háº¡ng má»¥c cá»¥ thá»ƒ nÃ o.
+DANH SÁCH A - ĐIỀU KHOẢN LOẠI TRỪ:
+Mọi điều khoản nói về việc KHÔNG bồi thường / loại trừ / không chi trả.
+Hạng mục bị loại trừ có thể là:
+  - Tên trực tiếp: 'Không bồi thường thuốc ngoài danh mục'
+  - Tên nhóm/khái niệm: 'Không bồi thường thiết bị y tế hỗ trợ điều trị'
+  -> Với tên nhóm, bạn PHẢI tra trong DANH SÁCH B để xem nhóm đó bao gồm những hạng mục cụ thể nào.
 
-DANH SÃCH B - KHÃI NIá»†M / Äá»ŠNH NGHÄ¨A / DANH Má»¤C:
-Má»i trang Ä‘á»‹nh nghÄ©a thuáº­t ngá»¯, liá»‡t kÃª danh má»¥c, giáº£i thÃ­ch khÃ¡i niá»‡m.
-VD: 'Thiáº¿t bá»‹ y táº¿ há»— trá»£ Ä‘iá»u trá»‹ bao gá»“m: ...'
--> Má»—i khÃ¡i niá»‡m trong DANH SÃCH A (loáº¡i trá»«) PHáº¢I Ä‘Æ°á»£c tra trong DANH SÃCH B Ä‘á»ƒ tÃ¬m cÃ¡c háº¡ng má»¥c con cá»¥ thá»ƒ.
--> LÆ°u Ã½: Ä‘á»‹nh nghÄ©a trong há»£p Ä‘á»“ng cÃ³ thá»ƒ KHÃ”NG bao gá»“m thuá»‘c. Pháº£i Ä‘á»c ká»¹ xem Ä‘á»‹nh nghÄ©a ghi gÃ¬.
+DANH SÁCH B - KHÁI NIỆM / ĐỊNH NGHĨA / DANH MỤC:
+Mọi trang định nghĩa thuật ngữ, liệt kê danh mục, giải thích khái niệm.
+VD: 'Thiết bị y tế hỗ trợ điều trị bao gồm: ...'
+-> Mỗi khái niệm trong DANH SÁCH A (loại trừ) PHẢI được tra trong DANH SÁCH B để tìm các hạng mục con cụ thể.
+-> Lưu ý: định nghĩa trong hợp đồng có thể KHÔNG bao gồm thuốc. Phải đọc kỹ xem định nghĩa ghi gì.
 
-DANH SÃCH C - Háº N Má»¨C CHI TRáº¢:
-Má»i giá»›i háº¡n chi tráº£: tá»‘i Ä‘a X VNÄ/nÄƒm, tá»‘i Ä‘a Y VNÄ/láº§n, tá»‘i Ä‘a Z% giÃ¡ trá»‹...
+DANH SÁCH C - HẠN MỨC CHI TRẢ:
+Mọi giới hạn chi trả: tối đa X VNĐ/năm, tối đa Y VNĐ/lần, tối đa Z% giá trị...
 
-2.2. QUY TRÃŒNH SUY LUáº¬N Báº®T BUá»˜C - MAP HÃ“A ÄÆ N VÃ€O 3 DANH SÃCH
+2.2. QUY TRÌNH SUY LUẬN BẮT BUỘC - MAP HÓA ĐƠN VÀO 3 DANH SÁCH
 
-Vá»›i Tá»ªNG Má»–I Má»¤C trong hÃ³a Ä‘Æ¡n, thá»±c hiá»‡n:
+Với TỪNG MỖI MỤC trong hóa đơn, thực hiện:
 
-BÆ¯á»šC 2(A) - TRA DANH SÃCH A (Ä‘iá»u khoáº£n loáº¡i trá»«):
-  - Má»¥c trong hÃ³a Ä‘Æ¡n cÃ³ trÃ¹ng tÃªn trá»±c tiáº¿p vá»›i báº¥t ká»³ háº¡ng má»¥c nÃ o trong DANH SÃCH A khÃ´ng?
-    -> CÃ³ -> KHáº¤U TRá»ª. Ghi rÃµ: tÃªn má»¥c + sá»‘ tiá»n + Ä‘iá»u khoáº£n + trang.
-    -> KhÃ´ng -> chuyá»ƒn sang BÆ¯á»šC 2(B).
+BƯỚC 2(A) - TRA DANH SÁCH A (điều khoản loại trừ):
+  - Mục trong hóa đơn có trùng tên trực tiếp với bất kỳ hạng mục nào trong DANH SÁCH A không?
+    -> Có -> KHẤU TRỪ. Ghi rõ: tên mục + số tiền + điều khoản + trang.
+    -> Không -> chuyển sang BƯỚC 2(B).
 
-BÆ¯á»šC 2(B) - TRA DANH SÃCH B (khÃ¡i niá»‡m/Ä‘á»‹nh nghÄ©a) - KIá»‚M TRA KHáº¤U TRá»ª GIÃN TIáº¾P:
-  - Má»¥c trong hÃ³a Ä‘Æ¡n cÃ³ thuá»™c báº¥t ká»³ khÃ¡i niá»‡m/Ä‘á»‹nh nghÄ©a nÃ o trong DANH SÃCH B khÃ´ng?
-    -> DUYá»†T Tá»ªNG khÃ¡i niá»‡m trong DANH SÃCH B:
-      - KhÃ¡i niá»‡m nÃ y cÃ³ liá»‡t kÃª/bao gá»“m má»¥c trong hÃ³a Ä‘Æ¡n khÃ´ng?
-      - KhÃ¡i niá»‡m nÃ y cÃ³ bá»‹ NHáº®C Äáº¾N trong DANH SÃCH A (tá»©c lÃ  khÃ¡i niá»‡m Ä‘Ã³ bá»‹ loáº¡i trá»«) khÃ´ng?
-      -> Náº¾U Cáº¢ HAI Äá»€U CÃ“: má»¥c trong hÃ³a Ä‘Æ¡n thuá»™c khÃ¡i niá»‡m bá»‹ loáº¡i trá»« -> KHáº¤U TRá»ª (giÃ¡n tiáº¿p).
-        Ghi rÃµ: tÃªn má»¥c + sá»‘ tiá»n + khÃ¡i niá»‡m trung gian + Ä‘iá»u khoáº£n loáº¡i trá»« + trang.
-      -> Chá»‰ cÃ³ 1/2: khÃ´ng Ä‘á»§ cÆ¡ sá»Ÿ, chuyá»ƒn sang khÃ¡i niá»‡m tiáº¿p theo.
-  - Sau khi duyá»‡t háº¿t DANH SÃCH B mÃ  váº«n khÃ´ng tÃ¬m tháº¥y -> chuyá»ƒn sang BÆ¯á»šC 2(C).
+BƯỚC 2(B) - TRA DANH SÁCH B (khái niệm/định nghĩa) - KIỂM TRA KHẤU TRỪ GIÁN TIẾP:
+  - Mục trong hóa đơn có thuộc bất kỳ khái niệm/định nghĩa nào trong DANH SÁCH B không?
+    -> DUYỆT TỪNG khái niệm trong DANH SÁCH B:
+      - Khái niệm này có liệt kê/bao gồm mục trong hóa đơn không?
+      - Khái niệm này có bị NHẮC ĐẾN trong DANH SÁCH A (tức là khái niệm đó bị loại trừ) không?
+      -> NẾU CẢ HAI ĐỀU CÓ: mục trong hóa đơn thuộc khái niệm bị loại trừ -> KHẤU TRỪ (gián tiếp).
+        Ghi rõ: tên mục + số tiền + khái niệm trung gian + điều khoản loại trừ + trang.
+      -> Chỉ có 1/2: không đủ cơ sở, chuyển sang khái niệm tiếp theo.
+  - Sau khi duyệt hết DANH SÁCH B mà vẫn không tìm thấy -> chuyển sang BƯỚC 2(C).
 
-BÆ¯á»šC 2(C) - TRA DANH SÃCH C (háº¡n má»©c chi tráº£):
-  - Má»¥c trong hÃ³a Ä‘Æ¡n cÃ³ thuá»™c má»™t háº¡ng má»¥c cÃ³ háº¡n má»©c trong DANH SÃCH C khÃ´ng?
-  - Sá»‘ tiá»n cÃ³ vÆ°á»£t háº¡n má»©c khÃ´ng?
-    -> VÆ°á»£t -> pháº§n vÆ°á»£t bá»‹ KHáº¤U TRá»ª.
-    -> KhÃ´ng vÆ°á»£t -> khÃ´ng kháº¥u trá»«.
+BƯỚC 2(C) - TRA DANH SÁCH C (hạn mức chi trả):
+  - Mục trong hóa đơn có thuộc một hạng mục có hạn mức trong DANH SÁCH C không?
+  - Số tiền có vượt hạn mức không?
+    -> Vượt -> phần vượt bị KHẤU TRỪ.
+    -> Không vượt -> không khấu trừ.
 
-BÆ¯á»šC 2(D) - Káº¾T LUáº¬N:
-  - Náº¿u má»¥c bá»‹ kháº¥u trá»« qua báº¥t ká»³ bÆ°á»›c 2(A)/2(B)/2(C) nÃ o -> Ä‘Æ°a vÃ o báº£ng káº¿t quáº£.
-  - Náº¿u khÃ´ng bá»‹ kháº¥u trá»« qua báº¥t ká»³ bÆ°á»›c nÃ o -> KHÃ”NG Ä‘Æ°a vÃ o báº£ng.
+BƯỚC 2(D) - KẾT LUẬN:
+  - Nếu mục bị khấu trừ qua bất kỳ bước 2(A)/2(B)/2(C) nào -> đưa vào bảng kết quả.
+  - Nếu không bị khấu trừ qua bất kỳ bước nào -> KHÔNG đưa vào bảng.
 
-2.3. NGUYÃŠN Táº®C PHÃ‚N LOáº I Äá»I TÆ¯á»¢NG â€” CHá»ˆ Dá»°A VÃ€O Há»¢P Äá»’NG, KHÃ”NG Tá»° Ã PHÃ‚N LOáº I
+2.3. NGUYÊN TẮC PHÂN LOẠI ĐỐI TƯỢNG — CHỈ DỰA VÀO HỢP ĐỒNG, KHÔNG TỰ Ý PHÂN LOẠI
 
-[!] NGUYÃŠN Táº®C Tá»I THáº¤U â€” KHÃ”NG ÄÆ¯á»¢C PHÃ‚N LOáº I Äá»I TÆ¯á»¢NG Tá»ª KIáº¾N THá»¨C NGOÃ€I Há»¢P Äá»’NG:
-- Báº¡n KHÃ”NG ÄÆ¯á»¢C tá»± Ã½ phÃ¢n loáº¡i má»™t má»¥c trong hÃ³a Ä‘Æ¡n lÃ  'thuá»‘c', 'thá»±c pháº©m chá»©c nÄƒng', 'thiáº¿t bá»‹ y táº¿' hay báº¥t ká»³ loáº¡i nÃ o dá»±a trÃªn kiáº¿n thá»©c cá»§a báº¡n.
-- Báº¡n CHá»ˆ ÄÆ¯á»¢C dÃ¹ng thÃ´ng tin tá»« chÃ­nh há»£p Ä‘á»“ng: náº¿u há»£p Ä‘á»“ng ghi háº¡ng má»¥c Ä‘Ã³ thuá»™c nhÃ³m bá»‹ loáº¡i trá»« â†’ kháº¥u trá»«. Náº¿u há»£p Ä‘á»“ng KHÃ”NG nháº¯c Ä‘áº¿n háº¡ng má»¥c Ä‘Ã³ â†’ KHÃ”NG kháº¥u trá»«.
-- KHÃ”NG ÄÆ¯á»¢C dÃ¹ng lÃ½ do 'lÃ  thá»±c pháº©m chá»©c nÄƒng', 'khÃ´ng pháº£i thuá»‘c', 'khÃ´ng cÃ³ tÃ¡c dá»¥ng Ä‘iá»u trá»‹' hoáº·c báº¥t ká»³ phÃ¢n loáº¡i y táº¿ nÃ o mÃ  há»£p Ä‘á»“ng KHÃ”NG ghi rÃµ.
-- LÃ­ do kháº¥u trá»« PHáº¢I lÃ  trÃ­ch dáº«n nguyÃªn vÄƒn Ä‘iá»u khoáº£n há»£p Ä‘á»“ng, KHÃ”NG ÄÆ¯á»¢C bá»• sung lÃ½ do riÃªng.
+[!] NGUYÊN TẮC TỐI THẤU — KHÔNG ĐƯỢC PHÂN LOẠI ĐỐI TƯỢNG TỪ KIẾN THỨC NGOÀI HỢP ĐỒNG:
+- Bạn KHÔNG ĐƯỢC tự ý phân loại một mục trong hóa đơn là 'thuốc', 'thực phẩm chức năng', 'thiết bị y tế' hay bất kỳ loại nào dựa trên kiến thức của bạn.
+- Bạn CHỈ ĐƯỢC dùng thông tin từ chính hợp đồng: nếu hợp đồng ghi hạng mục đó thuộc nhóm bị loại trừ → khấu trừ. Nếu hợp đồng KHÔNG nhắc đến hạng mục đó → KHÔNG khấu trừ.
+- KHÔNG ĐƯỢC dùng lý do 'là thực phẩm chức năng', 'không phải thuốc', 'không có tác dụng điều trị' hoặc bất kỳ phân loại y tế nào mà hợp đồng KHÔNG ghi rõ.
+- Lí do khấu trừ PHẢI là trích dẫn nguyên văn điều khoản hợp đồng, KHÔNG ĐƯỢC bổ sung lý do riêng.
 
-  CÃ¡ch xÃ¡c Ä‘á»‹nh Ä‘Ãºng:
-  a) Há»£p Ä‘á»“ng ghi TÃŠN Cá»¤ THá»‚ bá»‹ loáº¡i trá»« (vd: 'Sanlein'):
-     â†’ Kháº¥u trá»« Ä‘Ãºng tÃªn Ä‘Ã³. LÃ­ do = 'Há»£p Ä‘á»“ng ghi rÃµ loáº¡i trá»« [tÃªn háº¡ng má»¥c] táº¡i [sá»‘ Ä‘iá»u khoáº£n], trang [sá»‘]'.
-     â†’ KHÃ”NG ÄÆ¯á»¢C bá»• sung thÃªm lÃ½ do nhÆ° 'vÃ¬ lÃ  thá»±c pháº©m chá»©c nÄƒng' hay 'vÃ¬ khÃ´ng pháº£i thuá»‘c'.
-     â†’ KHÃ”NG ÄÆ¯á»¢C kÃ©o theo háº¡ng má»¥c khÃ¡c khÃ´ng Ä‘Æ°á»£c nháº¯c trong há»£p Ä‘á»“ng.
+  Cách xác định đúng:
+  a) Hợp đồng ghi TÊN CỤ THỂ bị loại trừ (vd: 'Sanlein'):
+     → Khấu trừ đúng tên đó. Lí do = 'Hợp đồng ghi rõ loại trừ [tên hạng mục] tại [số điều khoản], trang [số]'.
+     → KHÔNG ĐƯỢC bổ sung thêm lý do như 'vì là thực phẩm chức năng' hay 'vì không phải thuốc'.
+     → KHÔNG ĐƯỢC kéo theo hạng mục khác không được nhắc trong hợp đồng.
 
-  b) Há»£p Ä‘á»“ng ghi NHÃ“M/LOáº I bá»‹ loáº¡i trá»« (vd: 'thuá»‘c nhá» máº¯t', 'váº­t tÆ° y táº¿ tiÃªu hao'):
-     â†’ Kháº¥u trá»« má»i háº¡ng má»¥c trong hÃ³a Ä‘Æ¡n THá»°C Sá»° thuá»™c nhÃ³m/loáº¡i Ä‘Ã³.
-     â†’ Viá»‡c xÃ¡c Ä‘á»‹nh thuá»™c nhÃ³m hay khÃ´ng PHáº¢I dá»±a vÃ o Ä‘á»‹nh nghÄ©a trong há»£p Ä‘á»“ng (DANH SÃCH B), KHÃ”NG dá»±a vÃ o kiáº¿n thá»©c bÃªn ngoÃ i.
-     â†’ Náº¿u há»£p Ä‘á»“ng Ä‘á»‹nh nghÄ©a nhÃ³m Ä‘Ã³ + liá»‡t kÃª cÃ¡c háº¡ng má»¥c con â†’ chá»‰ kháº¥u trá»« háº¡ng má»¥c con Ä‘Æ°á»£c liá»‡t kÃª.
-     â†’ Náº¿u há»£p Ä‘á»“ng Ä‘á»‹nh nghÄ©a nhÃ³m Ä‘Ã³ mÃ  KHÃ”NG liá»‡t kÃª háº¡ng má»¥c con â†’ chá»‰ kháº¥u trá»« khi tÃªn háº¡ng má»¥c trong hÃ³a Ä‘Æ¡n trÃ¹ng khá»›p vá»›i tÃªn nhÃ³m.
+  b) Hợp đồng ghi NHÓM/LOẠI bị loại trừ (vd: 'thuốc nhỏ mắt', 'vật tư y tế tiêu hao'):
+     → Khấu trừ mọi hạng mục trong hóa đơn THỰC SỰ thuộc nhóm/loại đó.
+     → Việc xác định thuộc nhóm hay không PHẢI dựa vào định nghĩa trong hợp đồng (DANH SÁCH B), KHÔNG dựa vào kiến thức bên ngoài.
+     → Nếu hợp đồng định nghĩa nhóm đó + liệt kê các hạng mục con → chỉ khấu trừ hạng mục con được liệt kê.
+     → Nếu hợp đồng định nghĩa nhóm đó mà KHÔNG liệt kê hạng mục con → chỉ khấu trừ khi tên hạng mục trong hóa đơn trùng khớp với tên nhóm.
 
-  c) Há»£p Ä‘á»“ng KHÃ”NG nháº¯c Ä‘áº¿n háº¡ng má»¥c (khÃ´ng tÃªn cá»¥ thá»ƒ, khÃ´ng nhÃ³m chá»©a nÃ³):
-     â†’ KHÃ”NG KHáº¤U TRá»ª. KhÃ´ng Ä‘Æ°á»£c tá»± phÃ¢n loáº¡i Ä‘á»ƒ tÃ¬m lÃ½ do kháº¥u trá»«.
+  c) Hợp đồng KHÔNG nhắc đến hạng mục (không tên cụ thể, không nhóm chứa nó):
+     → KHÔNG KHẤU TRỪ. Không được tự phân loại để tìm lý do khấu trừ.
 
-  [!] TUYá»†T Äá»I KHÃ”NG:
-  - Tá»± suy 'A lÃ  thá»±c pháº©m chá»©c nÄƒng â†’ khÃ´ng pháº£i thuá»‘c â†’ khÃ´ng chi tráº£' â†’ Há»ŽI Há»¢P Äá»’NG cÃ³ ghi váº­y khÃ´ng? Náº¿u khÃ´ng â†’ KHÃ”NG KHáº¤U TRá»ª.
-  - Tá»± suy 'A tÆ°Æ¡ng tá»± B nÃªn cÅ©ng bá»‹ loáº¡i trá»«' â†’ Há»ŽI Há»¢P Äá»’NG cÃ³ ghi A khÃ´ng? Náº¿u khÃ´ng â†’ KHÃ”NG KHáº¤U TRá»ª.
-  - Bá»• sung lÃ­ do ngoÃ i Ä‘iá»u khoáº£n há»£p Ä‘á»“ng (vd: 'vÃ¬ khÃ´ng cÃ³ hoáº¡t cháº¥t Ä‘iá»u trá»‹', 'vÃ¬ lÃ  thá»±c pháº©m chá»©c nÄƒng') â†’ CHá»ˆ dÃ¹ng lÃ­ do tá»« há»£p Ä‘á»“ng.
+  [!] TUYỆT ĐỐI KHÔNG:
+  - Tự suy 'A là thực phẩm chức năng → không phải thuốc → không chi trả' → HỎI HỢP ĐỒNG có ghi vậy không? Nếu không → KHÔNG KHẤU TRỪ.
+  - Tự suy 'A tương tự B nên cũng bị loại trừ' → HỎI HỢP ĐỒNG có ghi A không? Nếu không → KHÔNG KHẤU TRỪ.
+  - Bổ sung lí do ngoài điều khoản hợp đồng (vd: 'vì không có hoạt chất điều trị', 'vì là thực phẩm chức năng') → CHỈ dùng lí do từ hợp đồng.
 
-2.4. VÃ Dá»¤ MINH Há»ŒA (Ä‘á»ƒ hiá»ƒu cÃ¡ch suy luáº­n, KHÃ”NG Ä‘Æ°á»£c dÃ¹ng vÃ­ dá»¥ nÃ y lÃ m khuÃ´n cá»‘ Ä‘á»‹nh):
+2.4. VÍ DỤ MINH HỌA (để hiểu cách suy luận, KHÔNG được dùng ví dụ này làm khuôn cố định):
 
-  TÃ¬nh huá»‘ng 1 â€” Kháº¥u trá»« khi há»£p Ä‘á»“ng ghi TÃŠN Cá»¤ THá»‚:
-  - HÃ³a Ä‘Æ¡n cÃ³: 'Sanlein 0.3% 5ml (SL: 2) - 264.600 VNÄ'
-  - Há»£p Ä‘á»“ng ghi: 'VÃ  loáº¡i trá»« thÃªm má»¥c 10' (Trang 4), Má»¥c 10 = 'Sanlein' (Trang 7/8)
-  â†’ KHáº¤U TRá»ª Sanlein. LÃ­ do = 'Há»£p Ä‘á»“ng ghi rÃµ loáº¡i trá»« Sanlein táº¡i Má»¥c 10 (Trang 4/7/8)'.
-  â†’ KHÃ”NG Bá»” SUNG lÃ­ do 'vÃ¬ Sanlein lÃ  thá»±c pháº©m chá»©c nÄƒng' hay báº¥t ká»³ lÃ­ do nÃ o khÃ¡c.
-  â†’ KHÃ”NG KÃ‰O THEO Liposic hay báº¥t ká»³ thuá»‘c nÃ o khÃ¡c khÃ´ng Ä‘Æ°á»£c nháº¯c trong há»£p Ä‘á»“ng.
+  Tình huống 1 — Khấu trừ khi hợp đồng ghi TÊN CỤ THỂ:
+  - Hóa đơn có: 'Sanlein 0.3% 5ml (SL: 2) - 264.600 VNĐ'
+  - Hợp đồng ghi: 'Và loại trừ thêm mục 10' (Trang 4), Mục 10 = 'Sanlein' (Trang 7/8)
+  → KHẤU TRỪ Sanlein. Lí do = 'Hợp đồng ghi rõ loại trừ Sanlein tại Mục 10 (Trang 4/7/8)'.
+  → KHÔNG BỔ SUNG lí do 'vì Sanlein là thực phẩm chức năng' hay bất kỳ lí do nào khác.
+  → KHÔNG KÉO THEO Liposic hay bất kỳ thuốc nào khác không được nhắc trong hợp đồng.
 
-  TÃ¬nh huá»‘ng 2 â€” Kháº¥u trá»« khi há»£p Ä‘á»“ng ghi NHÃ“M:
-  - Há»£p Ä‘á»“ng ghi: 'KhÃ´ng bá»“i thÆ°á»ng thuá»‘c nhá» máº¯t' (Ä‘iá»u khoáº£n X, trang Y)
-  - HÃ³a Ä‘Æ¡n cÃ³: 'Sanlein 0.3% 5ml' vÃ  'Liposic Eye gel 2% 10g'
-  â†’ Cáº£ hai Ä‘á»u lÃ  thuá»‘c nhá» máº¯t â†’ KHáº¤U TRá»ª cáº£ hai. LÃ­ do = 'Há»£p Ä‘á»“ng loáº¡i trá»« thuá»‘c nhá» máº¯t (Ä‘iá»u khoáº£n X, trang Y)'.
+  Tình huống 2 — Khấu trừ khi hợp đồng ghi NHÓM:
+  - Hợp đồng ghi: 'Không bồi thường thuốc nhỏ mắt' (điều khoản X, trang Y)
+  - Hóa đơn có: 'Sanlein 0.3% 5ml' và 'Liposic Eye gel 2% 10g'
+  → Cả hai đều là thuốc nhỏ mắt → KHẤU TRỪ cả hai. Lí do = 'Hợp đồng loại trừ thuốc nhỏ mắt (điều khoản X, trang Y)'.
 
-  TÃ¬nh huá»‘ng 3 â€” KHÃ”NG kháº¥u trá»« khi há»£p Ä‘á»“ng KHÃ”NG nháº¯c:
-  - HÃ³a Ä‘Æ¡n cÃ³: 'Liposic Eye gel 2% 10g - 69.550 VNÄ'
-  - Há»£p Ä‘á»“ng chá»‰ ghi loáº¡i trá»« 'Sanlein' (Má»¥c 10), KHÃ”NG nháº¯c 'Liposic', khÃ´ng nháº¯c 'thuá»‘c nhá» máº¯t'
-  â†’ KHÃ”NG KHáº¤U TRá»ª Liposic. LÃ­ do = 'Há»£p Ä‘á»“ng khÃ´ng ghi loáº¡i trá»« Liposic'.
-  â†’ KHÃ”NG ÄÆ¯á»¢C tá»± suy 'Liposic tÆ°Æ¡ng tá»± Sanlein nÃªn cÅ©ng bá»‹ loáº¡i trá»«'.
-  â†’ KHÃ”NG ÄÆ¯á»¢C tá»± suy 'Liposic lÃ  thá»±c pháº©m chá»©c nÄƒng nÃªn khÃ´ng chi tráº£'.
+  Tình huống 3 — KHÔNG khấu trừ khi hợp đồng KHÔNG nhắc:
+  - Hóa đơn có: 'Liposic Eye gel 2% 10g - 69.550 VNĐ'
+  - Hợp đồng chỉ ghi loại trừ 'Sanlein' (Mục 10), KHÔNG nhắc 'Liposic', không nhắc 'thuốc nhỏ mắt'
+  → KHÔNG KHẤU TRỪ Liposic. Lí do = 'Hợp đồng không ghi loại trừ Liposic'.
+  → KHÔNG ĐƯỢC tự suy 'Liposic tương tự Sanlein nên cũng bị loại trừ'.
+  → KHÔNG ĐƯỢC tự suy 'Liposic là thực phẩm chức năng nên không chi trả'.
 
-  TÃ¬nh huá»‘ng 4 â€” Kháº¥u trá»« giÃ¡n tiáº¿p Há»¢P Lá»† (dá»±a trÃªn Ä‘á»‹nh nghÄ©a trong há»£p Ä‘á»“ng):
-  - HÃ³a Ä‘Æ¡n cÃ³: 'BÄƒng gáº¡c y táº¿ - 50.000 VNÄ'
-  - Há»£p Ä‘á»“ng loáº¡i trá»«: 'váº­t tÆ° y táº¿ tiÃªu hao' (Trang 4)
-  - Há»£p Ä‘á»“ng Ä‘á»‹nh nghÄ©a: 'váº­t tÆ° y táº¿ tiÃªu hao bao gá»“m: bÄƒng gáº¡c, bÃ´ng y táº¿, á»‘ng tiÃªm...' (Trang 7)
-  â†’ KHáº¤U TRá»ª bÄƒng gáº¡c. LÃ­ do = 'Há»£p Ä‘á»“ng loáº¡i trá»« váº­t tÆ° y táº¿ tiÃªu hao (Trang 4), Ä‘á»‹nh nghÄ©a bao gá»“m bÄƒng gáº¡c (Trang 7)'.
+  Tình huống 4 — Khấu trừ gián tiếp HỢP LỆ (dựa trên định nghĩa trong hợp đồng):
+  - Hóa đơn có: 'Băng gạc y tế - 50.000 VNĐ'
+  - Hợp đồng loại trừ: 'vật tư y tế tiêu hao' (Trang 4)
+  - Hợp đồng định nghĩa: 'vật tư y tế tiêu hao bao gồm: băng gạc, bông y tế, ống tiêm...' (Trang 7)
+  → KHẤU TRỪ băng gạc. Lí do = 'Hợp đồng loại trừ vật tư y tế tiêu hao (Trang 4), định nghĩa bao gồm băng gạc (Trang 7)'.
 
-  [!] ÄÃ¢y chá»‰ lÃ  vÃ­ dá»¥ vá» cÃ¡ch suy luáº­n. Báº¡n PHáº¢I Ã¡p dá»¥ng cho Tá»ªNG Má»¤C trong hÃ³a Ä‘Æ¡n, vá»›i Tá»ªNG KHÃI NIá»†M trong há»£p Ä‘á»“ng â€” dá»±a trÃªn Ná»˜I DUNG THá»°C Táº¾ cá»§a há»£p Ä‘á»“ng, khÃ´ng dá»±a trÃªn vÃ­ dá»¥.
+  [!] Đây chỉ là ví dụ về cách suy luận. Bạn PHẢI áp dụng cho TỪNG MỤC trong hóa đơn, với TỪNG KHÁI NIỆM trong hợp đồng — dựa trên NỘI DUNG THỰC TẾ của hợp đồng, không dựa trên ví dụ.
 
-2.5. NGUYÃŠN Táº®C SUY LUáº¬N
+2.5. NGUYÊN TẮC SUY LUẬN
 
-- KHÃ”NG Bá»Ž SÃ“T: Äá»c háº¿t má»i Ä‘iá»u khoáº£n, tÃ¬m háº¿t má»i khoáº£n kháº¥u trá»«.
-- TRUY CHUá»–I Äáº¾N Táº¬N Cáº¤P LÃ: A bá»‹ kháº¥u trá»« chá»©a B, C -> kiá»ƒm tra B, C. B chá»©a B1, B2 -> tiáº¿p tá»¥c. Äi Ä‘áº¿n táº­n cÃ¹ng.
-- THAM CHIáº¾U CHÃ‰O: Äiá»u X dáº«n Ä‘áº¿n Äiá»u Y -> pháº£i Ä‘á»c cáº£ Y.
-- KHÃ”NG SUY ÄOÃN: Chá»‰ kháº¥u trá»« khi cÃ³ cÆ¡ sá»Ÿ rÃµ rÃ ng. Náº¿u khÃ´ng cháº¯c, Ä‘Ã¡nh dáº¥u '[!] Cáº§n xÃ¡c nháº­n'.
-- KHÃ”NG Tá»° Ã Má»ž Rá»˜NG KHÃI NIá»†M: Kháº¥u trá»« theo Ä‘Ãºng loáº¡i Ä‘á»‘i tÆ°á»£ng. Thuá»‘c â‰  thiáº¿t bá»‹ y táº¿ â‰  váº­t tÆ° y táº¿. Chá»‰ kháº¥u trá»« khi há»£p Ä‘á»“ng THá»°C Sá»° Ã¡p dá»¥ng cho loáº¡i Ä‘á»‘i tÆ°á»£ng Ä‘Ã³.
-- GHI NGUá»’N: Má»—i káº¿t luáº­n kháº¥u trá»« pháº£i kÃ¨m sá»‘ Ä‘iá»u khoáº£n + sá»‘ trang trong há»£p Ä‘á»“ng.
-- KIá»‚M TRA CHÃ‰O Báº®T BUá»˜C: Má»–I Má»¤C trong hÃ³a Ä‘Æ¡n PHáº¢I kiá»ƒm tra cáº£ 3 danh sÃ¡ch A, B, C.
+- KHÔNG BỎ SÓT: Đọc hết mọi điều khoản, tìm hết mọi khoản khấu trừ.
+- TRUY CHUỖI ĐẾN TẬN CẤP LÁ: A bị khấu trừ chứa B, C -> kiểm tra B, C. B chứa B1, B2 -> tiếp tục. Đi đến tận cùng.
+- THAM CHIẾU CHÉO: Điều X dẫn đến Điều Y -> phải đọc cả Y.
+- KHÔNG SUY ĐOÁN: Chỉ khấu trừ khi có cơ sở rõ ràng. Nếu không chắc, đánh dấu '[!] Cần xác nhận'.
+- KHÔNG TỰ Ý MỞ RỘNG KHÁI NIỆM: Khấu trừ theo đúng loại đối tượng. Thuốc ≠ thiết bị y tế ≠ vật tư y tế. Chỉ khấu trừ khi hợp đồng THỰC SỰ áp dụng cho loại đối tượng đó.
+- GHI NGUỒN: Mỗi kết luận khấu trừ phải kèm số điều khoản + số trang trong hợp đồng.
+- KIỂM TRA CHÉO BẮT BUỘC: MỖI MỤC trong hóa đơn PHẢI kiểm tra cả 3 danh sách A, B, C.
 
-2.6. NGUYÃŠN Táº®C Äá»ŒC NGÃ€Y â€” QUAN TRá»ŒNG
+2.6. NGUYÊN TẮC ĐỌC NGÀY — QUAN TRỌNG
 
-- Äá»ŒC NGÃ€Y CHÃNH XÃC: Pháº£i Ä‘á»c Ä‘Ãºng ngÃ y/thÃ¡ng/nÄƒm trÃªn hÃ³a Ä‘Æ¡n vÃ  há»£p Ä‘á»“ng. KhÃ´ng Ä‘Æ°á»£c hoÃ¡n Ä‘á»•i ngÃ y/thÃ¡ng, khÃ´ng Ä‘Æ°á»£c sá»­a nÄƒm.
-  VD: '26/06/2025' pháº£i Ä‘á»c lÃ  26 thÃ¡ng 06 nÄƒm 2025, KHÃ”NG pháº£i '25/06/2026' hay '06/26/2025'.
-- KIá»‚M TRA Äá»ŠNH Dáº NG NGÃ€Y: HÃ³a Ä‘Æ¡n Viá»‡t Nam dÃ¹ng Ä‘á»‹nh dáº¡ng dd/mm/yyyy. Náº¿u tháº¥y sá»‘ > 12 á»Ÿ vá»‹ trÃ­ Ä‘áº§u â†’ Ä‘Ã³ lÃ  ngÃ y, khÃ´ng pháº£i thÃ¡ng.
-- KHI SO SÃNH THá»œI Háº N: Äá»c chÃ­nh xÃ¡c ngÃ y báº¯t Ä‘áº§u hiá»‡u lá»±c báº£o hiá»ƒm vÃ  ngÃ y Ä‘iá»u trá»‹. Chá»‰ kháº¥u trá»« khi ngÃ y Ä‘iá»u trá»‹ THá»°C Sá»° náº±m ngoÃ i thá»i háº¡n báº£o hiá»ƒm. KhÃ´ng Ä‘Æ°á»£c Ä‘oÃ¡n hay sá»­a ngÃ y.
+- ĐỌC NGÀY CHÍNH XÁC: Phải đọc đúng ngày/tháng/năm trên hóa đơn và hợp đồng. Không được hoán đổi ngày/tháng, không được sửa năm.
+  VD: '26/06/2025' phải đọc là 26 tháng 06 năm 2025, KHÔNG phải '25/06/2026' hay '06/26/2025'.
+- KIỂM TRA ĐỊNH DẠNG NGÀY: Hóa đơn Việt Nam dùng định dạng dd/mm/yyyy. Nếu thấy số > 12 ở vị trí đầu → đó là ngày, không phải tháng.
+- KHI SO SÁNH THỜI HẠN: Đọc chính xác ngày bắt đầu hiệu lực bảo hiểm và ngày điều trị. Chỉ khấu trừ khi ngày điều trị THỰC SỰ nằm ngoài thời hạn bảo hiểm. Không được đoán hay sửa ngày.
 
-2.7. NGUYÃŠN Táº®C Äá»˜C Láº¬P Má»–I Má»¤C â€” KHÃ”NG KÃ‰O THEO â€” LUáº¬T Báº®T BUá»˜C
+2.7. NGUYÊN TẮC ĐỘC LẬP MỖI MỤC — KHÔNG KÉO THEO — LUẬT BẮT BUỘC
 
-[!] ÄÃ‚Y LÃ€ LUáº¬T Cá»¨NG â€” KHÃ”NG CÃ“ NGOáº I Lá»†:
+[!] ĐÂY LÀ LUẬT CỨNG — KHÔNG CÓ NGOẠI LỆ:
 
-- Má»–I Má»¤C trong hÃ³a Ä‘Æ¡n PHáº¢I Ä‘Æ°á»£c Ä‘Ã¡nh giÃ¡ Äá»˜C Láº¬P 100%. Káº¿t quáº£ cá»§a má»¥c nÃ y KHÃ”NG áº¢NH HÆ¯á»žNG Ä‘áº¿n má»¥c khÃ¡c.
-- KHÃ”NG ÄÆ¯á»¢C kÃ©o theo: náº¿u há»£p Ä‘á»“ng chá»‰ ghi loáº¡i trá»« 'Sanlein' â†’ CHá»ˆ kháº¥u trá»« Sanlein. KHÃ”NG ÄÆ¯á»¢C kháº¥u trá»« 'Liposic' hay báº¥t ká»³ má»¥c nÃ o khÃ¡c vá»›i lÃ­ do 'tÆ°Æ¡ng tá»± Sanlein', 'cÃ¹ng loáº¡i vá»›i Sanlein', 'cÃ¹ng lÃ  thá»±c pháº©m chá»©c nÄƒng nhÆ° Sanlein'.
-- KHÃ”NG ÄÆ¯á»¢C dÃ¹ng káº¿t quáº£ cá»§a má»¥c nÃ y lÃ m tiá»n Ä‘á» cho má»¥c khÃ¡c: 'A bá»‹ kháº¥u trá»« â†’ B cÅ©ng bá»‹ kháº¥u trá»« vÃ¬ giá»‘ng A' â†’ NGHIÃŠM Cáº¤M.
-- Má»–I Má»¤C PHáº¢I Tá»° CÃ“ cÆ¡ sá»Ÿ riÃªng tá»« há»£p Ä‘á»“ng: náº¿u há»£p Ä‘á»“ng KHÃ”NG nháº¯c Ä‘áº¿n má»¥c Ä‘Ã³ (khÃ´ng tÃªn cá»¥ thá»ƒ, khÃ´ng nhÃ³m chá»©a nÃ³) â†’ KHÃ”NG KHáº¤U TRá»ª, dÃ¹ má»i má»¥c khÃ¡c trong hÃ³a Ä‘Æ¡n cÃ³ bá»‹ kháº¥u trá»«.
-- Äá»ƒ kháº¥u trá»« má»™t má»¥c, báº¡n PHáº¢I tÃ¬m Ä‘Æ°á»£c ÄIá»€U KHOáº¢N Cá»¤ THá»‚ trong há»£p Ä‘á»“ng Ã¡p dá»¥ng cho CHÃNH Má»¤C ÄÃ“ (trÃ¹ng tÃªn trá»±c tiáº¿p hoáº·c thuá»™c nhÃ³m Ä‘Æ°á»£c Ä‘á»‹nh nghÄ©a trong há»£p Ä‘á»“ng).
+- MỖI MỤC trong hóa đơn PHẢI được đánh giá ĐỘC LẬP 100%. Kết quả của mục này KHÔNG ẢNH HƯỞNG đến mục khác.
+- KHÔNG ĐƯỢC kéo theo: nếu hợp đồng chỉ ghi loại trừ 'Sanlein' → CHỈ khấu trừ Sanlein. KHÔNG ĐƯỢC khấu trừ 'Liposic' hay bất kỳ mục nào khác với lí do 'tương tự Sanlein', 'cùng loại với Sanlein', 'cùng là thực phẩm chức năng như Sanlein'.
+- KHÔNG ĐƯỢC dùng kết quả của mục này làm tiền đề cho mục khác: 'A bị khấu trừ → B cũng bị khấu trừ vì giống A' → NGHIÊM CẤM.
+- MỖI MỤC PHẢI TỰ CÓ cơ sở riêng từ hợp đồng: nếu hợp đồng KHÔNG nhắc đến mục đó (không tên cụ thể, không nhóm chứa nó) → KHÔNG KHẤU TRỪ, dù mọi mục khác trong hóa đơn có bị khấu trừ.
+- Để khấu trừ một mục, bạn PHẢI tìm được ĐIỀU KHOẢN CỤ THỂ trong hợp đồng áp dụng cho CHÍNH MỤC ĐÓ (trùng tên trực tiếp hoặc thuộc nhóm được định nghĩa trong hợp đồng).
 
-VÃ Dá»¤ SAI (TUYá»†T Äá»I KHÃ”NG LÃ€M):
-- Há»£p Ä‘á»“ng ghi loáº¡i trá»« 'Sanlein' â†’ kháº¥u trá»« Sanlein â†’ kÃ©o thÃªm Liposic vÃ¬ 'cÃ¹ng loáº¡i' â†’ SAI. Liposic chá»‰ bá»‹ kháº¥u trá»« náº¿u há»£p Ä‘á»“ng CÅ¨NG ghi Liposic hoáº·c ghi nhÃ³m chá»©a Liposic.
-- Há»£p Ä‘á»“ng ghi loáº¡i trá»« 'Sanlein' vá»›i lÃ­ do 'Sanlein lÃ  thá»±c pháº©m chá»©c nÄƒng' â†’ kháº¥u trá»« Sanlein â†’ kÃ©o thÃªm Liposic vÃ¬ 'cÅ©ng lÃ  thá»±c pháº©m chá»©c nÄƒng' â†’ SAI. Liposic chá»‰ bá»‹ kháº¥u trá»« náº¿u há»£p Ä‘á»“ng CÅ¨NG ghi Liposic.
+VÍ DỤ SAI (TUYỆT ĐỐI KHÔNG LÀM):
+- Hợp đồng ghi loại trừ 'Sanlein' → khấu trừ Sanlein → kéo thêm Liposic vì 'cùng loại' → SAI. Liposic chỉ bị khấu trừ nếu hợp đồng CŨNG ghi Liposic hoặc ghi nhóm chứa Liposic.
+- Hợp đồng ghi loại trừ 'Sanlein' với lí do 'Sanlein là thực phẩm chức năng' → khấu trừ Sanlein → kéo thêm Liposic vì 'cũng là thực phẩm chức năng' → SAI. Liposic chỉ bị khấu trừ nếu hợp đồng CŨNG ghi Liposic.
 
-VÃ Dá»¤ ÄÃšNG:
-- Há»£p Ä‘á»“ng ghi loáº¡i trá»« 'Sanlein' (Má»¥c 10) â†’ KHáº¤U TRá»ª Sanlein. KHÃ”NG kháº¥u trá»« Liposic (há»£p Ä‘á»“ng khÃ´ng nháº¯c).
-- Há»£p Ä‘á»“ng ghi loáº¡i trá»« 'thuá»‘c nhá» máº¯t' (cáº£ nhÃ³m) â†’ KHáº¤U TRá»ª cáº£ Sanlein vÃ  Liposic (cÃ¹ng thuá»™c nhÃ³m thuá»‘c nhá» máº¯t).
-- Há»£p Ä‘á»“ng khÃ´ng nháº¯c 'Liposic' â†’ KHÃ”NG KHáº¤U TRá»ª Liposic, DÃ™ Sanlein bá»‹ kháº¥u trá»«.
+VÍ DỤ ĐÚNG:
+- Hợp đồng ghi loại trừ 'Sanlein' (Mục 10) → KHẤU TRỪ Sanlein. KHÔNG khấu trừ Liposic (hợp đồng không nhắc).
+- Hợp đồng ghi loại trừ 'thuốc nhỏ mắt' (cả nhóm) → KHẤU TRỪ cả Sanlein và Liposic (cùng thuộc nhóm thuốc nhỏ mắt).
+- Hợp đồng không nhắc 'Liposic' → KHÔNG KHẤU TRỪ Liposic, DÙ Sanlein bị khấu trừ.
 
 ===============================================
-BÆ¯á»šC 3 - XUáº¤T Báº¢NG Káº¾T QUáº¢
+BƯỚC 3 - XUẤT BẢNG KẾT QUẢ
 ===============================================
 
-Xuáº¥t DUY NHáº¤T Má»˜T Báº¢NG theo Ä‘Ãºng máº«u bÃªn dÆ°á»›i. KhÃ´ng viáº¿t thÃªm lá»i dáº«n, khÃ´ng giáº£i thÃ­ch bÃªn ngoÃ i báº£ng. Chá»‰ hiá»‡n báº£ng.
+Xuất DUY NHẤT MỘT BẢNG theo đúng mẫu bên dưới. Không viết thêm lời dẫn, không giải thích bên ngoài bảng. Chỉ hiện bảng.
 
-Äá»ŠNH Dáº NG Báº¢NG (Báº®T BUá»˜C - lÃ m Ä‘Ãºng máº«u):
+ĐỊNH DẠNG BẢNG (BẮT BUỘC - làm đúng mẫu):
 
-**Tá»•ng chi phÃ­ theo hÃ³a Ä‘Æ¡n:** [sá»‘ tiá»n] VNÄ
+**Tổng chi phí theo hóa đơn:** [số tiền] VNĐ
 
-| # | Tá»•ng tiá»n ban Ä‘áº§u | Má»¥c bá»‹ kháº¥u trá»« | Sá»‘ tiá»n bá»‹ kháº¥u trá»« (VNÄ) | LÃ­ do bá»‹ kháº¥u trá»« | Nguá»“n Ä‘iá»u khoáº£n | Tiá»n cÃ²n láº¡i |
+| # | Tổng tiền ban đầu | Mục bị khấu trừ | Số tiền bị khấu trừ (VNĐ) | Lí do bị khấu trừ | Nguồn điều khoản | Tiền còn lại |
 |---|---|---|---|---|---|---|
-| 0 | [Tá»”NG Cá»˜NG tá»« hÃ³a Ä‘Æ¡n] | - | - | - | - | [Tá»”NG Cá»˜NG] |
-| 1 | | [tÃªn háº¡ng má»¥c] | [sá»‘ tiá»n] | [lÃ­ do: trÃ­ch dáº«n Ä‘iá»u khoáº£n + giáº£i thÃ­ch vÃ¬ sao khoáº£n trong hÃ³a Ä‘Æ¡n bá»‹ kháº¥u trá»«] | [Äiá»u khoáº£n/trang] | [Tá»•ng - KH1] |
-| 2 | | [tÃªn háº¡ng má»¥c] | [sá»‘ tiá»n] | [lÃ­ do: trÃ­ch dáº«n Ä‘iá»u khoáº£n + giáº£i thÃ­ch] | [Äiá»u khoáº£n/trang] | [Tá»•ng-KH1 - KH2] |
+| 0 | [TỔNG CỘNG từ hóa đơn] | - | - | - | - | [TỔNG CỘNG] |
+| 1 | | [tên hạng mục] | [số tiền] | [lí do: trích dẫn điều khoản + giải thích vì sao khoản trong hóa đơn bị khấu trừ] | [Điều khoản/trang] | [Tổng - KH1] |
+| 2 | | [tên hạng mục] | [số tiền] | [lí do: trích dẫn điều khoản + giải thích] | [Điều khoản/trang] | [Tổng-KH1 - KH2] |
 | ... | | | | | | |
-| **KQ** | | **Tá»”NG KHáº¤U TRá»ª** | **[tá»•ng cá»™ng]** | | | **[tiá»n cuá»‘i cÃ¹ng cÃ²n láº¡i]** |
+| **KQ** | | **TỔNG KHẤU TRỪ** | **[tổng cộng]** | | | **[tiền cuối cùng còn lại]** |
 
-**Tá»•ng kháº¥u trá»«:** [sá»‘ tiá»n] VNÄ
-**Tiá»n bá»“i thÆ°á»ng thá»±c nháº­n:** [Tá»•ng - Kháº¥u trá»«] = [sá»‘ tiá»n] VNÄ
+**Tổng khấu trừ:** [số tiền] VNĐ
+**Tiền bồi thường thực nhận:** [Tổng - Khấu trừ] = [số tiền] VNĐ
 
-QUY Táº®C XUáº¤T Báº¢NG:
-- DÃ²ng 0 = tá»•ng tiá»n ban Ä‘áº§u. Cá»™t 'Tiá»n cÃ²n láº¡i' = Tá»”NG Cá»˜NG.
-- Má»—i dÃ²ng kháº¥u trá»« = má»™t háº¡ng má»¥c cá»¥ thá»ƒ trong hÃ³a Ä‘Æ¡n bá»‹ kháº¥u trá»«.
-- Cá»™t 'LÃ­ do' PHáº¢I ghi rÃµ: (a) Ä‘iá»u khoáº£n há»£p Ä‘á»“ng gÃ¬, (b) vÃ¬ sao khoáº£n trong hÃ³a Ä‘Æ¡n bá»‹ kháº¥u trá»« theo Ä‘iá»u khoáº£n Ä‘Ã³.
-- Cá»™t 'Nguá»“n Ä‘iá»u khoáº£n' = sá»‘ Ä‘iá»u khoáº£n + sá»‘ trang (náº¿u cÃ³).
-- Cá»™t 'Tiá»n cÃ²n láº¡i' = cháº¡y tÃ­ch lÅ©y: dÃ²ng 1 = Tá»•ng - KH1; dÃ²ng 2 = (Tá»•ng-KH1) - KH2; v.v.
-- DÃ²ng cuá»‘i (KQ) = tá»•ng cá»™ng kháº¥u trá»« vÃ  sá»‘ tiá»n cuá»‘i cÃ¹ng cÃ²n láº¡i.
-- Sá»‘ tiá»n: Ä‘á»‹nh dáº¡ng cÃ³ dáº¥u pháº©y (VD: 1.500.000.000). ÄÆ¡n vá»‹ VNÄ.
-- Náº¿u KHÃ”NG cÃ³ khoáº£n nÃ o bá»‹ kháº¥u trá»«: chá»‰ xuáº¥t dÃ²ng 0 vÃ  dÃ²ng KQ vá»›i '0' cho tá»•ng kháº¥u trá»«, ghi 'KhÃ´ng cÃ³ khoáº£n kháº¥u trá»«, khÃ¡ch hÃ ng nháº­n toÃ n bá»™ [sá»‘ tiá»n] VNÄ.'
-- Náº¿u CÃ“ khoáº£n khÃ´ng cháº¯c cháº¯n: váº«n Ä‘Æ°a vÃ o báº£ng nhÆ°ng ghi '[!] Cáº§n xÃ¡c nháº­n' á»Ÿ cá»™t LÃ­ do.
+QUY TẮC XUẤT BẢNG:
+- Dòng 0 = tổng tiền ban đầu. Cột 'Tiền còn lại' = TỔNG CỘNG.
+- Mỗi dòng khấu trừ = một hạng mục cụ thể trong hóa đơn bị khấu trừ.
+- Cột 'Lí do' PHẢI ghi rõ: (a) điều khoản hợp đồng gì, (b) vì sao khoản trong hóa đơn bị khấu trừ theo điều khoản đó.
+- Cột 'Nguồn điều khoản' = số điều khoản + số trang (nếu có).
+- Cột 'Tiền còn lại' = chạy tích lũy: dòng 1 = Tổng - KH1; dòng 2 = (Tổng-KH1) - KH2; v.v.
+- Dòng cuối (KQ) = tổng cộng khấu trừ và số tiền cuối cùng còn lại.
+- Số tiền: định dạng có dấu phẩy (VD: 1.500.000.000). Đơn vị VNĐ.
+- Nếu KHÔNG có khoản nào bị khấu trừ: chỉ xuất dòng 0 và dòng KQ với '0' cho tổng khấu trừ, ghi 'Không có khoản khấu trừ, khách hàng nhận toàn bộ [số tiền] VNĐ.'
+- Nếu CÓ khoản không chắc chắn: vẫn đưa vào bảng nhưng ghi '[!] Cần xác nhận' ở cột Lí do.
 
-NGUYÃŠN Táº®C Tá»”NG QUÃT:
-1. Äá»c háº¿t, nhá»› háº¿t - khÃ´ng bá» sÃ³t báº¥t ká»³ dÃ²ng nÃ o trong hÃ³a Ä‘Æ¡n hay Ä‘iá»u khoáº£n nÃ o trong há»£p Ä‘á»“ng.
-2. Suy luáº­n Ä‘áº¿n táº­n gá»‘c - kháº¥u trá»« giÃ¡n tiáº¿p, kháº¥u trá»« nhÃºng, kháº¥u trá»« theo Ä‘iá»u kiá»‡n, vÆ°á»£t háº¡n má»©c Ä‘á»u pháº£i kiá»ƒm tra.
-3. KHÃ”NG Tá»° Ã Má»ž Rá»˜NG KHÃI NIá»†M - kháº¥u trá»« Ä‘Ãºng loáº¡i Ä‘á»‘i tÆ°á»£ng: thuá»‘c lÃ  thuá»‘c, thiáº¿t bá»‹ lÃ  thiáº¿t bá»‹, váº­t tÆ° lÃ  váº­t tÆ°. Chá»‰ kháº¥u trá»« khi há»£p Ä‘á»“ng thá»±c sá»± Ã¡p dá»¥ng cho loáº¡i Ä‘á»‘i tÆ°á»£ng Ä‘Ã³.
-4. TrÃ­ch dáº«n nguá»“n - má»i káº¿t luáº­n pháº£i cÃ³ Ä‘iá»u khoáº£n há»£p Ä‘á»“ng lÃ m cÄƒn cá»©.
-5. ChÃ­nh xÃ¡c tuyá»‡t Ä‘á»‘i vá» con sá»‘ - khÃ´ng lÃ m trÃ²n, khÃ´ng Æ°á»›c lÆ°á»£ng, khÃ´ng 'khoáº£ng'.
-6. Äá»ŒC NGÃ€Y CHÃNH XÃC - dd/mm/yyyy, khÃ´ng hoÃ¡n Ä‘á»•i, khÃ´ng sá»­a nÄƒm. Chá»‰ kháº¥u trá»« khi THá»°C Sá»° ngoÃ i thá»i háº¡n.
-7. Má»–I Má»¤C Äá»˜C Láº¬P - khÃ´ng kÃ©o theo má»¥c khÃ¡c vÃ o kháº¥u trá»«. Má»—i má»¥c pháº£i tá»± cÃ³ cÆ¡ sá»Ÿ riÃªng.
-8. Chá»‰ xuáº¥t báº£ng - káº¿t quáº£ cuá»‘i cÃ¹ng lÃ  má»™t báº£ng duy nháº¥t, khÃ´ng kÃ¨m lá»i giáº£i thÃ­ch bÃªn ngoÃ i.
+NGUYÊN TẮC TỔNG QUÁT:
+1. Đọc hết, nhớ hết - không bỏ sót bất kỳ dòng nào trong hóa đơn hay điều khoản nào trong hợp đồng.
+2. Suy luận đến tận gốc - khấu trừ gián tiếp, khấu trừ nhúng, khấu trừ theo điều kiện, vượt hạn mức đều phải kiểm tra.
+3. KHÔNG TỰ Ý MỞ RỘNG KHÁI NIỆM - khấu trừ đúng loại đối tượng: thuốc là thuốc, thiết bị là thiết bị, vật tư là vật tư. Chỉ khấu trừ khi hợp đồng thực sự áp dụng cho loại đối tượng đó.
+4. Trích dẫn nguồn - mọi kết luận phải có điều khoản hợp đồng làm căn cứ.
+5. Chính xác tuyệt đối về con số - không làm tròn, không ước lượng, không 'khoảng'.
+6. ĐỌC NGÀY CHÍNH XÁC - dd/mm/yyyy, không hoán đổi, không sửa năm. Chỉ khấu trừ khi THỰC SỰ ngoài thời hạn.
+7. MỖI MỤC ĐỘC LẬP - không kéo theo mục khác vào khấu trừ. Mỗi mục phải tự có cơ sở riêng.
+8. Chỉ xuất bảng - kết quả cuối cùng là một bảng duy nhất, không kèm lời giải thích bên ngoài.
 '''
     return prompt
 
 
 # ============================================================
-# PIPELINE CHÃNH: 3 Táº¦NG (MAP-REDUCE-MERGE)
+# PIPELINE CHÍNH: 3 TẦNG (MAP-REDUCE-MERGE)
 # ============================================================
 
 def analyze_deduction(claim_data, photo_paths, contract_path):
-    """Pipeline 3 táº§ng: Tier 1 (Map) -> Tier 2 (Reduce) -> Tier 3 (Merge)."""
+    """Pipeline 3 tầng: Tier 1 (Map) -> Tier 2 (Reduce) -> Tier 3 (Merge)."""
 
     if not has_api_key():
         return {
             "success": False,
             "response": "",
-            "error": "ChÆ°a cáº¥u hÃ¬nh API key. Vui lÃ²ng thÃªm key vÃ o Streamlit Cloud Secrets (key: ollama_api_key) hoáº·c táº¡o file .kimi_api_key (local)."
+            "error": "Chưa cấu hình API key. Vui lòng thêm key vào Streamlit Cloud Secrets (key: ollama_api_key) hoặc tạo file .kimi_api_key (local)."
         }
 
     try:
@@ -855,31 +855,31 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         t_total = time.perf_counter()
 
         # ============================================================
-        # TIER 1 (MAP): KIMI Äá»ŒC áº¢NH HÃ“A ÄÆ N + CHUNKS Há»¢P Äá»’NG SONG SONG
-        # Chunk 5 trang/call + ThreadPoolExecutor(max_workers=6) Ä‘á»ƒ cap concurrency.
-        # Tá»•ng text trÃ­ch xuáº¥t KHÃ”NG Ä‘á»•i -> accuracy giá»¯ nguyÃªn.
+        # TIER 1 (MAP): KIMI ĐỌC ẢNH HÓA ĐƠN + CHUNKS HỢP ĐỒNG SONG SONG
+        # Chunk 5 trang/call + ThreadPoolExecutor(max_workers=6) để cap concurrency.
+        # Tổng text trích xuất KHÔNG đổi -> accuracy giữ nguyên.
         # ============================================================
 
-        # Chuáº©n bá»‹ chunks há»£p Ä‘á»“ng cho Kimi
+        # Chuẩn bị chunks hợp đồng cho Kimi
         contract_chunks_images = []  # list of (images_batch, num_pages_in_batch)
-        # DÃ¹ng cho trang cÃ³ text (khÃ´ng cáº§n Kimi)
+        # Dùng cho trang có text (không cần Kimi)
         contract_text_pages = {}  # {page_num: text}
 
         if contract_path and os.path.exists(contract_path):
             ext = os.path.splitext(contract_path)[1].lower().lstrip(".")
             if ext == "pdf":
-                # TÃ¡ch trang cÃ³ text vÃ  trang chá»‰ cÃ³ áº£nh
+                # Tách trang có text và trang chỉ có ảnh
                 text_pages, image_page_indices = extract_pdf_text_and_image_pages(contract_path, max_pages=100)
                 contract_text_pages = text_pages
 
                 if image_page_indices:
-                    # CÃ³ trang áº£nh scan â†’ chuyá»ƒn sang áº£nh cho Kimi Ä‘á»c
+                    # Có trang ảnh scan → chuyển sang ảnh cho Kimi đọc
                     contract_images, total_pages = pdf_pages_to_images_by_indices(contract_path, image_page_indices)
                     if contract_images:
                         chunk_size = 5
                         for i in range(0, len(contract_images), chunk_size):
                             batch = contract_images[i:i + chunk_size]
-                            # LÆ°u page indices (0-based) cá»§a chunk nÃ y Ä‘á»ƒ gá»™p text sau
+                            # Lưu page indices (0-based) của chunk này để gộp text sau
                             batch_page_indices = image_page_indices[i:i + chunk_size]
                             contract_chunks_images.append((batch, len(batch), batch_page_indices))
             elif ext in ("jpg", "jpeg", "png", "gif", "webp"):
@@ -891,23 +891,23 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
 
         def _read_invoice():
             if not photo_paths:
-                return {"success": False, "text": "", "error": "KhÃ´ng cÃ³ áº£nh"}
+                return {"success": False, "text": "", "error": "Không có ảnh"}
             any_photo = [p for p in photo_paths if os.path.exists(p)]
             if not any_photo:
-                return {"success": False, "text": "", "error": "KhÃ´ng tÃ¬m tháº¥y file áº£nh"}
+                return {"success": False, "text": "", "error": "Không tìm thấy file ảnh"}
             return extract_invoice_text(any_photo)
 
         def _read_contract_chunk(images_batch, num_pages_batch):
             return extract_contract_text_from_images(images_batch, num_pages_batch, batch_size=5)
 
         t_tier1 = time.perf_counter()
-        tier1_label = "Äang Ä‘á»c áº£nh há»£p Ä‘á»“ng & hÃ³a Ä‘Æ¡n (Tier 1)..."
+        tier1_label = "Đang đọc ảnh hợp đồng & hóa đơn (Tier 1)..."
         if contract_text_pages and not n_contract_chunks:
-            tier1_label = "Há»£p Ä‘á»“ng cÃ³ sáºµn text â€” Ä‘ang Ä‘á»c hÃ³a Ä‘Æ¡n (Tier 1)..."
+            tier1_label = "Hợp đồng có sẵn text — đang đọc hóa đơn (Tier 1)..."
         elif contract_text_pages and n_contract_chunks:
-            tier1_label = "Äang Ä‘á»c text + áº£nh há»£p Ä‘á»“ng & hÃ³a Ä‘Æ¡n (Tier 1)..."
+            tier1_label = "Đang đọc text + ảnh hợp đồng & hóa đơn (Tier 1)..."
         elif not n_contract_chunks:
-            tier1_label = "Äang Ä‘á»c hÃ³a Ä‘Æ¡n (Tier 1)..."
+            tier1_label = "Đang đọc hóa đơn (Tier 1)..."
 
         with _status(tier1_label) as status:
             invoice_result = None
@@ -920,14 +920,14 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 for idx, (imgs, np, _) in enumerate(contract_chunks_images)
             }
 
-            # Chá» invoice (timeout 200s)
+            # Chờ invoice (timeout 200s)
             if fut_invoice is not None:
                 try:
                     invoice_result = fut_invoice.result(timeout=200)
                 except Exception as e:
                     invoice_result = {"success": False, "text": "", "error": f"Tier 1 invoice timeout/error: {e}"}
 
-            # Chá» contract chunks (timeout tá»•ng 600s)
+            # Chờ contract chunks (timeout tổng 600s)
             try:
                 for fut in as_completed(fut_contracts, timeout=600):
                     idx = fut_contracts[fut]
@@ -936,113 +936,113 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                     except Exception as e:
                         contract_chunk_results[idx] = {"success": False, "text": "", "error": f"Tier 1 chunk {idx + 1}: {e}"}
             except Exception:
-                # timeout tá»•ng -> cÃ¡c chunk chÆ°a xong giá»¯ None -> xá»­ lÃ½ nhÆ° timeout bÃªn dÆ°á»›i
+                # timeout tổng -> các chunk chưa xong giữ None -> xử lý như timeout bên dưới
                 pass
 
-            # KhÃ´ng chá» thÃªm cÃ¡c future Ä‘ang cháº¡y (giá»¯ timeout cap nhÆ° báº£n cÅ©).
+            # Không chờ thêm các future đang chạy (giữ timeout cap như bản cũ).
             ex.shutdown(wait=False)
 
             tier1_elapsed = time.perf_counter() - t_tier1
             _log(f"Tier 1 xong sau {tier1_elapsed:.1f}s "
-                 f"(invoice={'cÃ³' if has_invoice else 'khÃ´ng'}, contract_chunks={n_contract_chunks}, "
+                 f"(invoice={'có' if has_invoice else 'không'}, contract_chunks={n_contract_chunks}, "
                  f"text_pages={len(contract_text_pages)})")
             if status is not None and hasattr(status, "update"):
                 try:
-                    status.update(label=f"ÄÃ£ Ä‘á»c xong Tier 1 ({tier1_elapsed:.1f}s)")
+                    status.update(label=f"Đã đọc xong Tier 1 ({tier1_elapsed:.1f}s)")
                 except Exception:
                     pass
 
-        # Xá»­ lÃ½ káº¿t quáº£ invoice
-        invoice_text = "(KhÃ´ng cÃ³ hÃ³a Ä‘Æ¡n)"
+        # Xử lý kết quả invoice
+        invoice_text = "(Không có hóa đơn)"
         if invoice_result and invoice_result.get("success") and invoice_result.get("text"):
             invoice_text = invoice_result["text"]
         elif invoice_result and not invoice_result.get("success") and photo_paths:
-            # â”€â”€ RETRY 1 Láº¦N: Tier 1 Ä‘á»c hÃ³a Ä‘Æ¡n tháº¥t báº¡i (cold start API) â”€â”€
-            _log(f"Tier 1 invoice tháº¥t báº¡i ({invoice_result.get('error', 'unknown')}) â€” retry...")
+            # ── RETRY 1 LẦN: Tier 1 đọc hóa đơn thất bại (cold start API) ──
+            _log(f"Tier 1 invoice thất bại ({invoice_result.get('error', 'unknown')}) — retry...")
             any_photo = [p for p in photo_paths if os.path.exists(p)]
             if any_photo:
-                with _status("Äang retry Ä‘á»c hÃ³a Ä‘Æ¡n (Tier 1 - láº§n 2)..."):
+                with _status("Đang retry đọc hóa đơn (Tier 1 - lần 2)..."):
                     invoice_result = extract_invoice_text(any_photo)
                 if invoice_result and invoice_result.get("success") and invoice_result.get("text"):
                     invoice_text = invoice_result["text"]
-                    _log("Tier 1 invoice retry thÃ nh cÃ´ng")
+                    _log("Tier 1 invoice retry thành công")
                 else:
                     return {
                         "success": False,
                         "response": "",
-                        "error": f"Tier 1 (Ä‘á»c hÃ³a Ä‘Æ¡n) tháº¥t báº¡i sau retry: {invoice_result.get('error', 'unknown')}"
+                        "error": f"Tier 1 (đọc hóa đơn) thất bại sau retry: {invoice_result.get('error', 'unknown')}"
                     }
             else:
                 return {
                     "success": False,
                     "response": "",
-                    "error": f"Tier 1 (Ä‘á»c hÃ³a Ä‘Æ¡n) tháº¥t báº¡i: {invoice_result.get('error', 'unknown')}"
+                    "error": f"Tier 1 (đọc hóa đơn) thất bại: {invoice_result.get('error', 'unknown')}"
                 }
 
-        # Xá»­ lÃ½ káº¿t quáº£ contract â€” gá»™p text pages + image chunks theo Ä‘Ãºng thá»© tá»± trang
+        # Xử lý kết quả contract — gộp text pages + image chunks theo đúng thứ tự trang
         contract_chunk_texts = []
 
         if contract_chunks_images:
             for idx, (imgs, np, batch_page_indices) in enumerate(contract_chunks_images):
                 chunk_parts = []
                 
-                # ThÃªm text tá»« cÃ¡c trang cÃ³ text trong chunk nÃ y (trÆ°á»›c khi thÃªm text Kimi)
+                # Thêm text từ các trang có text trong chunk này (trước khi thêm text Kimi)
                 for page_idx_0based in batch_page_indices:
                     page_num_1based = page_idx_0based + 1
                     if page_num_1based in contract_text_pages:
                         chunk_parts.append(f"\n--- Trang {page_num_1based} (text PDF) ---\n{contract_text_pages[page_num_1based]}")
                 
-                # ThÃªm káº¿t quáº£ Kimi Ä‘á»c áº£nh cho chunk nÃ y
+                # Thêm kết quả Kimi đọc ảnh cho chunk này
                 res = contract_chunk_results[idx] if idx < len(contract_chunk_results) else None
                 if res and res.get("success") and res.get("text"):
                     chunk_parts.append(res["text"])
                 elif res and not res.get("success"):
-                    # â”€â”€ RETRY 1 Láº¦N: chunk tháº¥t báº¡i (cold start API) â”€â”€
-                    _log(f"Tier 1 chunk {idx + 1} tháº¥t báº¡i ({res.get('error', 'unknown')}) â€” retry...")
-                    with _status(f"Äang retry Ä‘á»c há»£p Ä‘á»“ng chunk {idx + 1}..."):
+                    # ── RETRY 1 LẦN: chunk thất bại (cold start API) ──
+                    _log(f"Tier 1 chunk {idx + 1} thất bại ({res.get('error', 'unknown')}) — retry...")
+                    with _status(f"Đang retry đọc hợp đồng chunk {idx + 1}..."):
                         retry_res = _read_contract_chunk(imgs, np)
                     if retry_res and retry_res.get("success") and retry_res.get("text"):
                         chunk_parts.append(retry_res["text"])
-                        _log(f"Tier 1 chunk {idx + 1} retry thÃ nh cÃ´ng")
+                        _log(f"Tier 1 chunk {idx + 1} retry thành công")
                     else:
-                        chunk_parts.append(f"[Chunk {idx + 1} trÃ­ch xuáº¥t tháº¥t báº¡i: {res.get('error', 'unknown')}")
+                        chunk_parts.append(f"[Chunk {idx + 1} trích xuất thất bại: {res.get('error', 'unknown')}")
                 else:
-                    # Timeout â€” retry 1 láº§n
-                    _log(f"Tier 1 chunk {idx + 1} timeout â€” retry...")
-                    with _status(f"Äang retry Ä‘á»c há»£p Ä‘á»“ng chunk {idx + 1}..."):
+                    # Timeout — retry 1 lần
+                    _log(f"Tier 1 chunk {idx + 1} timeout — retry...")
+                    with _status(f"Đang retry đọc hợp đồng chunk {idx + 1}..."):
                         retry_res = _read_contract_chunk(imgs, np)
                     if retry_res and retry_res.get("success") and retry_res.get("text"):
                         chunk_parts.append(retry_res["text"])
-                        _log(f"Tier 1 chunk {idx + 1} retry thÃ nh cÃ´ng")
+                        _log(f"Tier 1 chunk {idx + 1} retry thành công")
                     else:
-                        chunk_parts.append(f"[Chunk {idx + 1} khÃ´ng cÃ³ káº¿t quáº£ (timeout)]")
+                        chunk_parts.append(f"[Chunk {idx + 1} không có kết quả (timeout)]")
                 
                 contract_chunk_texts.append("\n".join(chunk_parts))
         elif not contract_text_pages and contract_path and os.path.exists(contract_path):
-            contract_chunk_texts.append("(Há»£p Ä‘á»“ng trÃ­ch xuáº¥t tháº¥t báº¡i hoáº·c khÃ´ng thá»ƒ Ä‘á»c)")
+            contract_chunk_texts.append("(Hợp đồng trích xuất thất bại hoặc không thể đọc)")
         else:
-            contract_chunk_texts.append("(KhÃ´ng cÃ³ há»£p Ä‘á»“ng Ä‘Ã­nh kÃ¨m)")
+            contract_chunk_texts.append("(Không có hợp đồng đính kèm)")
 
         # ============================================================
-        # TIER 2 (Bá»Ž): Truyá»n tháº³ng text tá»« Tier 1 sang Tier 3
-        # (NhÆ° v0.6 gá»‘c - GLM nháº­n raw text, Ä‘á»c trá»±c tiáº¿p -> giá»¯ accuracy)
+        # TIER 2 (BỎ): Truyền thẳng text từ Tier 1 sang Tier 3
+        # (Như v0.6 gốc - GLM nhận raw text, đọc trực tiếp -> giữ accuracy)
         # ============================================================
 
         invoice_analysis = invoice_text
         contract_analyses = contract_chunk_texts
 
         # ============================================================
-        # TIER 3 (MERGE): GLM PHÃ‚N TÃCH KHáº¤U TRá»ª -> XUáº¤T Báº¢NG CUá»I CÃ™NG
+        # TIER 3 (MERGE): GLM PHÂN TÍCH KHẤU TRỪ -> XUẤT BẢNG CUỐI CÙNG
         # ============================================================
 
         contract_analyses_joined = "\n\n".join(contract_analyses)
 
-        # Bá» giá»›i háº¡n text â€” gá»­i toÃ n bá»™ text há»£p Ä‘á»“ng cho GLM phÃ¢n tÃ­ch
+        # Bỏ giới hạn text — gửi toàn bộ text hợp đồng cho GLM phân tích
         prompt = build_analysis_prompt(claim_data, invoice_analysis, contract_analyses_joined)
 
         system_msg = {
             "role": "system",
-            "content": "Báº¡n lÃ  chuyÃªn gia kiá»ƒm toÃ¡n há»£p Ä‘á»“ng báº£o hiá»ƒm cao cáº¥p. LUÃ”N tráº£ lá»i báº±ng tiáº¿ng Viá»‡t. Nhiá»‡m vá»¥: Äá»ŒC TOÃ€N Bá»˜ text hÃ³a Ä‘Æ¡n (ghi nhá»› tá»«ng dÃ²ng, tá»«ng con sá»‘) -> Äá»ŒC TOÃ€N Bá»˜ text há»£p Ä‘á»“ng (má»i Ä‘iá»u khoáº£n, phá»¥ lá»¥c, Ä‘Ã­nh chÃ­nh) -> XÃ‚Y Dá»°NG 3 DANH SÃCH TRONG Äáº¦U: (A) Äiá»u khoáº£n loáº¡i trá»«, (B) KhÃ¡i niá»‡m/Ä‘á»‹nh nghÄ©a/danh má»¥c, (C) Háº¡n má»©c chi tráº£ -> MAP Tá»ªNG Má»¤C trong hÃ³a Ä‘Æ¡n vÃ o 3 danh sÃ¡ch theo quy trÃ¬nh 2(A) -> 2(B) -> 2(C). Äáº¶C BIá»†T: khoáº£n trong hÃ³a Ä‘Æ¡n cÃ³ thá»ƒ KHÃ”NG TRÃ™NG TÃŠN trá»±c tiáº¿p vá»›i Ä‘iá»u khoáº£n loáº¡i trá»«, nhÆ°ng cÃ³ THUá»˜C má»™t khÃ¡i niá»‡m/Ä‘á»‹nh nghÄ©a bá»‹ loáº¡i trá»« (kháº¥u trá»« giÃ¡n tiáº¿p). Pháº£i Káº¾T Ná»I thÃ´ng tin giá»¯a cÃ¡c trang. QUAN TRá»ŒNG NHáº¤T - LUáº¬T Cá»¨NG: (1) KHÃ”NG ÄÆ¯á»¢C Tá»° PHÃ‚N LOáº I Ä‘á»‘i tÆ°á»£ng (thuá»‘c/thá»±c pháº©m chá»©c nÄƒng/thiáº¿t bá»‹ y táº¿...) tá»« kiáº¿n thá»©c ngoÃ i há»£p Ä‘á»“ng. Chá»‰ Ä‘Æ°á»£c kháº¥u trá»« khi há»£p Ä‘á»“ng THá»°C Sá»° ghi rÃµ háº¡ng má»¥c Ä‘Ã³ bá»‹ loáº¡i trá»« (trÃ¹ng tÃªn trá»±c tiáº¿p hoáº·c thuá»™c nhÃ³m Ä‘Æ°á»£c Ä‘á»‹nh nghÄ©a trong há»£p Ä‘á»“ng). (2) KHÃ”NG ÄÆ¯á»¢C Bá»” SUNG lÃ­ do ngoÃ i Ä‘iá»u khoáº£n há»£p Ä‘á»“ng â€” náº¿u há»£p Ä‘á»“ng ghi loáº¡i trá»« 'Sanlein' thÃ¬ lÃ­ do lÃ  'há»£p Ä‘á»“ng ghi rÃµ loáº¡i trá»« Sanlein', KHÃ”NG ÄÆ¯á»¢C thÃªm 'vÃ¬ lÃ  thá»±c pháº©m chá»©c nÄƒng' hay báº¥t ká»³ lÃ­ do nÃ o khÃ¡c. (3) Má»–I Má»¤C Äá»˜C Láº¬P 100% â€” KHÃ”NG KÃ‰O THEO: náº¿u há»£p Ä‘á»“ng chá»‰ ghi 'Sanlein' thÃ¬ CHá»ˆ kháº¥u trá»« Sanlein, KHÃ”NG KHáº¤U TRá»ª Liposic hay má»¥c nÃ o khÃ¡c khÃ´ng Ä‘Æ°á»£c há»£p Ä‘á»“ng nháº¯c Ä‘áº¿n. (4) KHÃ”NG tráº£ lá»i 'khÃ´ng cÃ³ kháº¥u trá»«' náº¿u chÆ°a kiá»ƒm tra ká»¹ táº¥t cáº£ Ä‘iá»u khoáº£n há»£p Ä‘á»“ng. Má»i káº¿t luáº­n pháº£i cÃ³ Ä‘iá»u khoáº£n há»£p Ä‘á»“ng lÃ m cÄƒn cá»©. CHÃNH XÃC TUYá»†T Äá»I vá» con sá»‘ - khÃ´ng lÃ m trÃ²n, khÃ´ng Æ°á»›c lÆ°á»£ng. Äá»ŒC NGÃ€Y CHÃNH XÃC: hÃ³a Ä‘Æ¡n Viá»‡t Nam dÃ¹ng Ä‘á»‹nh dáº¡ng dd/mm/yyyy, khÃ´ng Ä‘Æ°á»£c hoÃ¡n Ä‘á»•i ngÃ y/thÃ¡ng hay sá»­a nÄƒm. Output cuá»‘i cÃ¹ng lÃ  Má»˜T Báº¢NG DUY NHáº¤T theo máº«u, khÃ´ng kÃ¨m lá»i giáº£i thÃ­ch bÃªn ngoÃ i."
+            "content": "Bạn là chuyên gia kiểm toán hợp đồng bảo hiểm cao cấp. LUÔN trả lời bằng tiếng Việt. Nhiệm vụ: ĐỌC TOÀN BỘ text hóa đơn (ghi nhớ từng dòng, từng con số) -> ĐỌC TOÀN BỘ text hợp đồng (mọi điều khoản, phụ lục, đính chính) -> XÂY DỰNG 3 DANH SÁCH TRONG ĐẦU: (A) Điều khoản loại trừ, (B) Khái niệm/định nghĩa/danh mục, (C) Hạn mức chi trả -> MAP TỪNG MỤC trong hóa đơn vào 3 danh sách theo quy trình 2(A) -> 2(B) -> 2(C). ĐẶC BIỆT: khoản trong hóa đơn có thể KHÔNG TRÙNG TÊN trực tiếp với điều khoản loại trừ, nhưng có THUỘC một khái niệm/định nghĩa bị loại trừ (khấu trừ gián tiếp). Phải KẾT NỐI thông tin giữa các trang. QUAN TRỌNG NHẤT - LUẬT CỨNG: (1) KHÔNG ĐƯỢC TỰ PHÂN LOẠI đối tượng (thuốc/thực phẩm chức năng/thiết bị y tế...) từ kiến thức ngoài hợp đồng. Chỉ được khấu trừ khi hợp đồng THỰC SỰ ghi rõ hạng mục đó bị loại trừ (trùng tên trực tiếp hoặc thuộc nhóm được định nghĩa trong hợp đồng). (2) KHÔNG ĐƯỢC BỔ SUNG lí do ngoài điều khoản hợp đồng — nếu hợp đồng ghi loại trừ 'Sanlein' thì lí do là 'hợp đồng ghi rõ loại trừ Sanlein', KHÔNG ĐƯỢC thêm 'vì là thực phẩm chức năng' hay bất kỳ lí do nào khác. (3) MỖI MỤC ĐỘC LẬP 100% — KHÔNG KÉO THEO: nếu hợp đồng chỉ ghi 'Sanlein' thì CHỈ khấu trừ Sanlein, KHÔNG KHẤU TRỪ Liposic hay mục nào khác không được hợp đồng nhắc đến. (4) KHÔNG trả lời 'không có khấu trừ' nếu chưa kiểm tra kỹ tất cả điều khoản hợp đồng. Mọi kết luận phải có điều khoản hợp đồng làm căn cứ. CHÍNH XÁC TUYỆT ĐỐI về con số - không làm tròn, không ước lượng. ĐỌC NGÀY CHÍNH XÁC: hóa đơn Việt Nam dùng định dạng dd/mm/yyyy, không được hoán đổi ngày/tháng hay sửa năm. Output cuối cùng là MỘT BẢNG DUY NHẤT theo mẫu, không kèm lời giải thích bên ngoài."
         }
         user_msg = {"role": "user", "content": prompt}
         messages = [system_msg, user_msg]
@@ -1053,7 +1053,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             merge_result_box["result"] = call_analysis_model(messages, max_tokens=16000, timeout=600)
 
         t_tier3 = time.perf_counter()
-        with _status("Äang tá»•ng há»£p & xuáº¥t báº£ng kháº¥u trá»« (Tier 3)...") as status:
+        with _status("Đang tổng hợp & xuất bảng khấu trừ (Tier 3)...") as status:
             t_merge = threading.Thread(target=run_merge)
             t_merge.start()
             t_merge.join(timeout=620)
@@ -1062,19 +1062,19 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
             _log(f"Tier 3 xong sau {tier3_elapsed:.1f}s")
             if status is not None and hasattr(status, "update"):
                 try:
-                    status.update(label=f"ÄÃ£ tá»•ng há»£p xong Tier 3 ({tier3_elapsed:.1f}s)")
+                    status.update(label=f"Đã tổng hợp xong Tier 3 ({tier3_elapsed:.1f}s)")
                 except Exception:
                     pass
 
         analysis_result = merge_result_box["result"]
 
-        # â”€â”€ RETRY 1 Láº¦N náº¿u Tier 3 tráº£ vá» rá»—ng/tháº¥t báº¡i (cold start API) â”€â”€
+        # ── RETRY 1 LẦN nếu Tier 3 trả về rỗng/thất bại (cold start API) ──
         if not analysis_result or not analysis_result.get("success") or not analysis_result.get("text", "").strip():
-            _log("Tier 3 láº§n 1 rá»—ng/tháº¥t báº¡i â€” retry láº§n 2...")
+            _log("Tier 3 lần 1 rỗng/thất bại — retry lần 2...")
             retry_box = {"result": None}
             def run_merge_retry():
                 retry_box["result"] = call_analysis_model(messages, max_tokens=16000, timeout=600)
-            with _status("Äang retry tá»•ng há»£p (Tier 3 - láº§n 2)...") as status2:
+            with _status("Đang retry tổng hợp (Tier 3 - lần 2)...") as status2:
                 t_retry = threading.Thread(target=run_merge_retry)
                 t_retry.start()
                 t_retry.join(timeout=620)
@@ -1085,29 +1085,29 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                         pass
             analysis_result = retry_box["result"]
             if analysis_result and analysis_result.get("success") and analysis_result.get("text", "").strip():
-                _log("Tier 3 retry thÃ nh cÃ´ng")
+                _log("Tier 3 retry thành công")
             else:
-                _log("Tier 3 retry váº«n tháº¥t báº¡i")
+                _log("Tier 3 retry vẫn thất bại")
 
-        _log(f"Tá»•ng thá»i gian analyze_deduction: {time.perf_counter() - t_total:.1f}s")
+        _log(f"Tổng thời gian analyze_deduction: {time.perf_counter() - t_total:.1f}s")
 
         if analysis_result and analysis_result.get("success") and analysis_result.get("text"):
             return {"success": True, "response": analysis_result["text"], "error": ""}
         elif analysis_result and not analysis_result.get("success"):
-            return {"success": False, "response": "", "error": f"Tier 3 (merge) tháº¥t báº¡i: {analysis_result['error']}"}
+            return {"success": False, "response": "", "error": f"Tier 3 (merge) thất bại: {analysis_result['error']}"}
         else:
-            return {"success": False, "response": "", "error": "Tier 3 (merge) timeout hoáº·c khÃ´ng cÃ³ káº¿t quáº£"}
+            return {"success": False, "response": "", "error": "Tier 3 (merge) timeout hoặc không có kết quả"}
 
     except Exception as e:
         return {"success": False, "response": "", "error": str(e)}
 
 
 # ============================================================
-# LÆ¯U Káº¾T QUáº¢
+# LƯU KẾT QUẢ
 # ============================================================
 
 def save_reply(claim_data, ai_response, photo_names, contract_name):
-    """LÆ°u cÃ¢u tráº£ lá»i AI vÃ o thÆ° má»¥c tráº£ lá»i."""
+    """Lưu câu trả lời AI vào thư mục trả lời."""
     os.makedirs(REPLY_DIR, exist_ok=True)
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -1117,22 +1117,22 @@ def save_reply(claim_data, ai_response, photo_names, contract_name):
     filename = f"reply_{safe_name}_{product_id}_{ts}.md"
     filepath = os.path.join(REPLY_DIR, filename)
 
-    content = f"""# PhÃ¢n tÃ­ch khoáº£n kháº¥u trá»« bá»“i thÆ°á»ng
+    content = f"""# Phân tích khoản khấu trừ bồi thường
 
-**KhÃ¡ch hÃ ng:** {claim_data.get('customer_name', 'KhÃ´ng rÃµ')}
-**Sáº£n pháº©m:** {claim_data.get('product', {}).get('name', 'KhÃ´ng rÃµ')}
-**Thá»i gian:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+**Khách hàng:** {claim_data.get('customer_name', 'Không rõ')}
+**Sản phẩm:** {claim_data.get('product', {}).get('name', 'Không rõ')}
+**Thời gian:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
 
-## áº¢nh thiá»‡t háº¡i Ä‘Ã­nh kÃ¨m:
+## Ảnh thiệt hại đính kèm:
 """
     for name in photo_names:
         content += f"- {name}\n"
 
     content += f"""
-## Há»£p Ä‘á»“ng Ä‘Ã­nh kÃ¨m:
-- {contract_name or 'KhÃ´ng cÃ³'}
+## Hợp đồng đính kèm:
+- {contract_name or 'Không có'}
 
-## PhÃ¢n tÃ­ch AI:
+## Phân tích AI:
 {ai_response}
 """
 

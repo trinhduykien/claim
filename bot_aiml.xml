@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <aiml version="1.0">
 
@@ -6,7 +6,7 @@
 
 <!-- ============================================================ -->
 
-<!-- PHáº¦N 1: CÃC CATEGORY CÅ¨ (giá»¯ nguyÃªn, Ä‘Ã£ sá»­a lá»—i cÃº phÃ¡p) -->
+<!-- PHẦN 1: CÁC CATEGORY CŨ (giữ nguyên, đã sửa lỗi cú pháp) -->
 
 <!-- ============================================================ -->
 
@@ -22,11 +22,11 @@
 
     <template>
 
-        Xin chÃ o! TÃ´i lÃ  trá»£ lÃ½ áº£o .
+        Xin chào! Tôi là trợ lý ảo .
 
-        TÃ´i cÃ³ thá»ƒ há»— trá»£ anh/chá»‹ Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng báº£o hiá»ƒm.
+        Tôi có thể hỗ trợ anh/chị đánh giá điều kiện tiếp nhận bồi thường bảo hiểm.
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡? 
+        Anh/chị cần hỗ trợ gì ạ? 
 
     </template>
 
@@ -40,11 +40,11 @@
 
     <template>
 
-        Xin chÃ o! TÃ´i lÃ  trá»£ lÃ½ áº£o .
+        Xin chào! Tôi là trợ lý ảo .
 
-        TÃ´i cÃ³ thá»ƒ há»— trá»£ anh/chá»‹ Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng báº£o hiá»ƒm.
+        Tôi có thể hỗ trợ anh/chị đánh giá điều kiện tiếp nhận bồi thường bảo hiểm.
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡? 
+        Anh/chị cần hỗ trợ gì ạ? 
 
     </template>
 
@@ -58,11 +58,11 @@
 
     <template>
 
-        Xin chÃ o! TÃ´i lÃ  trá»£ lÃ½ áº£o .
+        Xin chào! Tôi là trợ lý ảo .
 
-        TÃ´i cÃ³ thá»ƒ há»— trá»£ anh/chá»‹ Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng báº£o hiá»ƒm.
+        Tôi có thể hỗ trợ anh/chị đánh giá điều kiện tiếp nhận bồi thường bảo hiểm.
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡? 
+        Anh/chị cần hỗ trợ gì ạ? 
 
     </template>
 
@@ -76,11 +76,11 @@
 
     <template>
 
-        Xin chÃ o! TÃ´i lÃ  trá»£ lÃ½ áº£o .
+        Xin chào! Tôi là trợ lý ảo .
 
-        TÃ´i cÃ³ thá»ƒ há»— trá»£ anh/chá»‹ Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng báº£o hiá»ƒm.
+        Tôi có thể hỗ trợ anh/chị đánh giá điều kiện tiếp nhận bồi thường bảo hiểm.
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡? 
+        Anh/chị cần hỗ trợ gì ạ? 
 
     </template>
 
@@ -88,7 +88,7 @@
 
 
 
-<!-- ============ Cáº¢M Æ N ============ -->
+<!-- ============ CẢM ƠN ============ -->
 
 
 
@@ -96,7 +96,7 @@
 
     <pattern>CAM ON</pattern>
 
-    <template>Cáº£m Æ¡n anh/chá»‹ Ä‘Ã£ sá»­ dá»¥ng dá»‹ch vá»¥ cá»§a ! </template>
+    <template>Cảm ơn anh/chị đã sử dụng dịch vụ của ! </template>
 
 </category>
 
@@ -106,7 +106,7 @@
 
     <pattern>THANK YOU</pattern>
 
-    <template>Cáº£m Æ¡n anh/chá»‹ Ä‘Ã£ sá»­ dá»¥ng dá»‹ch vá»¥ cá»§a ! </template>
+    <template>Cảm ơn anh/chị đã sử dụng dịch vụ của ! </template>
 
 </category>
 
@@ -116,13 +116,13 @@
 
     <pattern>CAM ON NHIEU</pattern>
 
-    <template>Ráº¥t vui Ä‘Æ°á»£c há»— trá»£ anh/chá»‹! </template>
+    <template>Rất vui được hỗ trợ anh/chị! </template>
 
 </category>
 
 
 
-<!-- ============ Há»ŽI TÃŠN ============ -->
+<!-- ============ HỎI TÊN ============ -->
 
 
 
@@ -134,9 +134,9 @@
 
         <set name="customername"><star/></set>
 
-        ChÃ o <get name="customername"/>! Ráº¥t vui Ä‘Æ°á»£c gáº·p anh/chá»‹.
+        Chào <get name="customername"/>! Rất vui được gặp anh/chị.
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡? TÃ´i cÃ³ thá»ƒ Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng báº£o hiá»ƒm cho anh/chá»‹.
+        Anh/chị cần hỗ trợ gì ạ? Tôi có thể đánh giá điều kiện tiếp nhận bồi thường bảo hiểm cho anh/chị.
 
     </template>
 
@@ -152,9 +152,9 @@
 
         <set name="customername"><star/></set>
 
-        ChÃ o <get name="customername"/>! Ráº¥t vui Ä‘Æ°á»£c gáº·p anh/chá»‹.
+        Chào <get name="customername"/>! Rất vui được gặp anh/chị.
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡?
+        Anh/chị cần hỗ trợ gì ạ?
 
     </template>
 
@@ -170,9 +170,9 @@
 
         <set name="customername"><star/></set>
 
-        ChÃ o <get name="customername"/>! Ráº¥t vui Ä‘Æ°á»£c gáº·p anh/chá»‹.
+        Chào <get name="customername"/>! Rất vui được gặp anh/chị.
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡?
+        Anh/chị cần hỗ trợ gì ạ?
 
     </template>
 
@@ -180,7 +180,7 @@
 
 
 
-<!-- ============ Sáº¢N PHáº¨M ============ -->
+<!-- ============ SẢN PHẨM ============ -->
 
 
 
@@ -212,7 +212,7 @@
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” CÃ“ ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — CÓ ============ -->
 
 
 
@@ -220,7 +220,7 @@
 
     <pattern>CO</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
@@ -230,7 +230,7 @@
 
     <pattern>DA</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
@@ -240,7 +240,7 @@
 
     <pattern>UNG</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
@@ -250,7 +250,7 @@
 
     <pattern>YEAH</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
@@ -260,7 +260,7 @@
 
     <pattern>YES</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
@@ -270,7 +270,7 @@
 
     <pattern>DUNG</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
@@ -280,7 +280,7 @@
 
     <pattern>DUNG ROI</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
@@ -290,7 +290,7 @@
 
     <pattern>PHAI</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
@@ -300,7 +300,7 @@
 
     <pattern>CHINH XAC</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
@@ -310,7 +310,7 @@
 
     <pattern>CHAC CHAN</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
@@ -320,7 +320,7 @@
 
     <pattern>DUOC</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
@@ -330,13 +330,13 @@
 
     <pattern>ROI</pattern>
 
-    <template>__ANSWER__:CÃ³</template>
+    <template>__ANSWER__:Có</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” KHÃ”NG ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG ============ -->
 
 
 
@@ -344,7 +344,7 @@
 
     <pattern>KHONG</pattern>
 
-    <template>__ANSWER__:KhÃ´ng</template>
+    <template>__ANSWER__:Không</template>
 
 </category>
 
@@ -354,7 +354,7 @@
 
     <pattern>KO</pattern>
 
-    <template>__ANSWER__:KhÃ´ng</template>
+    <template>__ANSWER__:Không</template>
 
 </category>
 
@@ -364,7 +364,7 @@
 
     <pattern>NO</pattern>
 
-    <template>__ANSWER__:KhÃ´ng</template>
+    <template>__ANSWER__:Không</template>
 
 </category>
 
@@ -374,7 +374,7 @@
 
     <pattern>NOPE</pattern>
 
-    <template>__ANSWER__:KhÃ´ng</template>
+    <template>__ANSWER__:Không</template>
 
 </category>
 
@@ -384,13 +384,13 @@
 
     <pattern>CHUA</pattern>
 
-    <template>__ANSWER__:ChÆ°a thÃ´ng bÃ¡o</template>
+    <template>__ANSWER__:Chưa thông báo</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” KHÃ”NG RÃ• ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG RÕ ============ -->
 
 
 
@@ -398,7 +398,7 @@
 
     <pattern>KHONG RO</pattern>
 
-    <template>__ANSWER__:KhÃ´ng rÃµ</template>
+    <template>__ANSWER__:Không rõ</template>
 
 </category>
 
@@ -408,7 +408,7 @@
 
     <pattern>KHONG BIET</pattern>
 
-    <template>__ANSWER__:KhÃ´ng rÃµ</template>
+    <template>__ANSWER__:Không rõ</template>
 
 </category>
 
@@ -418,13 +418,13 @@
 
     <pattern>KHONG CHAC</pattern>
 
-    <template>__ANSWER__:KhÃ´ng rÃµ</template>
+    <template>__ANSWER__:Không rõ</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” CHÆ¯A THÃ”NG BÃO ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — CHƯA THÔNG BÁO ============ -->
 
 
 
@@ -432,13 +432,13 @@
 
     <pattern>CHUA THONG BAO</pattern>
 
-    <template>__ANSWER__:ChÆ°a thÃ´ng bÃ¡o</template>
+    <template>__ANSWER__:Chưa thông báo</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” ÄANG CHUáº¨N Bá»Š ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — ĐANG CHUẨN BỊ ============ -->
 
 
 
@@ -446,7 +446,7 @@
 
     <pattern>DANG CHUAN BI</pattern>
 
-    <template>__ANSWER__:Äang chuáº©n bá»‹</template>
+    <template>__ANSWER__:Đang chuẩn bị</template>
 
 </category>
 
@@ -456,7 +456,7 @@
 
     <pattern>DANG XU LY</pattern>
 
-    <template>__ANSWER__:Äang chuáº©n bá»‹</template>
+    <template>__ANSWER__:Đang chuẩn bị</template>
 
 </category>
 
@@ -466,13 +466,13 @@
 
     <pattern>DANG</pattern>
 
-    <template>__ANSWER__:Äang chuáº©n bá»‹</template>
+    <template>__ANSWER__:Đang chuẩn bị</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” CHÆ¯A Gá»¬I ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — CHƯA GỬI ============ -->
 
 
 
@@ -480,13 +480,13 @@
 
     <pattern>CHUA GUI</pattern>
 
-    <template>__ANSWER__:ChÆ°a gá»­i</template>
+    <template>__ANSWER__:Chưa gửi</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” VIá»†T NAM ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — VIỆT NAM ============ -->
 
 
 
@@ -494,7 +494,7 @@
 
     <pattern>VIET NAM</pattern>
 
-    <template>__ANSWER__:Viá»‡t Nam</template>
+    <template>__ANSWER__:Việt Nam</template>
 
 </category>
 
@@ -504,13 +504,13 @@
 
     <pattern>NGUOI VIET NAM</pattern>
 
-    <template>__ANSWER__:Viá»‡t Nam</template>
+    <template>__ANSWER__:Việt Nam</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” NGÆ¯á»œI NÆ¯á»šC NGOÃ€I ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — NGƯỜI NƯỚC NGOÀI ============ -->
 
 
 
@@ -518,7 +518,7 @@
 
     <pattern>NGUOI NUOC NGOAI</pattern>
 
-    <template>__ANSWER__:NgÆ°á»i nÆ°á»›c ngoÃ i Ä‘á»‹nh cÆ° táº¡i VN</template>
+    <template>__ANSWER__:Người nước ngoài định cư tại VN</template>
 
 </category>
 
@@ -528,13 +528,13 @@
 
     <pattern>NUOC NGOAI</pattern>
 
-    <template>__ANSWER__:NgÆ°á»i nÆ°á»›c ngoÃ i Ä‘á»‹nh cÆ° táº¡i VN</template>
+    <template>__ANSWER__:Người nước ngoài định cư tại VN</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” KHÃC ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — KHÁC ============ -->
 
 
 
@@ -542,13 +542,13 @@
 
     <pattern>KHAC</pattern>
 
-    <template>__ANSWER__:KhÃ¡c</template>
+    <template>__ANSWER__:Khác</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” Cáº¤P Cá»¨U ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — CẤP CỨU ============ -->
 
 
 
@@ -556,13 +556,13 @@
 
     <pattern>CAP CUU</pattern>
 
-    <template>__ANSWER__:Cáº¥p cá»©u - khÃ´ng cáº§n cháº¥p thuáº­n trÆ°á»›c</template>
+    <template>__ANSWER__:Cấp cứu - không cần chấp thuận trước</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” CÃ“ ÄÃƒ THÃ”NG BÃO ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — CÓ ĐÃ THÔNG BÁO ============ -->
 
 
 
@@ -570,7 +570,7 @@
 
     <pattern>CO DA THONG BAO VA DUOC CHAP THUAN</pattern>
 
-    <template>__ANSWER__:CÃ³, Ä‘Ã£ thÃ´ng bÃ¡o vÃ  Ä‘Æ°á»£c cháº¥p thuáº­n</template>
+    <template>__ANSWER__:Có, đã thông báo và được chấp thuận</template>
 
 </category>
 
@@ -580,7 +580,7 @@
 
     <pattern>CO DA THONG BAO</pattern>
 
-    <template>__ANSWER__:CÃ³, Ä‘Ã£ thÃ´ng bÃ¡o vÃ  Ä‘Æ°á»£c cháº¥p thuáº­n</template>
+    <template>__ANSWER__:Có, đã thông báo và được chấp thuận</template>
 
 </category>
 
@@ -590,13 +590,13 @@
 
     <pattern>DA THONG BAO DUOC CHAP THUAN</pattern>
 
-    <template>__ANSWER__:CÃ³, Ä‘Ã£ thÃ´ng bÃ¡o vÃ  Ä‘Æ°á»£c cháº¥p thuáº­n</template>
+    <template>__ANSWER__:Có, đã thông báo và được chấp thuận</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” CHÆ¯A THÃ”NG BÃO (chÆ°a cháº¥p thuáº­n) ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — CHƯA THÔNG BÁO (chưa chấp thuận) ============ -->
 
 
 
@@ -604,7 +604,7 @@
 
     <pattern>CO CHUA THONG BAO</pattern>
 
-    <template>__ANSWER__:CÃ³, chÆ°a thÃ´ng bÃ¡o</template>
+    <template>__ANSWER__:Có, chưa thông báo</template>
 
 </category>
 
@@ -614,13 +614,13 @@
 
     <pattern>CHUA THONG BAO CHUA DUOC CHAP THUAN</pattern>
 
-    <template>__ANSWER__:CÃ³, chÆ°a thÃ´ng bÃ¡o</template>
+    <template>__ANSWER__:Có, chưa thông báo</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” KHÃ”NG PHáº¢I TÃŒNH TRáº NG CÃ“ Sáº´N ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG PHẢI TÌNH TRẠNG CÓ SẴN ============ -->
 
 
 
@@ -628,7 +628,7 @@
 
     <pattern>KHONG PHAI TINH TRANG CO SAN</pattern>
 
-    <template>__ANSWER__:KhÃ´ng pháº£i tÃ¬nh tráº¡ng cÃ³ sáºµn</template>
+    <template>__ANSWER__:Không phải tình trạng có sẵn</template>
 
 </category>
 
@@ -638,13 +638,13 @@
 
     <pattern>KHONG PHAI BENH CO SAN</pattern>
 
-    <template>__ANSWER__:KhÃ´ng pháº£i tÃ¬nh tráº¡ng cÃ³ sáºµn</template>
+    <template>__ANSWER__:Không phải tình trạng có sẵn</template>
 
 </category>
 
 
 
-<!-- ============ TRáº¢ Lá»œI CÃ‚U Há»ŽI â€” KHÃ”NG, CHÆ¯A LÃ€M ============ -->
+<!-- ============ TRẢ LỜI CÂU HỎI — KHÔNG, CHƯA LÀM ============ -->
 
 
 
@@ -652,13 +652,13 @@
 
     <pattern>CHUA LAM</pattern>
 
-    <template>__ANSWER__:KhÃ´ng, chÆ°a lÃ m</template>
+    <template>__ANSWER__:Không, chưa làm</template>
 
 </category>
 
 
 
-<!-- ============ Báº®T Äáº¦U Láº I ============ -->
+<!-- ============ BẮT ĐẦU LẠI ============ -->
 
 
 
@@ -694,13 +694,13 @@
 
 <!-- ============================================================ -->
 
-<!-- PHáº¦N 2: CATEGORY Má»šI â€” Há»˜I THOáº I Tá»° NHIÃŠN -->
+<!-- PHẦN 2: CATEGORY MỚI — HỘI THOẠI TỰ NHIÊN -->
 
 <!-- ============================================================ -->
 
 
 
-<!-- ============ Há»ŽI THÃ”NG TIN ============ -->
+<!-- ============ HỎI THÔNG TIN ============ -->
 
 
 
@@ -710,9 +710,9 @@
 
     <template>
 
-        (Tá»•ng CÃ´ng ty Cá»• pháº§n Báº£o hiá»ƒm Petrolimex) lÃ  doanh nghiá»‡p báº£o hiá»ƒm phi nhÃ¢n thá» hÃ ng Ä‘áº§u táº¡i Viá»‡t Nam, trá»±c thuá»™c Táº­p Ä‘oÃ n XÄƒng dáº§u Viá»‡t Nam. 
+        (Tổng Công ty Cổ phần Bảo hiểm Petrolimex) là doanh nghiệp bảo hiểm phi nhân thọ hàng đầu tại Việt Nam, trực thuộc Tập đoàn Xăng dầu Việt Nam. 
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ thÃªm khÃ´ng áº¡?
+        Anh/chị cần hỗ trợ gì thêm không ạ?
 
     </template>
 
@@ -726,9 +726,9 @@
 
     <template>
 
-        (Tá»•ng CÃ´ng ty Cá»• pháº§n Báº£o hiá»ƒm Petrolimex) lÃ  doanh nghiá»‡p báº£o hiá»ƒm phi nhÃ¢n thá» hÃ ng Ä‘áº§u táº¡i Viá»‡t Nam, trá»±c thuá»™c Táº­p Ä‘oÃ n XÄƒng dáº§u Viá»‡t Nam. 
+        (Tổng Công ty Cổ phần Bảo hiểm Petrolimex) là doanh nghiệp bảo hiểm phi nhân thọ hàng đầu tại Việt Nam, trực thuộc Tập đoàn Xăng dầu Việt Nam. 
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ thÃªm khÃ´ng áº¡?
+        Anh/chị cần hỗ trợ gì thêm không ạ?
 
     </template>
 
@@ -742,17 +742,17 @@
 
     <template>
 
-        TÃ´i lÃ  trá»£ lÃ½ áº£o cá»§a ! TÃ´i cÃ³ thá»ƒ há»— trá»£ anh/chá»‹:
+        Tôi là trợ lý ảo của ! Tôi có thể hỗ trợ anh/chị:
 
-        â€¢ ÄÃ¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng báº£o hiá»ƒm
+        • Đánh giá điều kiện tiếp nhận bồi thường bảo hiểm
 
-        â€¢ TÆ° váº¥n cÃ¡c sáº£n pháº©m báº£o hiá»ƒm cá»§a 
+        • Tư vấn các sản phẩm bảo hiểm của 
 
-        â€¢ Giáº£i Ä‘Ã¡p tháº¯c máº¯c vá» quy trÃ¬nh bá»“i thÆ°á»ng
+        • Giải đáp thắc mắc về quy trình bồi thường
 
 
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡? 
+        Anh/chị cần hỗ trợ gì ạ? 
 
     </template>
 
@@ -766,17 +766,17 @@
 
     <template>
 
-        TÃ´i cÃ³ thá»ƒ há»— trá»£ anh/chá»‹:
+        Tôi có thể hỗ trợ anh/chị:
 
-        â€¢ ÄÃ¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng báº£o hiá»ƒm
+        • Đánh giá điều kiện tiếp nhận bồi thường bảo hiểm
 
-        â€¢ TÆ° váº¥n cÃ¡c sáº£n pháº©m báº£o hiá»ƒm 
+        • Tư vấn các sản phẩm bảo hiểm 
 
-        â€¢ Giáº£i Ä‘Ã¡p tháº¯c máº¯c vá» quy trÃ¬nh bá»“i thÆ°á»ng
+        • Giải đáp thắc mắc về quy trình bồi thường
 
 
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡? 
+        Anh/chị cần hỗ trợ gì ạ? 
 
     </template>
 
@@ -790,17 +790,17 @@
 
     <template>
 
-        TÃ´i cÃ³ thá»ƒ há»— trá»£ anh/chá»‹:
+        Tôi có thể hỗ trợ anh/chị:
 
-        â€¢ ÄÃ¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng báº£o hiá»ƒm
+        • Đánh giá điều kiện tiếp nhận bồi thường bảo hiểm
 
-        â€¢ TÆ° váº¥n cÃ¡c sáº£n pháº©m báº£o hiá»ƒm 
+        • Tư vấn các sản phẩm bảo hiểm 
 
-        â€¢ Giáº£i Ä‘Ã¡p tháº¯c máº¯c vá» quy trÃ¬nh bá»“i thÆ°á»ng
+        • Giải đáp thắc mắc về quy trình bồi thường
 
 
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡? 
+        Anh/chị cần hỗ trợ gì ạ? 
 
     </template>
 
@@ -808,7 +808,7 @@
 
 
 
-<!-- ============ Há»ŽI LIÃŠN Há»† ============ -->
+<!-- ============ HỎI LIÊN HỆ ============ -->
 
 
 
@@ -818,7 +818,7 @@
 
     <template>
 
-         Tá»•ng Ä‘Ã i : 1900 54 54 55
+         Tổng đài : 1900 54 54 55
 
          Website: https://www..com.vn
 
@@ -826,7 +826,7 @@
 
 
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ thÃªm khÃ´ng áº¡?
+        Anh/chị cần hỗ trợ gì thêm không ạ?
 
     </template>
 
@@ -840,9 +840,9 @@
 
     <template>
 
-         Tá»•ng Ä‘Ã i : 1900 54 54 55
+         Tổng đài : 1900 54 54 55
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ thÃªm khÃ´ng áº¡?
+        Anh/chị cần hỗ trợ gì thêm không ạ?
 
     </template>
 
@@ -856,11 +856,11 @@
 
     <template>
 
-         Trá»¥ sá»Ÿ chÃ­nh: Táº§ng 21-22, tÃ²a nhÃ  Mipec, 229 TÃ¢y SÆ¡n, PhÆ°á»ng Kim LiÃªn, HÃ  Ná»™i
+         Trụ sở chính: Tầng 21-22, tòa nhà Mipec, 229 Tây Sơn, Phường Kim Liên, Hà Nội
 
          Website: https://www..com.vn
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ thÃªm khÃ´ng áº¡?
+        Anh/chị cần hỗ trợ gì thêm không ạ?
 
     </template>
 
@@ -868,7 +868,7 @@
 
 
 
-<!-- ============ Há»ŽI GIá»œ LÃ€M VIá»†C ============ -->
+<!-- ============ HỎI GIỜ LÀM VIỆC ============ -->
 
 
 
@@ -878,17 +878,17 @@
 
     <template>
 
-         Giá» lÃ m viá»‡c cá»§a :
+         Giờ làm việc của :
 
-        â€¢ Thá»© 2 - Thá»© 6: 8:00 - 17:00
+        • Thứ 2 - Thứ 6: 8:00 - 17:00
 
-        â€¢ Thá»© 7: 8:00 - 12:00
+        • Thứ 7: 8:00 - 12:00
 
-        â€¢ Chá»§ nháº­t: Nghá»‰
+        • Chủ nhật: Nghỉ
 
 
 
-        Tuy nhiÃªn, tÃ´i luÃ´n sáºµn sÃ ng há»— trá»£ anh/chá»‹ 24/7! 
+        Tuy nhiên, tôi luôn sẵn sàng hỗ trợ anh/chị 24/7! 
 
     </template>
 
@@ -898,21 +898,21 @@
 
 <category>
 
-    <pattern>GIá»œ LÃ€M VIá»†C</pattern>
+    <pattern>GIỜ LÀM VIỆC</pattern>
 
     <template>
 
-         Giá» lÃ m viá»‡c cá»§a :
+         Giờ làm việc của :
 
-        â€¢ Thá»© 2 - Thá»© 6: 8:00 - 17:00
+        • Thứ 2 - Thứ 6: 8:00 - 17:00
 
-        â€¢ Thá»© 7: 8:00 - 12:00
+        • Thứ 7: 8:00 - 12:00
 
-        â€¢ Chá»§ nháº­t: Nghá»‰
+        • Chủ nhật: Nghỉ
 
 
 
-        Tuy nhiÃªn, tÃ´i luÃ´n sáºµn sÃ ng há»— trá»£ anh/chá»‹ 24/7! 
+        Tuy nhiên, tôi luôn sẵn sàng hỗ trợ anh/chị 24/7! 
 
     </template>
 
@@ -920,7 +920,7 @@
 
 
 
-<!-- ============ Há»ŽI QUY TRÃŒNH Bá»’I THÆ¯á»œNG ============ -->
+<!-- ============ HỎI QUY TRÌNH BỒI THƯỜNG ============ -->
 
 
 
@@ -930,19 +930,19 @@
 
     <template>
 
-         Quy trÃ¬nh bá»“i thÆ°á»ng :
+         Quy trình bồi thường :
 
-        1. ThÃ´ng bÃ¡o sá»± cá»‘ cho (trong thá»i háº¡n quy Ä‘á»‹nh)
+        1. Thông báo sự cố cho (trong thời hạn quy định)
 
-        2. Chuáº©n bá»‹ há»“ sÆ¡ yÃªu cáº§u bá»“i thÆ°á»ng
+        2. Chuẩn bị hồ sơ yêu cầu bồi thường
 
-        3. tiáº¿p nháº­n vÃ  tháº©m Ä‘á»‹nh há»“ sÆ¡
+        3. tiếp nhận và thẩm định hồ sơ
 
-        4. Thanh toÃ¡n bá»“i thÆ°á»ng
+        4. Thanh toán bồi thường
 
 
 
-        Anh/chá»‹ cÃ³ muá»‘n tÃ´i Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng khÃ´ng áº¡? 
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 
 
     </template>
 
@@ -956,19 +956,19 @@
 
     <template>
 
-         Quy trÃ¬nh bá»“i thÆ°á»ng :
+         Quy trình bồi thường :
 
-        1. ThÃ´ng bÃ¡o sá»± cá»‘ cho (trong thá»i háº¡n quy Ä‘á»‹nh)
+        1. Thông báo sự cố cho (trong thời hạn quy định)
 
-        2. Chuáº©n bá»‹ há»“ sÆ¡ yÃªu cáº§u bá»“i thÆ°á»ng
+        2. Chuẩn bị hồ sơ yêu cầu bồi thường
 
-        3. tiáº¿p nháº­n vÃ  tháº©m Ä‘á»‹nh há»“ sÆ¡
+        3. tiếp nhận và thẩm định hồ sơ
 
-        4. Thanh toÃ¡n bá»“i thÆ°á»ng
+        4. Thanh toán bồi thường
 
 
 
-        Anh/chá»‹ cÃ³ muá»‘n tÃ´i Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng khÃ´ng áº¡? 
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 
 
     </template>
 
@@ -982,19 +982,19 @@
 
     <template>
 
-         Quy trÃ¬nh bá»“i thÆ°á»ng :
+         Quy trình bồi thường :
 
-        1. ThÃ´ng bÃ¡o sá»± cá»‘ cho (trong thá»i háº¡n quy Ä‘á»‹nh)
+        1. Thông báo sự cố cho (trong thời hạn quy định)
 
-        2. Chuáº©n bá»‹ há»“ sÆ¡ yÃªu cáº§u bá»“i thÆ°á»ng
+        2. Chuẩn bị hồ sơ yêu cầu bồi thường
 
-        3. tiáº¿p nháº­n vÃ  tháº©m Ä‘á»‹nh há»“ sÆ¡
+        3. tiếp nhận và thẩm định hồ sơ
 
-        4. Thanh toÃ¡n bá»“i thÆ°á»ng
+        4. Thanh toán bồi thường
 
 
 
-        Anh/chá»‹ cÃ³ muá»‘n tÃ´i Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng khÃ´ng áº¡? 
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 
 
     </template>
 
@@ -1002,7 +1002,7 @@
 
 
 
-<!-- ============ Há»ŽI Sáº¢N PHáº¨M ============ -->
+<!-- ============ HỎI SẢN PHẨM ============ -->
 
 
 
@@ -1012,29 +1012,29 @@
 
     <template>
 
-        cung cáº¥p nhiá»u sáº£n pháº©m báº£o hiá»ƒm phi nhÃ¢n thá», bao gá»“m:
+        cung cấp nhiều sản phẩm bảo hiểm phi nhân thọ, bao gồm:
 
-         Báº£o hiá»ƒm nhÃ  á»Ÿ (Combo 360, PhÃº Gia)
+         Bảo hiểm nhà ở (Combo 360, Phú Gia)
 
-         Báº£o hiá»ƒm Ã´ tÃ´, xe mÃ¡y (TNDS)
+         Bảo hiểm ô tô, xe máy (TNDS)
 
-         Báº£o hiá»ƒm sá»©c khá»e (Family Care, Care Plus)
+         Bảo hiểm sức khỏe (Family Care, Care Plus)
 
-         Báº£o hiá»ƒm tai náº¡n con ngÆ°á»i (24/24, má»©c cao)
+         Bảo hiểm tai nạn con người (24/24, mức cao)
 
-         Báº£o hiá»ƒm doanh nghiá»‡p (GiÃ¡n Ä‘oáº¡n KD, Káº¿t há»£p con ngÆ°á»i)
+         Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
 
-         Báº£o hiá»ƒm há»c sinh, sinh viÃªn
+         Bảo hiểm học sinh, sinh viên
 
-         Báº£o hiá»ƒm du lá»‹ch trong nÆ°á»›c &amp; quá»‘c táº¿
+         Bảo hiểm du lịch trong nước &amp; quốc tế
 
-         Báº£o hiá»ƒm tai náº¡n ngÆ°á»i sá»­ dá»¥ng Ä‘iá»‡n
+         Bảo hiểm tai nạn người sử dụng điện
 
-         Báº£o hiá»ƒm trÃ¡ch nhiá»‡m cÃ´ng cá»™ng
+         Bảo hiểm trách nhiệm công cộng
 
 
 
-        Anh/chá»‹ quan tÃ¢m sáº£n pháº©m nÃ o áº¡?
+        Anh/chị quan tâm sản phẩm nào ạ?
 
     </template>
 
@@ -1048,29 +1048,29 @@
 
     <template>
 
-        cung cáº¥p nhiá»u sáº£n pháº©m báº£o hiá»ƒm phi nhÃ¢n thá», bao gá»“m:
+        cung cấp nhiều sản phẩm bảo hiểm phi nhân thọ, bao gồm:
 
-         Báº£o hiá»ƒm nhÃ  á»Ÿ (Combo 360, PhÃº Gia)
+         Bảo hiểm nhà ở (Combo 360, Phú Gia)
 
-         Báº£o hiá»ƒm Ã´ tÃ´, xe mÃ¡y (TNDS)
+         Bảo hiểm ô tô, xe máy (TNDS)
 
-         Báº£o hiá»ƒm sá»©c khá»e (Family Care, Care Plus)
+         Bảo hiểm sức khỏe (Family Care, Care Plus)
 
-         Báº£o hiá»ƒm tai náº¡n con ngÆ°á»i (24/24, má»©c cao)
+         Bảo hiểm tai nạn con người (24/24, mức cao)
 
-         Báº£o hiá»ƒm doanh nghiá»‡p (GiÃ¡n Ä‘oáº¡n KD, Káº¿t há»£p con ngÆ°á»i)
+         Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
 
-         Báº£o hiá»ƒm há»c sinh, sinh viÃªn
+         Bảo hiểm học sinh, sinh viên
 
-         Báº£o hiá»ƒm du lá»‹ch trong nÆ°á»›c &amp; quá»‘c táº¿
+         Bảo hiểm du lịch trong nước &amp; quốc tế
 
-         Báº£o hiá»ƒm tai náº¡n ngÆ°á»i sá»­ dá»¥ng Ä‘iá»‡n
+         Bảo hiểm tai nạn người sử dụng điện
 
-         Báº£o hiá»ƒm trÃ¡ch nhiá»‡m cÃ´ng cá»™ng
+         Bảo hiểm trách nhiệm công cộng
 
 
 
-        Anh/chá»‹ quan tÃ¢m sáº£n pháº©m nÃ o áº¡?
+        Anh/chị quan tâm sản phẩm nào ạ?
 
     </template>
 
@@ -1084,29 +1084,29 @@
 
     <template>
 
-        cung cáº¥p nhiá»u sáº£n pháº©m báº£o hiá»ƒm phi nhÃ¢n thá», bao gá»“m:
+        cung cấp nhiều sản phẩm bảo hiểm phi nhân thọ, bao gồm:
 
-         Báº£o hiá»ƒm nhÃ  á»Ÿ (Combo 360, PhÃº Gia)
+         Bảo hiểm nhà ở (Combo 360, Phú Gia)
 
-         Báº£o hiá»ƒm Ã´ tÃ´, xe mÃ¡y (TNDS)
+         Bảo hiểm ô tô, xe máy (TNDS)
 
-         Báº£o hiá»ƒm sá»©c khá»e (Family Care, Care Plus)
+         Bảo hiểm sức khỏe (Family Care, Care Plus)
 
-         Báº£o hiá»ƒm tai náº¡n con ngÆ°á»i (24/24, má»©c cao)
+         Bảo hiểm tai nạn con người (24/24, mức cao)
 
-         Báº£o hiá»ƒm doanh nghiá»‡p (GiÃ¡n Ä‘oáº¡n KD, Káº¿t há»£p con ngÆ°á»i)
+         Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
 
-         Báº£o hiá»ƒm há»c sinh, sinh viÃªn
+         Bảo hiểm học sinh, sinh viên
 
-         Báº£o hiá»ƒm du lá»‹ch trong nÆ°á»›c &amp; quá»‘c táº¿
+         Bảo hiểm du lịch trong nước &amp; quốc tế
 
-         Báº£o hiá»ƒm tai náº¡n ngÆ°á»i sá»­ dá»¥ng Ä‘iá»‡n
+         Bảo hiểm tai nạn người sử dụng điện
 
-         Báº£o hiá»ƒm trÃ¡ch nhiá»‡m cÃ´ng cá»™ng
+         Bảo hiểm trách nhiệm công cộng
 
 
 
-        Anh/chá»‹ quan tÃ¢m sáº£n pháº©m nÃ o áº¡?
+        Anh/chị quan tâm sản phẩm nào ạ?
 
     </template>
 
@@ -1114,7 +1114,7 @@
 
 
 
-<!-- ============ Há»ŽI THÃ”NG TIN Sáº¢N PHáº¨M Cá»¤ THá»‚ ============ -->
+<!-- ============ HỎI THÔNG TIN SẢN PHẨM CỤ THỂ ============ -->
 
 
 
@@ -1124,15 +1124,15 @@
 
     <template>
 
-         cÃ³ 2 sáº£n pháº©m báº£o hiá»ƒm nhÃ  á»Ÿ chÃ­nh:
+         có 2 sản phẩm bảo hiểm nhà ở chính:
 
-        â€¢ Combo 360Â° Báº£o Vá»‡ NhÃ  â€“ Gia ÄÃ¬nh (Ã´ tÃ´: 599k/nÄƒm, xe mÃ¡y: 199k/nÄƒm)
+        • Combo 360° Bảo Vệ Nhà – Gia Đình (ô tô: 599k/năm, xe máy: 199k/năm)
 
-        â€¢ Báº£o hiá»ƒm ChÃ¡y Ná»• ToÃ n Diá»‡n NhÃ  á»ž PhÃº Gia (theo Nghá»‹ Ä‘á»‹nh 105/106)
+        • Bảo hiểm Cháy Nổ Toàn Diện Nhà Ở Phú Gia (theo Nghị định 105/106)
 
 
 
-        Anh/chá»‹ cÃ³ muá»‘n tÃ´i Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng khÃ´ng áº¡?
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ?
 
     </template>
 
@@ -1146,17 +1146,17 @@
 
     <template>
 
-         cÃ³ cÃ¡c sáº£n pháº©m báº£o hiá»ƒm sá»©c khá»e:
+         có các sản phẩm bảo hiểm sức khỏe:
 
-        â€¢ Family Care (2-11.2 triá»‡u/nÄƒm) - báº£o vá»‡ gia Ä‘Ã¬nh
+        • Family Care (2-11.2 triệu/năm) - bảo vệ gia đình
 
-        â€¢ Care Plus - chÄƒm sÃ³c sá»©c khá»e quá»‘c táº¿, quyá»n lá»£i lÃªn 42 tá»·/nÄƒm
+        • Care Plus - chăm sóc sức khỏe quốc tế, quyền lợi lên 42 tỷ/năm
 
-        â€¢ ChÄƒm sÃ³c Sá»©c khá»e &amp; Há»— trá»£ Y táº¿ (QÄ 383/2025)
+        • Chăm sóc Sức khỏe &amp; Hỗ trợ Y tế (QĐ 383/2025)
 
 
 
-        Anh/chá»‹ cÃ³ muá»‘n tÃ´i Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng khÃ´ng áº¡?
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ?
 
     </template>
 
@@ -1170,21 +1170,21 @@
 
     <template>
 
-         cÃ³ cÃ¡c sáº£n pháº©m báº£o hiá»ƒm tai náº¡n:
+         có các sản phẩm bảo hiểm tai nạn:
 
-        â€¢ Tai náº¡n Con ngÆ°á»i 24/24 (16-70 tuá»•i)
+        • Tai nạn Con người 24/24 (16-70 tuổi)
 
-        â€¢ Tai náº¡n Má»©c TrÃ¡ch Nhiá»‡m Cao (18-65 tuá»•i)
+        • Tai nạn Mức Trách Nhiệm Cao (18-65 tuổi)
 
-        â€¢ Tai náº¡n NgÆ°á»i sá»­ dá»¥ng Äiá»‡n
+        • Tai nạn Người sử dụng Điện
 
-        â€¢ Tai náº¡n Há»c sinh, Sinh viÃªn 24/24
+        • Tai nạn Học sinh, Sinh viên 24/24
 
-        â€¢ ChÄƒm sÃ³c Sá»©c khá»e &amp; Há»— trá»£ Y táº¿ (tai náº¡n 383)
+        • Chăm sóc Sức khỏe &amp; Hỗ trợ Y tế (tai nạn 383)
 
 
 
-        Anh/chá»‹ cÃ³ muá»‘n tÃ´i Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng khÃ´ng áº¡?
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ?
 
     </template>
 
@@ -1198,15 +1198,15 @@
 
     <template>
 
-         cÃ³ 2 sáº£n pháº©m báº£o hiá»ƒm du lá»‹ch:
+         có 2 sản phẩm bảo hiểm du lịch:
 
-        â€¢ Du lá»‹ch trong nÆ°á»›c (1-70 tuá»•i)
+        • Du lịch trong nước (1-70 tuổi)
 
-        â€¢ Du lá»‹ch quá»‘c táº¿ (6 tuáº§n - 80 tuá»•i) - báº£o lÃ£nh viá»‡n phÃ­ toÃ n tháº¿ giá»›i
+        • Du lịch quốc tế (6 tuần - 80 tuổi) - bảo lãnh viện phí toàn thế giới
 
 
 
-        Anh/chá»‹ cÃ³ muá»‘n tÃ´i Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng khÃ´ng áº¡?
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ?
 
     </template>
 
@@ -1214,7 +1214,7 @@
 
 
 
-<!-- ============ TÆ¯ Váº¤N ============ -->
+<!-- ============ TƯ VẤN ============ -->
 
 
 
@@ -1224,23 +1224,23 @@
 
     <template>
 
-        Dáº¡, tÃ´i sáºµn sÃ ng tÆ° váº¥n! Anh/chá»‹ Ä‘ang quan tÃ¢m Ä‘áº¿n loáº¡i báº£o hiá»ƒm nÃ o áº¡?
+        Dạ, tôi sẵn sàng tư vấn! Anh/chị đang quan tâm đến loại bảo hiểm nào ạ?
 
-        TÃ´i cÃ³ thá»ƒ tÆ° váº¥n vá»:
+        Tôi có thể tư vấn về:
 
-        â€¢ Báº£o hiá»ƒm nhÃ  á»Ÿ, tÃ i sáº£n
+        • Bảo hiểm nhà ở, tài sản
 
-        â€¢ Báº£o hiá»ƒm sá»©c khá»e
+        • Bảo hiểm sức khỏe
 
-        â€¢ Báº£o hiá»ƒm tai náº¡n
+        • Bảo hiểm tai nạn
 
-        â€¢ Báº£o hiá»ƒm du lá»‹ch
+        • Bảo hiểm du lịch
 
-        â€¢ Báº£o hiá»ƒm doanh nghiá»‡p
+        • Bảo hiểm doanh nghiệp
 
 
 
-        Hoáº·c náº¿u anh/chá»‹ gáº·p sá»± cá»‘ vÃ  muá»‘n Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n bá»“i thÆ°á»ng, tÃ´i cÅ©ng cÃ³ thá»ƒ há»— trá»£!
+        Hoặc nếu anh/chị gặp sự cố và muốn đánh giá điều kiện bồi thường, tôi cũng có thể hỗ trợ!
 
     </template>
 
@@ -1254,11 +1254,11 @@
 
     <template>
 
-        Dáº¡, tÃ´i sáºµn sÃ ng tÆ° váº¥n! Anh/chá»‹ Ä‘ang quan tÃ¢m Ä‘áº¿n loáº¡i báº£o hiá»ƒm nÃ o áº¡?
+        Dạ, tôi sẵn sàng tư vấn! Anh/chị đang quan tâm đến loại bảo hiểm nào ạ?
 
-        TÃ´i cÃ³ thá»ƒ tÆ° váº¥n vá» báº£o hiá»ƒm nhÃ  á»Ÿ, sá»©c khá»e, tai náº¡n, du lá»‹ch, hoáº·c doanh nghiá»‡p.
+        Tôi có thể tư vấn về bảo hiểm nhà ở, sức khỏe, tai nạn, du lịch, hoặc doanh nghiệp.
 
-        Náº¿u anh/chá»‹ gáº·p sá»± cá»‘, tÃ´i cÅ©ng cÃ³ thá»ƒ Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng!
+        Nếu anh/chị gặp sự cố, tôi cũng có thể đánh giá điều kiện tiếp nhận bồi thường!
 
     </template>
 
@@ -1272,7 +1272,7 @@
 
     <template>
 
-        Dáº¡, tÃ´i sáºµn sÃ ng tÆ° váº¥n! Anh/chá»‹ Ä‘ang quan tÃ¢m Ä‘áº¿n loáº¡i báº£o hiá»ƒm nÃ o áº¡?
+        Dạ, tôi sẵn sàng tư vấn! Anh/chị đang quan tâm đến loại bảo hiểm nào ạ?
 
     </template>
 
@@ -1280,7 +1280,7 @@
 
 
 
-<!-- ============ Há»ŽI GIÃ ============ -->
+<!-- ============ HỎI GIÁ ============ -->
 
 
 
@@ -1290,19 +1290,19 @@
 
     <template>
 
-        PhÃ­ báº£o hiá»ƒm phá»¥ thuá»™c vÃ o sáº£n pháº©m anh/chá»‹ chá»n:
+        Phí bảo hiểm phụ thuộc vào sản phẩm anh/chị chọn:
 
-        â€¢ Combo 360 Ã´ tÃ´: 599.000Ä‘/nÄƒm
+        • Combo 360 ô tô: 599.000đ/năm
 
-        â€¢ Combo 360 xe mÃ¡y: 199.000Ä‘/nÄƒm
+        • Combo 360 xe máy: 199.000đ/năm
 
-        â€¢ Family Care: 2-11.2 triá»‡u/nÄƒm
+        • Family Care: 2-11.2 triệu/năm
 
-        â€¢ CÃ¡c sáº£n pháº©m khÃ¡c: theo thá»a thuáº­n/biá»ƒu phÃ­
+        • Các sản phẩm khác: theo thỏa thuận/biểu phí
 
 
 
-        Anh/chá»‹ quan tÃ¢m sáº£n pháº©m nÃ o áº¡?
+        Anh/chị quan tâm sản phẩm nào ạ?
 
     </template>
 
@@ -1316,19 +1316,19 @@
 
     <template>
 
-        PhÃ­ báº£o hiá»ƒm phá»¥ thuá»™c vÃ o sáº£n pháº©m anh/chá»‹ chá»n:
+        Phí bảo hiểm phụ thuộc vào sản phẩm anh/chị chọn:
 
-        â€¢ Combo 360 Ã´ tÃ´: 599.000Ä‘/nÄƒm
+        • Combo 360 ô tô: 599.000đ/năm
 
-        â€¢ Combo 360 xe mÃ¡y: 199.000Ä‘/nÄƒm
+        • Combo 360 xe máy: 199.000đ/năm
 
-        â€¢ Family Care: 2-11.2 triá»‡u/nÄƒm
+        • Family Care: 2-11.2 triệu/năm
 
-        â€¢ CÃ¡c sáº£n pháº©m khÃ¡c: theo thá»a thuáº­n/biá»ƒu phÃ­
+        • Các sản phẩm khác: theo thỏa thuận/biểu phí
 
 
 
-        Anh/chá»‹ quan tÃ¢m sáº£n pháº©m nÃ o áº¡?
+        Anh/chị quan tâm sản phẩm nào ạ?
 
     </template>
 
@@ -1336,7 +1336,7 @@
 
 
 
-<!-- ============ Há»ŽI Bá»’I THÆ¯á»œNG ============ -->
+<!-- ============ HỎI BỒI THƯỜNG ============ -->
 
 
 
@@ -1346,11 +1346,11 @@
 
     <template>
 
-        Má»©c bá»“i thÆ°á»ng phá»¥ thuá»™c vÃ o sáº£n pháº©m vÃ  sá»‘ tiá»n báº£o hiá»ƒm ghi trong há»£p Ä‘á»“ng cá»§a anh/chá»‹. 
+        Mức bồi thường phụ thuộc vào sản phẩm và số tiền bảo hiểm ghi trong hợp đồng của anh/chị. 
 
 
 
-        Äá»ƒ tÃ´i Ä‘Ã¡nh giÃ¡ chÃ­nh xÃ¡c Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng, anh/chá»‹ cÃ³ thá»ƒ mÃ´ táº£ sá»± cá»‘ Ä‘Ã£ xáº£y ra nhÃ©!
+        Để tôi đánh giá chính xác điều kiện tiếp nhận bồi thường, anh/chị có thể mô tả sự cố đã xảy ra nhé!
 
     </template>
 
@@ -1364,19 +1364,19 @@
 
     <template>
 
-         Quy trÃ¬nh bá»“i thÆ°á»ng :
+         Quy trình bồi thường :
 
-        1. ThÃ´ng bÃ¡o sá»± cá»‘ cho (trong thá»i háº¡n quy Ä‘á»‹nh)
+        1. Thông báo sự cố cho (trong thời hạn quy định)
 
-        2. Chuáº©n bá»‹ há»“ sÆ¡ yÃªu cáº§u bá»“i thÆ°á»ng
+        2. Chuẩn bị hồ sơ yêu cầu bồi thường
 
-        3. tiáº¿p nháº­n vÃ  tháº©m Ä‘á»‹nh há»“ sÆ¡
+        3. tiếp nhận và thẩm định hồ sơ
 
-        4. Thanh toÃ¡n bá»“i thÆ°á»ng
+        4. Thanh toán bồi thường
 
 
 
-        Anh/chá»‹ cÃ³ muá»‘n tÃ´i Ä‘Ã¡nh giÃ¡ Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng khÃ´ng áº¡? 
+        Anh/chị có muốn tôi đánh giá điều kiện tiếp nhận bồi thường không ạ? 
 
     </template>
 
@@ -1384,7 +1384,7 @@
 
 
 
-<!-- ============ Máº¤T Há»¢P Äá»’NG ============ -->
+<!-- ============ MẤT HỢP ĐỒNG ============ -->
 
 
 
@@ -1394,15 +1394,15 @@
 
     <template>
 
-         Äá»«ng lo láº¯ng! Anh/chá»‹ cÃ³ thá»ƒ liÃªn há»‡ Ä‘á»ƒ Ä‘Æ°á»£c cáº¥p láº¡i há»£p Ä‘á»“ng/sá»• báº£o hiá»ƒm:
+         Đừng lo lắng! Anh/chị có thể liên hệ để được cấp lại hợp đồng/sổ bảo hiểm:
 
-         Tá»•ng Ä‘Ã i: 1900 54 54 55
+         Tổng đài: 1900 54 54 55
 
          Website: https://www..com.vn
 
 
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ khÃ¡c khÃ´ng áº¡?
+        Anh/chị cần hỗ trợ gì khác không ạ?
 
     </template>
 
@@ -1410,7 +1410,7 @@
 
 
 
-<!-- ============ Táº M BIá»†T ============ -->
+<!-- ============ TẠM BIỆT ============ -->
 
 
 
@@ -1420,7 +1420,7 @@
 
     <template>
 
-        Táº¡m biá»‡t anh/chá»‹! Cáº£m Æ¡n Ä‘Ã£ liÃªn há»‡ . ChÃºc anh/chá»‹ má»™t ngÃ y tá»‘t lÃ nh! 
+        Tạm biệt anh/chị! Cảm ơn đã liên hệ . Chúc anh/chị một ngày tốt lành! 
 
     </template>
 
@@ -1434,7 +1434,7 @@
 
     <template>
 
-        Táº¡m biá»‡t anh/chá»‹! Cáº£m Æ¡n Ä‘Ã£ liÃªn há»‡ . ChÃºc anh/chá»‹ má»™t ngÃ y tá»‘t lÃ nh! 
+        Tạm biệt anh/chị! Cảm ơn đã liên hệ . Chúc anh/chị một ngày tốt lành! 
 
     </template>
 
@@ -1448,7 +1448,7 @@
 
     <template>
 
-        Táº¡m biá»‡t anh/chá»‹! Cáº£m Æ¡n Ä‘Ã£ liÃªn há»‡ . ChÃºc anh/chá»‹ má»™t ngÃ y tá»‘t lÃ nh! 
+        Tạm biệt anh/chị! Cảm ơn đã liên hệ . Chúc anh/chị một ngày tốt lành! 
 
     </template>
 
@@ -1462,7 +1462,7 @@
 
     <template>
 
-        Táº¡m biá»‡t anh/chá»‹! Cáº£m Æ¡n Ä‘Ã£ liÃªn há»‡ . ChÃºc anh/chá»‹ má»™t ngÃ y tá»‘t lÃ nh! 
+        Tạm biệt anh/chị! Cảm ơn đã liên hệ . Chúc anh/chị một ngày tốt lành! 
 
     </template>
 
@@ -1470,7 +1470,7 @@
 
 
 
-<!-- ============ CÃC CÃ‚U Há»ŽI THÆ¯á»œNG Gáº¶P ============ -->
+<!-- ============ CÁC CÂU HỎI THƯỜNG GẶP ============ -->
 
 
 
@@ -1480,7 +1480,7 @@
 
     <template>
 
-        Dáº¡ cÃ³, tÃ´i há»— trá»£ tiáº¿ng Viá»‡t! Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡?
+        Dạ có, tôi hỗ trợ tiếng Việt! Anh/chị cần hỗ trợ gì ạ?
 
     </template>
 
@@ -1494,9 +1494,9 @@
 
     <template>
 
-        TÃ´i lÃ  trá»£ lÃ½ áº£o cá»§a ! DÃ¹ lÃ  mÃ¡y nhÆ°ng tÃ´i luÃ´n sáºµn sÃ ng há»— trá»£ anh/chá»‹ nhÆ° má»™t ngÆ°á»i báº¡n!
+        Tôi là trợ lý ảo của ! Dù là máy nhưng tôi luôn sẵn sàng hỗ trợ anh/chị như một người bạn!
 
-        Anh/chá»‹ cáº§n giÃºp gÃ¬ áº¡?
+        Anh/chị cần giúp gì ạ?
 
     </template>
 
@@ -1504,7 +1504,7 @@
 
 
 
-<!-- ============ CHUYá»‚N HÆ¯á»šNG SRAI ============ -->
+<!-- ============ CHUYỂN HƯỚNG SRAI ============ -->
 
 
 
@@ -1512,7 +1512,7 @@
 
     <pattern>CHO TOI HOI</pattern>
 
-    <template>__CHAT__:Anh/chá»‹ muá»‘n há»i gÃ¬ áº¡? TÃ´i sáºµn sÃ ng há»— trá»£! </template>
+    <template>__CHAT__:Anh/chị muốn hỏi gì ạ? Tôi sẵn sàng hỗ trợ! </template>
 
 </category>
 
@@ -1522,7 +1522,7 @@
 
     <pattern>CHO EM HOI</pattern>
 
-    <template>__CHAT__:Anh/chá»‹ muá»‘n há»i gÃ¬ áº¡? TÃ´i sáºµn sÃ ng há»— trá»£! </template>
+    <template>__CHAT__:Anh/chị muốn hỏi gì ạ? Tôi sẵn sàng hỗ trợ! </template>
 
 </category>
 
@@ -1532,13 +1532,13 @@
 
     <pattern>XIN HOI</pattern>
 
-    <template>__CHAT__:Anh/chá»‹ muá»‘n há»i gÃ¬ áº¡? TÃ´i sáºµn sÃ ng há»— trá»£! </template>
+    <template>__CHAT__:Anh/chị muốn hỏi gì ạ? Tôi sẵn sàng hỗ trợ! </template>
 
 </category>
 
 
 
-<!-- ============ Há»ŽI CÃ“ MUá»N ÄÃNH GIÃ ============ -->
+<!-- ============ HỎI CÓ MUỐN ĐÁNH GIÁ ============ -->
 
 
 
@@ -1624,13 +1624,13 @@
 
         <random>
 
-            <li>TÃ´i chÆ°a hiá»ƒu rÃµ Ã½ anh/chá»‹. Anh/chá»‹ cÃ³ thá»ƒ nÃ³i láº¡i Ä‘Æ°á»£c khÃ´ng? </li>
+            <li>Tôi chưa hiểu rõ ý anh/chị. Anh/chị có thể nói lại được không? </li>
 
-            <li>Xin lá»—i, tÃ´i chÆ°a rÃµ. Anh/chá»‹ vui lÃ²ng tráº£ lá»i theo cÃ¡c lá»±a chá»n Ä‘Æ°á»£c Ä‘á» xuáº¥t nhÃ©.</li>
+            <li>Xin lỗi, tôi chưa rõ. Anh/chị vui lòng trả lời theo các lựa chọn được đề xuất nhé.</li>
 
-            <li>TÃ´i chÆ°a hiá»ƒu. Anh/chá»‹ cÃ³ thá»ƒ chá»n Ä‘Ã¡p Ã¡n tá»« danh sÃ¡ch hoáº·c gÃµ rÃµ hÆ¡n Ä‘Æ°á»£c khÃ´ng?</li>
+            <li>Tôi chưa hiểu. Anh/chị có thể chọn đáp án từ danh sách hoặc gõ rõ hơn được không?</li>
 
-            <li> TÃ´i chÆ°a xá»­ lÃ½ Ä‘Æ°á»£c cÃ¢u tráº£ lá»i nÃ y. Vui lÃ²ng chá»n Ä‘Ã¡p Ã¡n tá»« danh sÃ¡ch nhÃ©.</li>
+            <li> Tôi chưa xử lý được câu trả lời này. Vui lòng chọn đáp án từ danh sách nhé.</li>
 
         </random>
 
@@ -1642,15 +1642,15 @@
 
 <!-- ============================================================ -->
 
-<!-- PHáº¦N 3: CATEGORY Má»šI â€” WELCOME RADIO BUTTON OPTIONS -->
+<!-- PHẦN 3: CATEGORY MỚI — WELCOME RADIO BUTTON OPTIONS -->
 
-<!-- (ThÃªm má»›i, khÃ´ng ghi Ä‘Ã¨ category cÅ©) -->
+<!-- (Thêm mới, không ghi đè category cũ) -->
 
 <!-- ============================================================ -->
 
 
 
-<!-- ============ TÆ¯ Váº¤N Sáº¢N PHáº¨M ============ -->
+<!-- ============ TƯ VẤN SẢN PHẨM ============ -->
 
 
 
@@ -1660,29 +1660,29 @@
 
     <template>
 
-        Dáº¡! TÃ´i cÃ³ thá»ƒ tÆ° váº¥n vá» cÃ¡c sáº£n pháº©m báº£o hiá»ƒm :
+        Dạ! Tôi có thể tư vấn về các sản phẩm bảo hiểm :
 
-         Báº£o hiá»ƒm nhÃ  á»Ÿ (Combo 360, PhÃº Gia)
+         Bảo hiểm nhà ở (Combo 360, Phú Gia)
 
-         Báº£o hiá»ƒm Ã´ tÃ´, xe mÃ¡y (TNDS)
+         Bảo hiểm ô tô, xe máy (TNDS)
 
-         Báº£o hiá»ƒm sá»©c khá»e (Family Care, Care Plus)
+         Bảo hiểm sức khỏe (Family Care, Care Plus)
 
-         Báº£o hiá»ƒm tai náº¡n con ngÆ°á»i (24/24, má»©c cao)
+         Bảo hiểm tai nạn con người (24/24, mức cao)
 
-         Báº£o hiá»ƒm doanh nghiá»‡p (GiÃ¡n Ä‘oáº¡n KD, Káº¿t há»£p con ngÆ°á»i)
+         Bảo hiểm doanh nghiệp (Gián đoạn KD, Kết hợp con người)
 
-         Báº£o hiá»ƒm há»c sinh, sinh viÃªn
+         Bảo hiểm học sinh, sinh viên
 
-         Báº£o hiá»ƒm du lá»‹ch trong nÆ°á»›c &amp; quá»‘c táº¿
+         Bảo hiểm du lịch trong nước &amp; quốc tế
 
-         Báº£o hiá»ƒm tai náº¡n ngÆ°á»i sá»­ dá»¥ng Ä‘iá»‡n
+         Bảo hiểm tai nạn người sử dụng điện
 
-         Báº£o hiá»ƒm trÃ¡ch nhiá»‡m cÃ´ng cá»™ng
+         Bảo hiểm trách nhiệm công cộng
 
 
 
-        Anh/chá»‹ quan tÃ¢m sáº£n pháº©m nÃ o áº¡?
+        Anh/chị quan tâm sản phẩm nào ạ?
 
     </template>
 
@@ -1718,7 +1718,7 @@
 
 
 
-<!-- ============ GIáº¢I ÄÃP THáº®C Máº®C ============ -->
+<!-- ============ GIẢI ĐÁP THẮC MẮC ============ -->
 
 
 
@@ -1728,19 +1728,19 @@
 
     <template>
 
-        Dáº¡! TÃ´i cÃ³ thá»ƒ giáº£i Ä‘Ã¡p tháº¯c máº¯c vá»:
+        Dạ! Tôi có thể giải đáp thắc mắc về:
 
-         Quy trÃ¬nh bá»“i thÆ°á»ng 
+         Quy trình bồi thường 
 
-         ThÃ´ng tin liÃªn há»‡
+         Thông tin liên hệ
 
-         Giá» lÃ m viá»‡c
+         Giờ làm việc
 
-         Má»©c bá»“i thÆ°á»ng, phÃ­ báº£o hiá»ƒm
+         Mức bồi thường, phí bảo hiểm
 
 
 
-        Anh/chá»‹ muá»‘n há»i gÃ¬ áº¡? 
+        Anh/chị muốn hỏi gì ạ? 
 
     </template>
 
@@ -1790,7 +1790,7 @@
 
 
 
-<!-- ============ ÄÃNH GIÃ ÄIá»€U KIá»†N (redirect via srai) ============ -->
+<!-- ============ ĐÁNH GIÁ ĐIỀU KIỆN (redirect via srai) ============ -->
 
 
 
@@ -1808,7 +1808,7 @@
 
 
 
-<!-- ============ CHUYá»‚N HÆ¯á»šNG Tá»ª WELCOME OPTIONS ============ -->
+<!-- ============ CHUYỂN HƯỚNG TỪ WELCOME OPTIONS ============ -->
 
 
 
@@ -1841,23 +1841,23 @@
 
 
 <!-- ============================================================ -->
-<!-- PHáº¦N 4: CÃC CATEGORY Má»šI - Há»– TRá»¢ CSKH (giá»‘ng bot Shopee) -->
+<!-- PHẦN 4: CÁC CATEGORY MỚI - HỖ TRỢ CSKH (giống bot Shopee) -->
 <!-- ============================================================ -->
 
-<!-- ============ 4.1 Há»– TRá»¢ Äá»”I TRáº¢ / Báº¢O HÃ€NH (quy trÃ¬nh khiáº¿u náº¡i) ============ -->
+<!-- ============ 4.1 HỖ TRỢ ĐỔI TRẢ / BẢO HÀNH (quy trình khiếu nại) ============ -->
 
 <category>
     <pattern>TOI MUON KHIEU NAI</pattern>
     <template>
-        Anh/chá»‹ cáº§n khiáº¿u náº¡i vá» káº¿t quáº£ bá»“i thÆ°á»ng, vui lÃ²ng lÃ m theo cÃ¡c bÆ°á»›c sau:
+        Anh/chị cần khiếu nại về kết quả bồi thường, vui lòng làm theo các bước sau:
 
-        Buoc 1: Lien he bo phan Giai quyet Boi thuong qua tong dai 1900 54 54 55 de trinh bay noi dung khiáº¿u náº¡i.
+        Buoc 1: Lien he bo phan Giai quyet Boi thuong qua tong dai 1900 54 54 55 de trinh bay noi dung khiếu nại.
 
         Buoc 2: Cung cap cac thong tin: ho so boi thuong, ma ho so, ten nguoi duoc bao hiem, ngay gay ro va ly do khong dong y.
 
         Buoc 3: Nhan vien tiep nhan se ghi nhan va chuyen den bo phon xu ly trong thoi gian 3-5 ngay lam viec.
 
-        Buoc 4: Anh/chá»‹ se nhan duoc phan hoi bang van ban hoac cuoc goi tu truong boi boi thuong.
+        Buoc 4: Anh/chị se nhan duoc phan hoi bang van ban hoac cuoc goi tu truong boi boi thuong.
 
         Neu khong nhan duoc phan hoi, vui long lien he lai tong dai 1900 54 54 55 hoac gui email den @petrolimex.com.vn.
     </template>
@@ -1873,7 +1873,7 @@
 <category>
     <pattern>TOI KHONG DONG Y VOI KET QUA BOI THUONG</pattern>
     <template>
-        Neu anh/chá»‹ khong dong y voi ket qua boi thuong, vui long thuc hien theo quy trinh khieu nai sau day:
+        Neu anh/chị khong dong y voi ket qua boi thuong, vui long thuc hien theo quy trinh khieu nai sau day:
 
         1. Lien he bo phan Giai quyet Boi thuong qua tong dai 1900 54 54 55.
 
@@ -1881,16 +1881,16 @@
 
         3. Ho so se duoc xem xet lai boi truong boi boi thuong trong thoi gian 5-7 ngay lam viec.
 
-        4. Ket qua xet xet lai se duoc thong bao cho anh/chá»‹ bang van ban.
+        4. Ket qua xet xet lai se duoc thong bao cho anh/chị bang van ban.
 
-        Anh/chá»‹ cung co the gui email khieu nai den @petrolimex.com.vn hoac den dia chi Tang 21-22, toa nha Mipec, 229 Tay Son, phuong Kim Lien, Ha Noi.
+        Anh/chị cung co the gui email khieu nai den @petrolimex.com.vn hoac den dia chi Tang 21-22, toa nha Mipec, 229 Tay Son, phuong Kim Lien, Ha Noi.
     </template>
 </category>
 
 <category>
     <pattern>DUNG KY HOP DONG</pattern>
     <template>
-        De yeu cau dung ky hoac cham dut hop dong bao hiem, anh/chá»‹ vui long thuc hien:
+        De yeu cau dung ky hoac cham dut hop dong bao hiem, anh/chị vui long thuc hien:
 
         1. Lien he tong dai 1900 54 54 55 hoac den truc tiep van phong gan nhat.
 
@@ -1916,33 +1916,33 @@
     </template>
 </category>
 
-<!-- ============ 4.2 Há»– TRá»¢ TÃ€I KHOáº¢N / KHÃCH HÃ€NG ============ -->
+<!-- ============ 4.2 HỖ TRỢ TÀI KHOẢN / KHÁCH HÀNG ============ -->
 
 <category>
     <pattern>TOI QUEN MAT MA KHOA</pattern>
     <template>
-        Khi anh/chá»‹ quen mat ma khoa tai khoan, vui long lien he tong dai 1900 54 54 55 de duoc ho tro reset ma khoa. Nhan vien se xac nhan thong tin ca nhan roi huong dan anh/chá»‹ thiet lap lai mat ma khoa moi.
+        Khi anh/chị quen mat ma khoa tai khoan, vui long lien he tong dai 1900 54 54 55 de duoc ho tro reset ma khoa. Nhan vien se xac nhan thong tin ca nhan roi huong dan anh/chị thiet lap lai mat ma khoa moi.
     </template>
 </category>
 
 <category>
     <pattern>TOI MUON DOI THONG TIN</pattern>
     <template>
-        De doi thong tin tai khoan hoac thong tin ca nhan, vui long lien he tong dai 1900 54 54 55. Nhan vien se xac nhan danh tinh va huong dan anh/chá»‹ cap nhat thong tin moi.
+        De doi thong tin tai khoan hoac thong tin ca nhan, vui long lien he tong dai 1900 54 54 55. Nhan vien se xac nhan danh tinh va huong dan anh/chị cap nhat thong tin moi.
     </template>
 </category>
 
 <category>
     <pattern>TOI MUON DOI TEN</pattern>
     <template>
-        Viec doi ten tren hop dong bao hiem can thuc hien qua tong dai 1900 54 54 55 hoac den truc tiep van phong . Anh/chá»‹ can mang theo giay to xac nhan danh tinh (CCCD/ho chieu) va giay to lien quan den hop dong bao hiem. Nhan vien se huong dan qua trinh cap nhat.
+        Viec doi ten tren hop dong bao hiem can thuc hien qua tong dai 1900 54 54 55 hoac den truc tiep van phong . Anh/chị can mang theo giay to xac nhan danh tinh (CCCD/ho chieu) va giay to lien quan den hop dong bao hiem. Nhan vien se huong dan qua trinh cap nhat.
     </template>
 </category>
 
 <category>
     <pattern>DOI MAT KHAU</pattern>
     <template>
-        De doi mat khau tai khoan, vui long lien he tong dai 1900 54 54 55. Nhan vien se xac nhan thong tin ca nhan roi huong dan anh/chá»‹ thiet lap mat khau moi.
+        De doi mat khau tai khoan, vui long lien he tong dai 1900 54 54 55. Nhan vien se xac nhan thong tin ca nhan roi huong dan anh/chị thiet lap mat khau moi.
     </template>
 </category>
 
@@ -1953,7 +1953,7 @@
     </template>
 </category>
 
-<!-- ============ 4.3 Há»ŽI Vá»€ THá»œI GIAN Xá»¬ LÃ ============ -->
+<!-- ============ 4.3 HỎI VỀ THỜI GIAN XỬ LÝ ============ -->
 
 <category>
     <pattern>BOI THUONG MAT BAO LAU</pattern>
@@ -1964,9 +1964,9 @@
 
         - Boi thuong phuc tap, can tham dinh: 15-30 ngay lam viec.
 
-        - Truong hop can xac minh them: co the keo dai hon 30 ngay, nhung se thong bao cho anh/chá»‹ tien do xu ly.
+        - Truong hop can xac minh them: co the keo dai hon 30 ngay, nhung se thong bao cho anh/chị tien do xu ly.
 
-        De theo doi tien do ho so, anh/chá»‹ co the lien he tong dai 1900 54 54 55 hoac truy cap website https://www..com.vn.
+        De theo doi tien do ho so, anh/chị co the lien he tong dai 1900 54 54 55 hoac truy cap website https://www..com.vn.
     </template>
 </category>
 
@@ -1998,12 +1998,12 @@
     </template>
 </category>
 
-<!-- ============ 4.4 Há»ŽI Vá»€ Há»’ SÆ  / TÃ€I LIá»†U ============ -->
+<!-- ============ 4.4 HỎI VỀ HỒ SƠ / TÀI LIỆU ============ -->
 
 <category>
     <pattern>HO SO BOI THUONG CAN GI</pattern>
     <template>
-        De lam thu tuc boi thuong, anh/chá»‹ can chuan bi cac giay to sau:
+        De lam thu tuc boi thuong, anh/chị can chuan bi cac giay to sau:
 
         1. Giay bao hiem hoac hop dong bao hiem (ban chinh hoac ban sao).
 
@@ -2017,7 +2017,7 @@
 
         6. Cac giay to khac theo yeu cau cua tung loai bao hiem.
 
-        Anh/chá»‹ co the download mau don va danh sach chi tiet tai website https://www..com.vn hoac lien he tong dai 1900 54 54 55.
+        Anh/chị co the download mau don va danh sach chi tiet tai website https://www..com.vn hoac lien he tong dai 1900 54 54 55.
     </template>
 </category>
 
@@ -2045,13 +2045,13 @@
 <category>
     <pattern>TOI BI MAT GIAY TO</pattern>
     <template>
-        Neu anh/chá»‹ da lam mat giay to lien quan den boi thuong, vui long lam theo huong dan sau:
+        Neu anh/chị da lam mat giay to lien quan den boi thuong, vui long lam theo huong dan sau:
 
         1. Lien he ngay tong dai 1900 54 54 55 de bao cao tinh trang mat giay to.
 
-        2. Nhan vien se huong dan anh/chá»‹ thu tuc xin cap lai hoac xac nhan thay the giay to.
+        2. Nhan vien se huong dan anh/chị thu tuc xin cap lai hoac xac nhan thay the giay to.
 
-        3. Trong mot so truong hop, anh/chá»‹ co the can den truc tiep van phong de xac nhan danh tinh va lam thu tuc bo sung.
+        3. Trong mot so truong hop, anh/chị co the can den truc tiep van phong de xac nhan danh tinh va lam thu tuc bo sung.
 
         Luu y: khong nen viec bo ho so neu thieu giay to, vi co the huong dan bo sung sau. Vui long lien he som nhat co the.
     </template>
@@ -2071,12 +2071,12 @@
     </template>
 </category>
 
-<!-- ============ 4.5 Há»ŽI Vá»€ PHÃ Báº¢O HIá»‚M / ÄÃ“NG PHÃ ============ -->
+<!-- ============ 4.5 HỎI VỀ PHÍ BẢO HIỂM / ĐÓNG PHÍ ============ -->
 
 <category>
     <pattern>DONG PHI BAO HIEM O DAU</pattern>
     <template>
-        Anh/chá»‹ co the dong phi bao hiem theo cac cach sau:
+        Anh/chị co the dong phi bao hiem theo cac cach sau:
 
         1. Chuyen khoan ngan hang: Chuyen den tai khoan cua theo thong tin tren hoa don hoac thong bao dong phi.
 
@@ -2084,7 +2084,7 @@
 
         3. Dien thoai qua cong truc tiep: Truc tiep den cac van phong tren toan quoc.
 
-        4. Cong thuc qua cong (neu co): Anh/chá»‹ co the tham khao website https://www..com.vn de biet them chi tiet.
+        4. Cong thuc qua cong (neu co): Anh/chị co the tham khao website https://www..com.vn de biet them chi tiet.
 
         Vui long lien he tong dai 1900 54 54 55 neu can ho tro.
     </template>
@@ -2107,7 +2107,7 @@
 <category>
     <pattern>PHI BAO HIEM CO THE THANH TOAN GOI LAI KHONG</pattern>
     <template>
-        Co, anh/chá»‹ co the thanh toan phi bao hiem gop lai (dong gop). Tuy nhien, viec dong gop phu thuoc vao san pham bao hiem va quy cua cong ty bao hiem. De biet chi tiet viec dong gop ap dung cho hop dong cua anh/chá»‹, vui long lien he tong dai 1900 54 54 55 hoac xem quy dinh trong hop dong bao hiem.
+        Co, anh/chị co the thanh toan phi bao hiem gop lai (dong gop). Tuy nhien, viec dong gop phu thuoc vao san pham bao hiem va quy cua cong ty bao hiem. De biet chi tiet viec dong gop ap dung cho hop dong cua anh/chị, vui long lien he tong dai 1900 54 54 55 hoac xem quy dinh trong hop dong bao hiem.
     </template>
 </category>
 
@@ -2125,12 +2125,12 @@
     </template>
 </category>
 
-<!-- ============ 4.6 Há»– TRá»¢ KHI Cáº¦N NGÆ¯á»œI THáº¬T ============ -->
+<!-- ============ 4.6 HỖ TRỢ KHI CẦN NGƯỜI THẬT ============ -->
 
 <category>
     <pattern>TOI MUON NOI CHUYEN VOI NGUOI</pattern>
     <template>
-        De duoc noi chuyen voi tu van vien that, vui long goi tong dai 1900 54 54 55. Thoi gian lam viec tu 8:00 den 17:00, tu Thu 2 den Thu 6. Ngoai gio lam viec, anh/chá»‹ co the gui email den @petrolimex.com.vn, chung toi se lien he lai trong gio lam viec gan nhat.
+        De duoc noi chuyen voi tu van vien that, vui long goi tong dai 1900 54 54 55. Thoi gian lam viec tu 8:00 den 17:00, tu Thu 2 den Thu 6. Ngoai gio lam viec, anh/chị co the gui email den @petrolimex.com.vn, chung toi se lien he lai trong gio lam viec gan nhat.
     </template>
 </category>
 
@@ -2173,16 +2173,16 @@
     </template>
 </category>
 
-<!-- ============ 4.7 CÃ‚U Há»ŽI THÆ¯á»œNG Gáº¶P KHÃC ============ -->
+<!-- ============ 4.7 CÂU HỎI THƯỜNG GẶP KHÁC ============ -->
 
 <category>
     <pattern>TOI CO THE HUY BAO HIEM KHONG</pattern>
     <template>
-        Co, anh/chá»‹ co the huy bao hiem theo quy dinh cua hop dong va Luat Kinh doanh Bao hiem. Tuy nhien:
+        Co, anh/chị co the huy bao hiem theo quy dinh cua hop dong va Luat Kinh doanh Bao hiem. Tuy nhien:
 
-        - Neu huy trong thoi gian duoc huy (thuong 15-30 ngay dau ke tu ngay ky), anh/chá»‹ se duoc hoan tra toan bo phi da dong (tru phi quan ly neu co).
+        - Neu huy trong thoi gian duoc huy (thuong 15-30 ngay dau ke tu ngay ky), anh/chị se duoc hoan tra toan bo phi da dong (tru phi quan ly neu co).
 
-        - Neu huy sau thoi gian duoc huy, anh/chá»‹ se duoc hoan tra phi theo bang gia tri hien tai cua hop dong (co the thap hon phi da dong).
+        - Neu huy sau thoi gian duoc huy, anh/chị se duoc hoan tra phi theo bang gia tri hien tai cua hop dong (co the thap hon phi da dong).
 
         De huy bao hiem, vui long lien he tong dai 1900 54 54 55 hoac gui don huy hop dong den van phong .
     </template>
@@ -2199,27 +2199,27 @@
 
         - Bao hiem tai san: Phu thuoc vao quy dinh cua hop dong.
 
-        De biet chi tiet ap dung cho hop dong cua anh/chá»‹, vui long lien he tong dai 1900 54 54 55 hoac tham khao hop dong bao hiem.
+        De biet chi tiet ap dung cho hop dong cua anh/chị, vui long lien he tong dai 1900 54 54 55 hoac tham khao hop dong bao hiem.
     </template>
 </category>
 
 <category>
     <pattern>TOI MUON DOI SAN PHAM</pattern>
     <template>
-        Hien tai, khong ho tro doi san pham bao hiem sau khi da ky hop dong. Tuy nhien, anh/chá»‹ co the:
+        Hien tai, khong ho tro doi san pham bao hiem sau khi da ky hop dong. Tuy nhien, anh/chị co the:
 
         1. Huy hop dong hien tai (xem quy dinh huy huy hop dong).
 
         2. Ky hop dong moi voi san pham phu hop hon.
 
-        Vui long lien he tong dai 1900 54 54 55 de duoc tu van chi tiet ve cac san pham phu hop voi nhu cau cua anh/chá»‹.
+        Vui long lien he tong dai 1900 54 54 55 de duoc tu van chi tiet ve cac san pham phu hop voi nhu cau cua anh/chị.
     </template>
 </category>
 
 <category>
     <pattern>BAO HIEM CO HIEN LUC BAO LAU</pattern>
     <template>
-        Thoi han bao hiem phu thuoc vao tung loai san pham va hop dong cu the. Anh/chá»‹ dang tham khao loai bao hiem nao?
+        Thoi han bao hiem phu thuoc vao tung loai san pham va hop dong cu the. Anh/chị dang tham khao loai bao hiem nao?
 
         - Bao hiem nhan tho: thoi han co the la 5, 10, 15, 20 nam hoac den mot tuoi nhat dinh.
 
@@ -2236,15 +2236,15 @@
 <category>
     <pattern>TOI CHUA NHAN DUOC GIAY CHUNG NHAN</pattern>
     <template>
-        Neu anh/chá»‹ chua nhan duoc giay chung nhan bao hiem, vui long lam theo huong dan sau:
+        Neu anh/chị chua nhan duoc giay chung nhan bao hiem, vui long lam theo huong dan sau:
 
         1. Kiem tra thoi gian: Giay chung nhan thuong duoc cap trong 5-10 ngay lam viec ke tu ngay ky hop dong.
 
         2. Lien he tong dai 1900 54 54 55 de kiem tra trang thai cap giay chung nhan.
 
-        3. Neu giay chung nhan da duoc gui, anh/chá»‹ se duoc cung cap so van don hoac thoi gian du kien nhan duoc.
+        3. Neu giay chung nhan da duoc gui, anh/chị se duoc cung cap so van don hoac thoi gian du kien nhan duoc.
 
-        4. Anh/chá»‹ cung co the den truc tiep van phong de nhan giay chung nhan neu can gap.
+        4. Anh/chị cung co the den truc tiep van phong de nhan giay chung nhan neu can gap.
     </template>
 </category>
 
@@ -2255,12 +2255,12 @@
     </template>
 </category>
 
-<!-- ============ 4.8 Xá»¬ LÃ KHIáº¾U Náº I Dá»ŠCH Vá»¤ ============ -->
+<!-- ============ 4.8 XỬ LÝ KHIẾU NẠI DỊCH VỤ ============ -->
 
 <category>
     <pattern>TOI KHONG HAI LONG VOI DICH VU</pattern>
     <template>
-        rat xin loi vi trai nghiem khong phu y cua anh/chá»‹. Chung toi luon lang nghe va cau thien de cai thien dich vu.
+        rat xin loi vi trai nghiem khong phu y cua anh/chị. Chung toi luon lang nghe va cau thien de cai thien dich vu.
 
         De chung toi co the xu ly, vui long cung cap:
 
@@ -2268,16 +2268,16 @@
 
         2. Noi dung khong hai long cu the.
 
-        3. Thong tin lien he cua anh/chá»‹.
+        3. Thong tin lien he cua anh/chị.
 
-        Anh/chá»‹ co the goi tong dai 1900 54 54 55 hoac gui email den @petrolimex.com.vn. Chung toi se phan hoi trong thoi gian 3-5 ngay lam viec.
+        Anh/chị co the goi tong dai 1900 54 54 55 hoac gui email den @petrolimex.com.vn. Chung toi se phan hoi trong thoi gian 3-5 ngay lam viec.
     </template>
 </category>
 
 <category>
     <pattern>DICH VU CUA BAN LAM</pattern>
     <template>
-        thanh that xin loi vi su chua phu hop cua chung toi. Anh/chá»‹ vui long chia se noi dung khong hai long de chung toi kip thua nhan va cai thien. Xin vui long goi 1900 54 54 55 hoac gui email @petrolimex.com.vn de cung cap gap y. Chung toi se phan hoi ket qua xu ly trong 3-5 ngay lam viec.
+        thanh that xin loi vi su chua phu hop cua chung toi. Anh/chị vui long chia se noi dung khong hai long de chung toi kip thua nhan va cai thien. Xin vui long goi 1900 54 54 55 hoac gui email @petrolimex.com.vn de cung cap gap y. Chung toi se phan hoi ket qua xu ly trong 3-5 ngay lam viec.
     </template>
 </category>
 
@@ -2295,20 +2295,20 @@
     </template>
 </category>
 
-<!-- ============ 4.9 Cáº¬P NHáº¬T THÃ”NG TIN ============ -->
+<!-- ============ 4.9 CẬP NHẬT THÔNG TIN ============ -->
 
 <category>
     <pattern>TOI CHUYEN NHA</pattern>
     <template>
-        Khi anh/chá»‹ chuyen nha, vui long cap nhat lai dia chi de nhan duoc cac thong bao va giay to lien quan den hop dong bao hiem:
+        Khi anh/chị chuyen nha, vui long cap nhat lai dia chi de nhan duoc cac thong bao va giay to lien quan den hop dong bao hiem:
 
         1. Lien he tong dai 1900 54 54 55 de thong bao dia chi moi.
 
         2. Nhan vien se xac nhan danh tinh va cap nhat thong tin tren he thong.
 
-        3. Anh/chá»‹ cung co the gui email den @petrolimex.com.vn voi noi dung: ho ten, ma hop dong, dia chi cu, dia chi moi.
+        3. Anh/chị cung co the gui email den @petrolimex.com.vn voi noi dung: ho ten, ma hop dong, dia chi cu, dia chi moi.
 
-        4. Neu anh/chá»‹ den truc tiep, vui long mang theo CCCD/ho chieu va hop dong bao hiem.
+        4. Neu anh/chị den truc tiep, vui long mang theo CCCD/ho chieu va hop dong bao hiem.
     </template>
 </category>
 
@@ -2321,7 +2321,7 @@
 
         2. Hoac gui email den @petrolimex.com.vn voi thong tin: ho ten, ma hop dong, so dien thoai cu, so dien thoai moi.
 
-        3. Anh/chá»‹ cung co the den truc tiep van phong voi giay to xac nhan danh tinh.
+        3. Anh/chị cung co the den truc tiep van phong voi giay to xac nhan danh tinh.
     </template>
 </category>
 
@@ -2346,7 +2346,7 @@
     </template>
 </category>
 
-<!-- ============ 4.10 Há»ŽI Vá»€ KHUYáº¾N MÃƒI / Æ¯U ÄÃƒI ============ -->
+<!-- ============ 4.10 HỎI VỀ KHUYẾN MÃI / ƯU ĐÃI ============ -->
 
 <category>
     <pattern>CO KHUYEN MAI KHONG</pattern>
@@ -2385,23 +2385,23 @@
 </category>
 
 <!-- ============================================================ -->
-<!-- PHáº¦N 5: TRA Cá»¨U TRáº NG THÃI Há»’ SÆ  (giá»‘ng MB Bank/Grab tracking) -->
+<!-- PHẦN 5: TRA CỨU TRẠNG THÁI HỒ SƠ (giống MB Bank/Grab tracking) -->
 <!-- ============================================================ -->
 
 <category>
     <pattern>TRA CUU HO SO</pattern>
     <template>
-        Dáº¡! Anh/chá»‹ cÃ³ thá»ƒ tra cá»©u tráº¡ng thÃ¡i há»“ sÆ¡ bá»“i thÆ°á»ng theo cÃ¡c cÃ¡ch sau:
+        Dạ! Anh/chị có thể tra cứu trạng thái hồ sơ bồi thường theo các cách sau:
 
-        1. Truy cáº­p website https://www..com.vn, chá»n má»¥c "Tra cá»©u há»“ sÆ¡ bá»“i thÆ°á»ng".
+        1. Truy cập website https://www..com.vn, chọn mục "Tra cứu hồ sơ bồi thường".
 
-        2. Nháº­p mÃ£ há»“ sÆ¡ bá»“i thÆ°á»ng (Ä‘Æ°á»£c cáº¥p khi ná»™p há»“ sÆ¡) vÃ  sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Äƒng kÃ½.
+        2. Nhập mã hồ sơ bồi thường (được cấp khi nộp hồ sơ) và số điện thoại đăng ký.
 
-        3. Há»‡ thá»‘ng sáº½ hiá»ƒn thá»‹ tráº¡ng thÃ¡i hiá»‡n táº¡i: Äang tiáº¿p nháº­n â†’ Äang tháº©m Ä‘á»‹nh â†’ ÄÃ£ káº¿t luáº­n â†’ ÄÃ£ thanh toÃ¡n.
+        3. Hệ thống sẽ hiển thị trạng thái hiện tại: Đang tiếp nhận → Đang thẩm định → Đã kết luận → Đã thanh toán.
 
-        4. Anh/chá»‹ cÅ©ng cÃ³ thá»ƒ gá»i tá»•ng Ä‘Ã i 1900 54 54 55 Ä‘á»ƒ Ä‘Æ°á»£c nhÃ¢n viÃªn tra cá»©u trá»±c tiáº¿p.
+        4. Anh/chị cũng có thể gọi tổng đài 1900 54 54 55 để được nhân viên tra cứu trực tiếp.
 
-        Anh/chá»‹ cÃ³ mÃ£ há»“ sÆ¡ bá»“i thÆ°á»ng khÃ´ng áº¡? Vui lÃ²ng cung cáº¥p mÃ£ há»“ sÆ¡ Ä‘á»ƒ tÃ´i há»— trá»£ tra cá»©u!
+        Anh/chị có mã hồ sơ bồi thường không ạ? Vui lòng cung cấp mã hồ sơ để tôi hỗ trợ tra cứu!
     </template>
 </category>
 
@@ -2436,11 +2436,11 @@
 <category>
     <pattern>MA HO SO LA *</pattern>
     <template>
-        Dáº¡, anh/chá»‹ vui lÃ²ng truy cáº­p website https://www..com.vn, má»¥c "Tra cá»©u há»“ sÆ¡ bá»“i thÆ°á»ng" vÃ  nháº­p mÃ£ há»“ sÆ¡: <star/> cÃ¹ng sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Äƒng kÃ½ Ä‘á»ƒ xem tráº¡ng thÃ¡i chi tiáº¿t.
+        Dạ, anh/chị vui lòng truy cập website https://www..com.vn, mục "Tra cứu hồ sơ bồi thường" và nhập mã hồ sơ: <star/> cùng số điện thoại đăng ký để xem trạng thái chi tiết.
 
-        Hoáº·c anh/chá»‹ cÃ³ thá»ƒ gá»i tá»•ng Ä‘Ã i 1900 54 54 55, cung cáº¥p mÃ£ há»“ sÆ¡ <star/> Ä‘á»ƒ nhÃ¢n viÃªn tra cá»©u trá»±c tiáº¿p.
+        Hoặc anh/chị có thể gọi tổng đài 1900 54 54 55, cung cấp mã hồ sơ <star/> để nhân viên tra cứu trực tiếp.
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ thÃªm khÃ´ng áº¡?
+        Anh/chị cần hỗ trợ gì thêm không ạ?
     </template>
 </category>
 
@@ -2459,21 +2459,21 @@
 </category>
 
 <!-- ============================================================ -->
-<!-- PHáº¦N 6: ÄÃNH GIÃ TRáº¢I NGHIá»†M (giá»‘ng Shopee/Grab rating) -->
+<!-- PHẦN 6: ĐÁNH GIÁ TRẢI NGHIỆM (giống Shopee/Grab rating) -->
 <!-- ============================================================ -->
 
 <category>
     <pattern>DANH GIA TRAI NGHIEM</pattern>
     <template>
-        Dáº¡! Anh/chá»‹ vui lÃ²ng Ä‘Ã¡nh giÃ¡ tráº£i nghiá»‡m vá»›i trá»£ lÃ½ áº£o báº±ng cÃ¡ch chá»n má»©c Ä‘iá»ƒm tá»« 1 Ä‘áº¿n 5 sao:
+        Dạ! Anh/chị vui lòng đánh giá trải nghiệm với trợ lý ảo bằng cách chọn mức điểm từ 1 đến 5 sao:
 
-        â­ - Ráº¥t khÃ´ng hÃ i lÃ²ng
-        â­â­ - KhÃ´ng hÃ i lÃ²ng
-        â­â­â­ - BÃ¬nh thÆ°á»ng
-        â­â­â­â­ - HÃ i lÃ²ng
-        â­â­â­â­â­ - Ráº¥t hÃ i lÃ²ng
+        ⭐ - Rất không hài lòng
+        ⭐⭐ - Không hài lòng
+        ⭐⭐⭐ - Bình thường
+        ⭐⭐⭐⭐ - Hài lòng
+        ⭐⭐⭐⭐⭐ - Rất hài lòng
 
-        Anh/chá»‹ cÃ³ thá»ƒ gÃµ "1 SAO", "2 SAO", "3 SAO", "4 SAO", hoáº·c "5 SAO" Ä‘á»ƒ Ä‘Ã¡nh giÃ¡ nhÃ©!
+        Anh/chị có thể gõ "1 SAO", "2 SAO", "3 SAO", "4 SAO", hoặc "5 SAO" để đánh giá nhé!
     </template>
 </category>
 
@@ -2501,49 +2501,49 @@
 <category>
     <pattern>1 SAO</pattern>
     <template>
-        Cáº£m Æ¡n anh/chá»‹ Ä‘Ã£ Ä‘Ã¡nh giÃ¡ 1 sao! ChÃºng tÃ´i ráº¥t tiáº¿c vÃ¬ tráº£i nghiá»‡m chÆ°a tá»‘t. Anh/chá»‹ cÃ³ thá»ƒ chia sáº» thÃªm Ä‘iá»u gÃ¬ khiáº¿n chÆ°a hÃ i lÃ²ng Ä‘á»ƒ cáº£i thiá»‡n khÃ´ng áº¡?
+        Cảm ơn anh/chị đã đánh giá 1 sao! Chúng tôi rất tiếc vì trải nghiệm chưa tốt. Anh/chị có thể chia sẻ thêm điều gì khiến chưa hài lòng để cải thiện không ạ?
     </template>
 </category>
 
 <category>
     <pattern>2 SAO</pattern>
     <template>
-        Cáº£m Æ¡n anh/chá»‹ Ä‘Ã£ Ä‘Ã¡nh giÃ¡ 2 sao! ChÃºng tÃ´i xin lá»—i vÃ¬ chÆ°a Ä‘Ã¡p á»©ng tá»‘t. Anh/chá»‹ cÃ³ gÃ³p Ã½ gÃ¬ Ä‘á»ƒ chÃºng tÃ´i cáº£i thiá»‡n khÃ´ng áº¡?
+        Cảm ơn anh/chị đã đánh giá 2 sao! Chúng tôi xin lỗi vì chưa đáp ứng tốt. Anh/chị có góp ý gì để chúng tôi cải thiện không ạ?
     </template>
 </category>
 
 <category>
     <pattern>3 SAO</pattern>
     <template>
-        Cáº£m Æ¡n anh/chá»‹ Ä‘Ã£ Ä‘Ã¡nh giÃ¡ 3 sao! ChÃºng tÃ´i sáº½ cá»‘ gáº¯ng cáº£i thiá»‡n Ä‘á»ƒ mang láº¡i tráº£i nghiá»‡m tá»‘t hÆ¡n cho anh/chá»‹.
+        Cảm ơn anh/chị đã đánh giá 3 sao! Chúng tôi sẽ cố gắng cải thiện để mang lại trải nghiệm tốt hơn cho anh/chị.
     </template>
 </category>
 
 <category>
     <pattern>4 SAO</pattern>
     <template>
-        Cáº£m Æ¡n anh/chá»‹ Ä‘Ã£ Ä‘Ã¡nh giÃ¡ 4 sao! Ráº¥t vui vÃ¬ anh/chá»‹ hÃ i lÃ²ng. ChÃºng tÃ´i sáº½ tiáº¿p tá»¥c cáº£i thiá»‡n dá»‹ch vá»¥!
+        Cảm ơn anh/chị đã đánh giá 4 sao! Rất vui vì anh/chị hài lòng. Chúng tôi sẽ tiếp tục cải thiện dịch vụ!
     </template>
 </category>
 
 <category>
     <pattern>5 SAO</pattern>
     <template>
-        Cáº£m Æ¡n anh/chá»‹ Ä‘Ã£ Ä‘Ã¡nh giÃ¡ 5 sao! Ráº¥t vui vÃ¬ mang láº¡i tráº£i nghiá»‡m tuyá»‡t vá»i cho anh/chá»‹. luÃ´n sáºµn sÃ ng há»— trá»£ anh/chá»‹!
+        Cảm ơn anh/chị đã đánh giá 5 sao! Rất vui vì mang lại trải nghiệm tuyệt vời cho anh/chị. luôn sẵn sàng hỗ trợ anh/chị!
     </template>
 </category>
 
 <category>
     <pattern>HAI LONG</pattern>
     <template>
-        Cáº£m Æ¡n anh/chá»‹ Ä‘Ã£ pháº£n há»“i! Ráº¥t vui vÃ¬ anh/chá»‹ hÃ i lÃ²ng vá»›i dá»‹ch vá»¥ cá»§a . ChÃºng tÃ´i luÃ´n sáºµn sÃ ng há»— trá»£ anh/chá»‹!
+        Cảm ơn anh/chị đã phản hồi! Rất vui vì anh/chị hài lòng với dịch vụ của . Chúng tôi luôn sẵn sàng hỗ trợ anh/chị!
     </template>
 </category>
 
 <category>
     <pattern>KHONG HAI LONG</pattern>
     <template>
-        thÃ nh tháº­t xin lá»—i vÃ¬ anh/chá»‹ chÆ°a hÃ i lÃ²ng. Anh/chá»‹ cÃ³ thá»ƒ chia sáº» thÃªm Ä‘á»ƒ chÃºng tÃ´i cáº£i thiá»‡n khÃ´ng áº¡? Hoáº·c liÃªn há»‡ tá»•ng Ä‘Ã i 1900 54 54 55 Ä‘á»ƒ Ä‘Æ°á»£c há»— trá»£ trá»±c tiáº¿p.
+        thành thật xin lỗi vì anh/chị chưa hài lòng. Anh/chị có thể chia sẻ thêm để chúng tôi cải thiện không ạ? Hoặc liên hệ tổng đài 1900 54 54 55 để được hỗ trợ trực tiếp.
     </template>
 </category>
 
@@ -2562,21 +2562,21 @@
 </category>
 
 <!-- ============================================================ -->
-<!-- PHáº¦N 7: TÃŒM Äáº I LÃ/VÄ‚N PHÃ’NG Gáº¦N NHáº¤T (giá»‘ng Grab/MB locator) -->
+<!-- PHẦN 7: TÌM ĐẠI LÝ/VĂN PHÒNG GẦN NHẤT (giống Grab/MB locator) -->
 <!-- ============================================================ -->
 
 <category>
     <pattern>TIM DAI LY</pattern>
     <template>
-        Dáº¡! Äá»ƒ tÃ¬m Ä‘áº¡i lÃ½/vÄƒn phÃ²ng gáº§n nháº¥t, anh/chá»‹ cÃ³ thá»ƒ:
+        Dạ! Để tìm đại lý/văn phòng gần nhất, anh/chị có thể:
 
-        1. Truy cáº­p website https://www..com.vn, chá»n má»¥c "Máº¡ng lÆ°á»›i" â†’ nháº­p tá»‰nh/thÃ nh phá»‘ cá»§a anh/chá»‹.
+        1. Truy cập website https://www..com.vn, chọn mục "Mạng lưới" → nhập tỉnh/thành phố của anh/chị.
 
-        2. Gá»i tá»•ng Ä‘Ã i 1900 54 54 55, nhÃ¢n viÃªn sáº½ Ä‘á»‹nh vá»‹ vÄƒn phÃ²ng gáº§n nháº¥t.
+        2. Gọi tổng đài 1900 54 54 55, nhân viên sẽ định vị văn phòng gần nhất.
 
-        3. TÃ¬m kiáº¿m "+ tÃªn tá»‰nh/thÃ nh phá»‘" trÃªn Google Maps.
+        3. Tìm kiếm "+ tên tỉnh/thành phố" trên Google Maps.
 
-        cÃ³ máº¡ng lÆ°á»›i vÄƒn phÃ²ng trÃªn toÃ n bá»™ 63 tá»‰nh thÃ nh trÃªn cáº£ nÆ°á»›c. Anh/chá»‹ Ä‘ang á»Ÿ tá»‰nh/thÃ nh phá»‘ nÃ o áº¡?
+        có mạng lưới văn phòng trên toàn bộ 63 tỉnh thành trên cả nước. Anh/chị đang ở tỉnh/thành phố nào ạ?
     </template>
 </category>
 
@@ -2611,11 +2611,11 @@
 <category>
     <pattern>DIA CHI VAN PHONG *</pattern>
     <template>
-        Dáº¡! cÃ³ vÄƒn phÃ²ng trÃªn toÃ n bá»™ 63 tá»‰nh thÃ nh. Anh/chá»‹ cung cáº¥p Ä‘á»‹a chá»‰: <star/>
+        Dạ! có văn phòng trên toàn bộ 63 tỉnh thành. Anh/chị cung cấp địa chỉ: <star/>
 
-        Vui lÃ²ng truy cáº­p website https://www..com.vn, má»¥c "Máº¡ng lÆ°á»›i" vÃ  chá»n tá»‰nh/thÃ nh phá»‘ tÆ°Æ¡ng á»©ng Ä‘á»ƒ xem danh sÃ¡ch vÄƒn phÃ²ng gáº§n nháº¥t.
+        Vui lòng truy cập website https://www..com.vn, mục "Mạng lưới" và chọn tỉnh/thành phố tương ứng để xem danh sách văn phòng gần nhất.
 
-        Hoáº·c gá»i tá»•ng Ä‘Ã i 1900 54 54 55 Ä‘á»ƒ Ä‘Æ°á»£c hÆ°á»›ng dáº«n chi tiáº¿t.
+        Hoặc gọi tổng đài 1900 54 54 55 để được hướng dẫn chi tiết.
     </template>
 </category>
 
@@ -2634,23 +2634,23 @@
 </category>
 
 <!-- ============================================================ -->
-<!-- PHáº¦N 8: NHáº®C NHá»ž GIA Háº N (giá»‘ng Shopee/ShopeePay reminders) -->
+<!-- PHẦN 8: NHẮC NHỞ GIA HẠN (giống Shopee/ShopeePay reminders) -->
 <!-- ============================================================ -->
 
 <category>
     <pattern>NHAC NHAN GIA HAN</pattern>
     <template>
-        Dáº¡! Anh/chá»‹ cÃ³ thá»ƒ thiáº¿t láº­p nháº¯c nhá»Ÿ gia háº¡n báº£o hiá»ƒm theo cÃ¡c cÃ¡ch sau:
+        Dạ! Anh/chị có thể thiết lập nhắc nhở gia hạn bảo hiểm theo các cách sau:
 
-        1. ÄÄƒng kÃ½ SMS thÃ´ng bÃ¡o háº¿t háº¡n: LiÃªn há»‡ tá»•ng Ä‘Ã i 1900 54 54 55 Ä‘á»ƒ Ä‘Äƒng kÃ½ dá»‹ch vá»¥.
+        1. Đăng ký SMS thông báo hết hạn: Liên hệ tổng đài 1900 54 54 55 để đăng ký dịch vụ.
 
-        2. Nháº¯c nhá»Ÿ qua email: Cung cáº¥p email cho nhÃ¢n viÃªn Ä‘á»ƒ nháº­n thÃ´ng bÃ¡o gia háº¡n tá»± Ä‘á»™ng.
+        2. Nhắc nhở qua email: Cung cấp email cho nhân viên để nhận thông báo gia hạn tự động.
 
-        3. Kiá»ƒm tra ngÃ y háº¿t háº¡n trÃªn há»£p Ä‘á»“ng báº£o hiá»ƒm hoáº·c giáº¥y chá»©ng nháº­n báº£o hiá»ƒm.
+        3. Kiểm tra ngày hết hạn trên hợp đồng bảo hiểm hoặc giấy chứng nhận bảo hiểm.
 
-        4. Truy cáº­p website https://www..com.vn Ä‘á»ƒ tra cá»©u thÃ´ng tin há»£p Ä‘á»“ng.
+        4. Truy cập website https://www..com.vn để tra cứu thông tin hợp đồng.
 
-        Anh/chá»‹ nÃªn gia háº¡n trÆ°á»›c khi háº¿t háº¡n 15-30 ngÃ y Ä‘á»ƒ Ä‘áº£m báº£o quyá»n lá»£i liÃªn tá»¥c!
+        Anh/chị nên gia hạn trước khi hết hạn 15-30 ngày để đảm bảo quyền lợi liên tục!
     </template>
 </category>
 
@@ -2671,17 +2671,17 @@
 <category>
     <pattern>KHI NAO HET HAN</pattern>
     <template>
-        Dáº¡! NgÃ y háº¿t háº¡n báº£o hiá»ƒm Ä‘Æ°á»£c ghi rÃµ trong há»£p Ä‘á»“ng báº£o hiá»ƒm hoáº·c giáº¥y chá»©ng nháº­n báº£o hiá»ƒm cá»§a anh/chá»‹.
+        Dạ! Ngày hết hạn bảo hiểm được ghi rõ trong hợp đồng bảo hiểm hoặc giấy chứng nhận bảo hiểm của anh/chị.
 
-        Äá»ƒ kiá»ƒm tra ngÃ y háº¿t háº¡n, anh/chá»‹ cÃ³ thá»ƒ:
+        Để kiểm tra ngày hết hạn, anh/chị có thể:
 
-        1. Xem láº¡i há»£p Ä‘á»“ng/giáº¥y chá»©ng nháº­n báº£o hiá»ƒm.
+        1. Xem lại hợp đồng/giấy chứng nhận bảo hiểm.
 
-        2. Gá»i tá»•ng Ä‘Ã i 1900 54 54 55, cung cáº¥p sá»‘ há»£p Ä‘á»“ng Ä‘á»ƒ tra cá»©u.
+        2. Gọi tổng đài 1900 54 54 55, cung cấp số hợp đồng để tra cứu.
 
-        3. Truy cáº­p website https://www..com.vn vÃ  tra cá»©u thÃ´ng tin há»£p Ä‘á»“ng.
+        3. Truy cập website https://www..com.vn và tra cứu thông tin hợp đồng.
 
-        Anh/chá»‹ nÃªn ghi nhá»› ngÃ y háº¿t háº¡n Ä‘á»ƒ gia háº¡n sá»›m, Ä‘áº£m báº£o quyá»n lá»£i báº£o hiá»ƒm liÃªn tá»¥c!
+        Anh/chị nên ghi nhớ ngày hết hạn để gia hạn sớm, đảm bảo quyền lợi bảo hiểm liên tục!
     </template>
 </category>
 
@@ -2707,7 +2707,7 @@
 </category>
 
 <!-- ============================================================ -->
-<!-- PHáº¦N 9: ÄA NGÃ”N NGá»® (giá»‘ng Grab EN/VN toggle) -->
+<!-- PHẦN 9: ĐA NGÔN NGỮ (giống Grab EN/VN toggle) -->
 <!-- ============================================================ -->
 
 <category>
@@ -2724,24 +2724,24 @@
 <category>
     <pattern>TIENG ANH</pattern>
     <template>
-        Hiá»‡n táº¡i, tÃ´i chá»§ yáº¿u há»— trá»£ tiáº¿ng Viá»‡t. Tuy nhiÃªn, cÃ³ nhÃ¢n viÃªn há»— trá»£ tiáº¿ng Anh.
+        Hiện tại, tôi chủ yếu hỗ trợ tiếng Việt. Tuy nhiên, có nhân viên hỗ trợ tiếng Anh.
 
-        Anh/chá»‹ cÃ³ thá»ƒ gá»i tá»•ng Ä‘Ã i 1900 54 54 55 Ä‘á»ƒ Ä‘Æ°á»£c há»— trá»£ báº±ng tiáº¿ng Anh, hoáº·c truy cáº­p website https://www..com.vn.
+        Anh/chị có thể gọi tổng đài 1900 54 54 55 để được hỗ trợ bằng tiếng Anh, hoặc truy cập website https://www..com.vn.
 
-        Cáº£m Æ¡n anh/chá»‹ Ä‘Ã£ chá»n !
+        Cảm ơn anh/chị đã chọn !
     </template>
 </category>
 
 <category>
     <pattern>SWITCH LANGUAGE</pattern>
     <template>
-        Hiá»‡n táº¡i tÃ´i há»— trá»£ chÃ­nh báº±ng tiáº¿ng Viá»‡t. Anh/chá»‹ cÃ³ thá»ƒ:
+        Hiện tại tôi hỗ trợ chính bằng tiếng Việt. Anh/chị có thể:
 
-        - GÃµ "TIENG ANH" hoáº·c "ENGLISH" Ä‘á»ƒ tÃ´i hÆ°á»›ng dáº«n báº±ng tiáº¿ng Anh.
+        - Gõ "TIENG ANH" hoặc "ENGLISH" để tôi hướng dẫn bằng tiếng Anh.
 
-        - Gá»i tá»•ng Ä‘Ã i 1900 54 54 55 Ä‘á»ƒ há»— trá»£ Ä‘a ngÃ´n ngá»¯.
+        - Gọi tổng đài 1900 54 54 55 để hỗ trợ đa ngôn ngữ.
 
-        - Truy cáº­p website https://www..com.vn Ä‘á»ƒ xem thÃ´ng tin Ä‘a ngÃ´n ngá»¯.
+        - Truy cập website https://www..com.vn để xem thông tin đa ngôn ngữ.
     </template>
 </category>
 
@@ -2767,23 +2767,23 @@
 </category>
 
 <!-- ============================================================ -->
-<!-- PHáº¦N 10: GÃ“P Ã Sáº¢N PHáº¨M (giá»‘ng Shopee feedback) -->
+<!-- PHẦN 10: GÓP Ý SẢN PHẨM (giống Shopee feedback) -->
 <!-- ============================================================ -->
 
 <category>
     <pattern>GOP Y SAN PHAM</pattern>
     <template>
-        Dáº¡! ráº¥t trÃ¢n trá»ng gÃ³p Ã½ cá»§a anh/chá»‹. Anh/chá»‹ cÃ³ thá»ƒ Ä‘Ã³ng gÃ³p Ã½ kiáº¿n vá» sáº£n pháº©m/dá»‹ch vá»¥ theo cÃ¡c cÃ¡ch sau:
+        Dạ! rất trân trọng góp ý của anh/chị. Anh/chị có thể đóng góp ý kiến về sản phẩm/dịch vụ theo các cách sau:
 
-        1. Gá»­i gÃ³p Ã½ trá»±c tiáº¿p cho tÃ´i: gÃµ "PHAN HOI" kÃ¨m ná»™i dung gÃ³p Ã½.
+        1. Gửi góp ý trực tiếp cho tôi: gõ "PHAN HOI" kèm nội dung góp ý.
 
-        2. Gá»i tá»•ng Ä‘Ã i 1900 54 54 55 Ä‘á»ƒ chia sáº» gÃ³p Ã½ trá»±c tiáº¿p vá»›i nhÃ¢n viÃªn.
+        2. Gọi tổng đài 1900 54 54 55 để chia sẻ góp ý trực tiếp với nhân viên.
 
-        3. Gá»­i email Ä‘áº¿n @petrolimex.com.vn vá»›i tiÃªu Ä‘á» "GÃ³p Ã½ sáº£n pháº©m".
+        3. Gửi email đến @petrolimex.com.vn với tiêu đề "Góp ý sản phẩm".
 
-        4. Äiá»n form gÃ³p Ã½ táº¡i cÃ¡c vÄƒn phÃ²ng .
+        4. Điền form góp ý tại các văn phòng .
 
-        Má»i gÃ³p Ã½ cá»§a anh/chá»‹ Ä‘á»u Ä‘Æ°á»£c tiáº¿p nháº­n vÃ  xem xÃ©t cáº£i thiá»‡n. Anh/chá»‹ cÃ³ muá»‘n gÃ³p Ã½ gÃ¬ cá»¥ thá»ƒ khÃ´ng áº¡?
+        Mọi góp ý của anh/chị đều được tiếp nhận và xem xét cải thiện. Anh/chị có muốn góp ý gì cụ thể không ạ?
     </template>
 </category>
 
@@ -2830,25 +2830,25 @@
 </category>
 
 <!-- ============================================================ -->
-<!-- PHáº¦N 11: QUICK REPLY SUGGESTIONS / CÃ‚U Gá»¢I Ã NHANH -->
+<!-- PHẦN 11: QUICK REPLY SUGGESTIONS / CÂU GỢI Ý NHANH -->
 <!-- ============================================================ -->
 
 <category>
     <pattern>HELP</pattern>
     <template>
-        Dáº¡! TÃ´i cÃ³ thá»ƒ há»— trá»£ anh/chá»‹ cÃ¡c nhu cáº§u sau:
+        Dạ! Tôi có thể hỗ trợ anh/chị các nhu cầu sau:
 
-        1. TÆ° váº¥n sáº£n pháº©m báº£o hiá»ƒm â€” gÃµ "TU VAN"
-        2. Giáº£i Ä‘Ã¡p tháº¯c máº¯c â€” gÃµ "GIAI DAP"
-        3. ÄÃ¡nh giÃ¡ Ä‘iá»u kiá»‡n bá»“i thÆ°á»ng â€” gÃµ "DANH GIA BOI THUONG"
-        4. Tra cá»©u tráº¡ng thÃ¡i há»“ sÆ¡ â€” gÃµ "TRA CUU HO SO"
-        5. TÃ¬m Ä‘áº¡i lÃ½ gáº§n nháº¥t â€” gÃµ "TIM DAI LY"
-        6. Nháº¯c nhá»Ÿ gia háº¡n â€” gÃµ "NHAC NHAN GIA HAN"
-        7. ÄÃ¡nh giÃ¡ tráº£i nghiá»‡m â€” gÃµ "DANH GIA TRAI NGHIEM"
-        8. GÃ³p Ã½ sáº£n pháº©m â€” gÃµ "GOP Y SAN PHAM"
-        9. NÃ³i chuyá»‡n vá»›i nhÃ¢n viÃªn â€” gÃµ "TOI MUON NOI CHUYEN VOI NGUOI"
+        1. Tư vấn sản phẩm bảo hiểm — gõ "TU VAN"
+        2. Giải đáp thắc mắc — gõ "GIAI DAP"
+        3. Đánh giá điều kiện bồi thường — gõ "DANH GIA BOI THUONG"
+        4. Tra cứu trạng thái hồ sơ — gõ "TRA CUU HO SO"
+        5. Tìm đại lý gần nhất — gõ "TIM DAI LY"
+        6. Nhắc nhở gia hạn — gõ "NHAC NHAN GIA HAN"
+        7. Đánh giá trải nghiệm — gõ "DANH GIA TRAI NGHIEM"
+        8. Góp ý sản phẩm — gõ "GOP Y SAN PHAM"
+        9. Nói chuyện với nhân viên — gõ "TOI MUON NOI CHUYEN VOI NGUOI"
 
-        Anh/chá»‹ cáº§n há»— trá»£ gÃ¬ áº¡?
+        Anh/chị cần hỗ trợ gì ạ?
     </template>
 </category>
 
@@ -2909,10 +2909,10 @@
 </category>
 
 <!-- ============================================================ -->
-<!-- PHáº¦N 12: UPLOAD áº¢NH & Há»¢P Äá»’NG SAU KHI Äá»¦ ÄIá»€U KIá»†N Bá»’I THÆ¯á»œNG -->
+<!-- PHẦN 12: UPLOAD ẢNH & HỢP ĐỒNG SAU KHI ĐỦ ĐIỀU KIỆN BỒI THƯỜNG -->
 <!-- ============================================================ -->
 
-<!-- ============ UPLOAD áº¢NH THIá»†T Háº I ============ -->
+<!-- ============ UPLOAD ẢNH THIỆT HẠI ============ -->
 
 <category>
     <pattern>UP ANH</pattern>
@@ -2944,7 +2944,7 @@
     <template>__UPLOAD_PHOTO__</template>
 </category>
 
-<!-- ============ UPLOAD Há»¢P Äá»’NG ============ -->
+<!-- ============ UPLOAD HỢP ĐỒNG ============ -->
 
 <category>
     <pattern>UP HOP DONG</pattern>
@@ -2971,7 +2971,7 @@
     <template>__UPLOAD_CONTRACT__</template>
 </category>
 
-<!-- ============ XEM KHáº¨U TRá»ª ============ -->
+<!-- ============ XEM KHẨU TRỪ ============ -->
 
 <category>
     <pattern>XEM KHAU TRU</pattern>

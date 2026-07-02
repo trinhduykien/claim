@@ -1,37 +1,37 @@
-﻿# HÆ°á»›ng dáº«n setup API Key cho AI Deduction Module
+# Hướng dẫn setup API Key cho AI Deduction Module
 
-## âš ï¸ QUAN TRá»ŒNG: Báº£o máº­t API Key
+## ⚠️ QUAN TRỌNG: Bảo mật API Key
 
-**KHÃ”NG bao giá» dÃ¡n API key vÃ o chat, Discord, hay commit lÃªn GitHub.**
+**KHÔNG bao giờ dán API key vào chat, Discord, hay commit lên GitHub.**
 
-## CÃ¡ch 1: Environment Variable (khuyÃªn dÃ¹ng)
+## Cách 1: Environment Variable (khuyên dùng)
 
-### PowerShell (táº¡m thá»i - máº¥t khi táº¯t terminal)
+### PowerShell (tạm thời - mất khi tắt terminal)
 ```powershell
 $env:KIMI_API_KEY = "your-key-here"
 streamlit run app.py
 ```
 
-### PowerShell (vÄ©nh viá»…n - cho user hiá»‡n táº¡i)
+### PowerShell (vĩnh viễn - cho user hiện tại)
 ```powershell
 [System.Environment]::SetEnvironmentVariable("KIMI_API_KEY", "your-api-key-here", "User")
 ```
-â†’ Restart terminal Ä‘á»ƒ Ã¡p dá»¥ng.
+→ Restart terminal để áp dụng.
 
-## CÃ¡ch 2: File local (khÃ´ng commit lÃªn git)
+## Cách 2: File local (không commit lên git)
 
-Táº¡o file `.kimi_api_key` trong cÃ¹ng thÆ° má»¥c vá»›i `app.py`:
+Tạo file `.kimi_api_key` trong cùng thư mục với `app.py`:
 ```
 your-api-key-here
 ```
 
-File nÃ y Ä‘Ã£ Ä‘Æ°á»£c thÃªm vÃ o `.gitignore` â†’ sáº½ khÃ´ng bá»‹ push lÃªn GitHub.
+File này đã được thêm vào `.gitignore` → sẽ không bị push lên GitHub.
 
-## Kiá»ƒm tra
+## Kiểm tra
 
-Sau khi setup, cháº¡y app vÃ  thá»­:
-1. HoÃ n táº¥t Ä‘Ã¡nh giÃ¡ claim â†’ káº¿t quáº£ "Äá»¦ ÄIá»€U KIá»†N"
-2. Upload áº£nh + há»£p Ä‘á»“ng
-3. Báº¥m "PhÃ¢n tÃ­ch kháº¥u trá»«" â†’ AI sáº½ xá»­ lÃ½
+Sau khi setup, chạy app và thử:
+1. Hoàn tất đánh giá claim → kết quả "ĐỦ ĐIỀU KIỆN"
+2. Upload ảnh + hợp đồng
+3. Bấm "Phân tích khấu trừ" → AI sẽ xử lý
 
-Náº¿u chÆ°a cÃ³ API key, app sáº½ hiá»ƒn thá»‹ thÃ´ng bÃ¡o lá»—i hÆ°á»›ng dáº«n.
+Nếu chưa có API key, app sẽ hiển thị thông báo lỗi hướng dẫn.

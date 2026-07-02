@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """Táº¡o PowerPoint thuyáº¿t trÃ¬nh AI Claim Chatbot V.0.10"""
 
 from pptx import Presentation
@@ -469,3 +469,4 @@ add_text(slide, Inches(1), Inches(6.3), Inches(11.3), Inches(0.5),
 output_path = r"D:\WORK\back up 1\_AI_Claim_Chatbot_V0.10.pptx"
 prs.save(output_path)
 print(f"Saved: {output_path}")
+
