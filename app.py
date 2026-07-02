@@ -60,7 +60,7 @@ except ImportError:
 
 st.set_page_config(
 
-    page_title="Trợ lý ảo V.0.6",
+    page_title="Bảo hiểm - Trợ lý ảo",
 
     page_icon="",
 
@@ -793,13 +793,7 @@ def full_reset():
 
 with st.sidebar:
 
-    _logo = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "logo.png")
-
-    if os.path.exists(_logo):
-
-        st.image(_logo, width=200)
-
-    st.markdown("## Trợ lý ảo")
+    st.markdown("## Menu")
 
     st.markdown("### Version 0.6")
 
@@ -861,11 +855,7 @@ with st.sidebar:
 
 
 
-_logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "logo.png")
-
-_logo_html = f'<img src="file/{_logo_path}" alt="">' if os.path.exists(_logo_path) else ''
-
-st.markdown(f'<div class="-header">{_logo_html}<div><h1>BẢO HIỂM </h1><p>Tổng Công ty Cổ phần Bảo hiểm Petrolimex | Trợ lý ảo V.0.6</p></div></div>', unsafe_allow_html=True)
+st.markdown('<div class="app-header"><div><h1>Bảo hiểm</h1></div></div>', unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -1814,11 +1804,11 @@ if st.session_state.waiting_for_faq_choice and not st.session_state.current_prod
 
                 "Thông tin liên hệ :\n\n"
 
-                "Tổng Công ty Cổ phần Bảo hiểm Petrolimex\n"
+                "\n"
 
                 "Trụ sở chính: Tầng 21-22, tòa nhà Mipec, 229 Tây Sơn, Phường Kim Liên, Hà Nội\n"
 
-                "Email: @petrolimex.com.vn\n"
+                "Email: \n"
 
                 "Điện thoại: (024) 3776-0867\n"
 
@@ -1952,7 +1942,7 @@ if st.session_state.waiting_for_faq_choice and not st.session_state.current_prod
 
                 "- Gọi tổng đài: 1900 54 54 55\n"
 
-                "- Email: @petrolimex.com.vn\n"
+                "- Email: \n"
 
                 "- Chat trực tiếp tại website: https://www..com.vn\n\n"
 
@@ -2000,7 +1990,7 @@ if st.session_state.waiting_for_faq_choice and not st.session_state.current_prod
 
                 "- Tổng đài: 1900 54 54 55\n"
 
-                "- Email: @petrolimex.com.vn\n\n"
+                "- Email: \n\n"
 
                 "Anh/chị cần hỗ trợ gì thêm không ạ?"
 
