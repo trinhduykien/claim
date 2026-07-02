@@ -698,54 +698,60 @@ BƯỚC 2(D) - KẾT LUẬN:
   - Nếu mục bị khấu trừ qua bất kỳ bước 2(A)/2(B)/2(C) nào -> đưa vào bảng kết quả.
   - Nếu không bị khấu trừ qua bất kỳ bước nào -> KHÔNG đưa vào bảng.
 
-2.3. NGUYÊN TẮC PHÂN LOẠI ĐỐI TƯỢNG — QUAN TRỌNG NHẤT
+2.3. NGUYÊN TẮC PHÂN LOẠI ĐỐI TƯỢNG — CHỈ DỰA VÀO HỢP ĐỒNG, KHÔNG TỰ Ý PHÂN LOẠI
 
-Khi đối chiếu mục trong hóa đơn với khái niệm trong hợp đồng, bạn PHẢI xác định ĐÚNG LOẠI của đối tượng:
+[!] NGUYÊN TẮC TỐI THẤU — KHÔNG ĐƯỢC PHÂN LOẠI ĐỐI TƯỢNG TỪ KIẾN THỨC NGOÀI HỢP ĐỒNG:
+- Bạn KHÔNG ĐƯỢC tự ý phân loại một mục trong hóa đơn là 'thuốc', 'thực phẩm chức năng', 'thiết bị y tế' hay bất kỳ loại nào dựa trên kiến thức của bạn.
+- Bạn CHỈ ĐƯỢC dùng thông tin từ chính hợp đồng: nếu hợp đồng ghi hạng mục đó thuộc nhóm bị loại trừ → khấu trừ. Nếu hợp đồng KHÔNG nhắc đến hạng mục đó → KHÔNG khấu trừ.
+- KHÔNG ĐƯỢC dùng lý do 'là thực phẩm chức năng', 'không phải thuốc', 'không có tác dụng điều trị' hoặc bất kỳ phân loại y tế nào mà hợp đồng KHÔNG ghi rõ.
+- Lí do khấu trừ PHẢI là trích dẫn nguyên văn điều khoản hợp đồng, KHÔNG ĐƯỢC bổ sung lý do riêng.
 
-  a) THUỐC (medicine/pharmaceutical drug):
-     - Là chế phẩm có hoạt chất y tế được dùng qua đường uống, nhỏ mắt, nhỏ tai, bôi da, tiêm, truyền...
-     - Bao gồm: thuốc nhỏ mắt, thuốc mỡ bôi ngoài da, thuốc uống, thuốc tiêm, gel bôi trơn mắt (nếu có hoạt chất điều trị)...
-     - Đặc điểm: thường có tên thương mại + hàm lượng hoạt chất + dạng bào chế (vd: 'Ofloxacin 0.3% nhỏ mắt 5ml', 'Sanlein 0.3% nhỏ mắt 5ml').
-     - Nếu hợp đồng nói 'không bồi thường thuốc ngoài danh mục' -> kiểm tra thuốc có trong danh mục không.
-     - Nếu hợp đồng nói 'không bồi thường thiết bị y tế' -> THUỐC KHÔNG PHẢI THIẾT BỊ Y TẾ. Không được khấu trừ thuốc theo điều khoản loại trừ thiết bị y tế.
+  Cách xác định đúng:
+  a) Hợp đồng ghi TÊN CỤ THỂ bị loại trừ (vd: 'Sanlein'):
+     → Khấu trừ đúng tên đó. Lí do = 'Hợp đồng ghi rõ loại trừ [tên hạng mục] tại [số điều khoản], trang [số]'.
+     → KHÔNG ĐƯỢC bổ sung thêm lý do như 'vì là thực phẩm chức năng' hay 'vì không phải thuốc'.
+     → KHÔNG ĐƯỢC kéo theo hạng mục khác không được nhắc trong hợp đồng.
 
-  b) VẬT TƯ Y TẾ (medical device/supplies):
-     - Là dụng cụ/hàng lo dùng trong y tế KHÔNG có hoạt chất điều trị: băng gạc, ống tiêm, kim tiêm, catheter, găng tay y tế, máy đo huyết áp, nhiệt kế...
-     - Đặc điểm: là vật lý, không phải chế phẩm dược phẩm.
-     - Nếu hợp đồng nói 'không bồi thường thiết bị y tế' -> vật tư y tế MỚI bị khấu trừ.
+  b) Hợp đồng ghi NHÓM/LOẠI bị loại trừ (vd: 'thuốc nhỏ mắt', 'vật tư y tế tiêu hao'):
+     → Khấu trừ mọi hạng mục trong hóa đơn THỰC SỰ thuộc nhóm/loại đó.
+     → Việc xác định thuộc nhóm hay không PHẢI dựa vào định nghĩa trong hợp đồng (DANH SÁCH B), KHÔNG dựa vào kiến thức bên ngoài.
+     → Nếu hợp đồng định nghĩa nhóm đó + liệt kê các hạng mục con → chỉ khấu trừ hạng mục con được liệt kê.
+     → Nếu hợp đồng định nghĩa nhóm đó mà KHÔNG liệt kê hạng mục con → chỉ khấu trừ khi tên hạng mục trong hóa đơn trùng khớp với tên nhóm.
 
-  c) DỊCH VỤ Y TẾ (medical service):
-     - Khám bệnh, xét nghiệm, phẫu thuật, vật lý trị liệu, chụp X-quang, siêu âm...
-     - Là quy trình/dịch vụ do nhân viên y tế thực hiện.
+  c) Hợp đồng KHÔNG nhắc đến hạng mục (không tên cụ thể, không nhóm chứa nó):
+     → KHÔNG KHẤU TRỪ. Không được tự phân loại để tìm lý do khấu trừ.
 
-  d) CÁC LOẠI KHÁC: thực phẩm chức năng, mỹ phẩm, hàng hóa...
-
-NGUYÊN TẮC XÁC ĐỊNH:
-- XÉT THEO BẢN CHẤT CỦA ĐỐI TƯỢNG, KHÔNG XÉT THEO ĐƯỜNG DÙNG.
-  VD: Thuốc nhỏ mắt là THUỐC (có hoạt chất điều trị), KHÔNG PHẢI vật tư y tế, KHÔNG PHẢI thiết bị y tế.
-  VD: Gel bôi trơn mắt (nếu có hoạt chất điều trị) là THUỐC. Nếu KHÔNG có hoạt chất điều trị (chỉ là gel bôi trơn) thì là vật tư y tế.
-- KHI HỢP ĐỒNG LIỆT KÊ 'thiết bị y tế hỗ trợ điều trị', bạn PHẢI tra trong DANH SÁCH B để xem định nghĩa cụ thể: hợp đồng ghi rõ 'thiết bị y tế' gồm những gì. Nếu định nghĩa không nhắc đến thuốc -> thuốc KHÔNG bị khấu trừ theo điều khoản đó.
-- KHÔNG ĐƯỢC TỰ Ý MỞ RỘNG khái niệm: nếu hợp đồng nói 'thiết bị y tế' mà hóa đơn là 'thuốc' -> KHÔNG KHẤU TRỪ theo điều khoản thiết bị y tế. Phải tìm điều khoản khác áp dụng trực tiếp cho thuốc.
-- ĐƯỜNG DÙNG KHÔNG XÁC ĐỊNH LOẠI: thuốc nhỏ mắt vẫn là thuốc, thuốc mỡ bôi da vẫn là thuốc. Không được gọi thuốc là 'thiết bị y tế' chỉ vì cùng đường dùng với vật tư.
+  [!] TUYỆT ĐỐI KHÔNG:
+  - Tự suy 'A là thực phẩm chức năng → không phải thuốc → không chi trả' → HỎI HỢP ĐỒNG có ghi vậy không? Nếu không → KHÔNG KHẤU TRỪ.
+  - Tự suy 'A tương tự B nên cũng bị loại trừ' → HỎI HỢP ĐỒNG có ghi A không? Nếu không → KHÔNG KHẤU TRỪ.
+  - Bổ sung lí do ngoài điều khoản hợp đồng (vd: 'vì không có hoạt chất điều trị', 'vì là thực phẩm chức năng') → CHỈ dùng lí do từ hợp đồng.
 
 2.4. VÍ DỤ MINH HỌA (để hiểu cách suy luận, KHÔNG được dùng ví dụ này làm khuôn cố định):
 
-  Tình huống 1 — Khấu trừ gián tiếp HỢP LỆ:
-  - Hóa đơn có: 'Băng gạc y tế - 50.000 VNĐ' (vật tư y tế)
-  - DANH SÁCH A: 'Không bồi thường vật tư y tế tiêu hao' (trang 4)
-  - DANH SÁCH B: 'Vật tư y tế tiêu hao bao gồm: băng gạc, bông y tế, ống tiêm...' (trang 7)
-  -> Bước 2(A): 'Băng gạc' không trùng trực tiếp với 'vật tư y tế tiêu hao' -> Không trùng trực tiếp.
-  -> Bước 2(B): Duyệt DANH SÁCH B -> khái niệm 'vật tư y tế tiêu hao' có chứa 'băng gạc'? CÓ. Khái niệm này có bị loại trừ trong DANH SÁCH A? CÓ.
-  -> KẾT LUẬN: Băng gạc bị KHẤU TRỪ gián tiếp. Đúng loại đối tượng.
+  Tình huống 1 — Khấu trừ khi hợp đồng ghi TÊN CỤ THỂ:
+  - Hóa đơn có: 'Sanlein 0.3% 5ml (SL: 2) - 264.600 VNĐ'
+  - Hợp đồng ghi: 'Và loại trừ thêm mục 10' (Trang 4), Mục 10 = 'Sanlein' (Trang 7/8)
+  → KHẤU TRỪ Sanlein. Lí do = 'Hợp đồng ghi rõ loại trừ Sanlein tại Mục 10 (Trang 4/7/8)'.
+  → KHÔNG BỔ SUNG lí do 'vì Sanlein là thực phẩm chức năng' hay bất kỳ lí do nào khác.
+  → KHÔNG KÉO THEO Liposic hay bất kỳ thuốc nào khác không được nhắc trong hợp đồng.
 
-  Tình huống 2 — KHÔNG khấu trừ vì sai loại đối tượng:
-  - Hóa đơn có: 'Thuốc Ofloxacin 0.3% nhỏ mắt 5ml - 60.000 VNĐ' (THUỐC)
-  - DANH SÁCH A: 'Không bồi thường thiết bị y tế hỗ trợ điều trị' (trang 4)
-  - DANH SÁCH B: 'Thiết bị y tế hỗ trợ điều trị bao gồm: băng gạc, ống tiêm, catheter...' (trang 7) — KHÔNG nhắc đến thuốc
-  -> Bước 2(A): 'Ofloxacin' không trùng trực tiếp với 'thiết bị y tế' -> Không trùng trực tiếp.
-  -> Bước 2(B): Duyệt DANH SÁCH B -> 'thiết bị y tế' có chứa 'Ofloxacin'? KHÔNG. Định nghĩa không nhắc đến thuốc.
-  -> Ofloxacin là THUỐC, không phải thiết bị y tế -> KHÔNG KHẤU TRỪ theo điều khoản thiết bị y tế.
-  -> Tiếp tục tra các điều khoản khác (có điều khoản nào nói rõ 'không bồi thường thuốc ngoài danh mục' không?).
+  Tình huống 2 — Khấu trừ khi hợp đồng ghi NHÓM:
+  - Hợp đồng ghi: 'Không bồi thường thuốc nhỏ mắt' (điều khoản X, trang Y)
+  - Hóa đơn có: 'Sanlein 0.3% 5ml' và 'Liposic Eye gel 2% 10g'
+  → Cả hai đều là thuốc nhỏ mắt → KHẤU TRỪ cả hai. Lí do = 'Hợp đồng loại trừ thuốc nhỏ mắt (điều khoản X, trang Y)'.
+
+  Tình huống 3 — KHÔNG khấu trừ khi hợp đồng KHÔNG nhắc:
+  - Hóa đơn có: 'Liposic Eye gel 2% 10g - 69.550 VNĐ'
+  - Hợp đồng chỉ ghi loại trừ 'Sanlein' (Mục 10), KHÔNG nhắc 'Liposic', không nhắc 'thuốc nhỏ mắt'
+  → KHÔNG KHẤU TRỪ Liposic. Lí do = 'Hợp đồng không ghi loại trừ Liposic'.
+  → KHÔNG ĐƯỢC tự suy 'Liposic tương tự Sanlein nên cũng bị loại trừ'.
+  → KHÔNG ĐƯỢC tự suy 'Liposic là thực phẩm chức năng nên không chi trả'.
+
+  Tình huống 4 — Khấu trừ gián tiếp HỢP LỆ (dựa trên định nghĩa trong hợp đồng):
+  - Hóa đơn có: 'Băng gạc y tế - 50.000 VNĐ'
+  - Hợp đồng loại trừ: 'vật tư y tế tiêu hao' (Trang 4)
+  - Hợp đồng định nghĩa: 'vật tư y tế tiêu hao bao gồm: băng gạc, bông y tế, ống tiêm...' (Trang 7)
+  → KHẤU TRỪ băng gạc. Lí do = 'Hợp đồng loại trừ vật tư y tế tiêu hao (Trang 4), định nghĩa bao gồm băng gạc (Trang 7)'.
 
   [!] Đây chỉ là ví dụ về cách suy luận. Bạn PHẢI áp dụng cho TỪNG MỤC trong hóa đơn, với TỪNG KHÁI NIỆM trong hợp đồng — dựa trên NỘI DUNG THỰC TẾ của hợp đồng, không dựa trên ví dụ.
 
@@ -766,12 +772,24 @@ NGUYÊN TẮC XÁC ĐỊNH:
 - KIỂM TRA ĐỊNH DẠNG NGÀY: Hóa đơn Việt Nam dùng định dạng dd/mm/yyyy. Nếu thấy số > 12 ở vị trí đầu → đó là ngày, không phải tháng.
 - KHI SO SÁNH THỜI HẠN: Đọc chính xác ngày bắt đầu hiệu lực bảo hiểm và ngày điều trị. Chỉ khấu trừ khi ngày điều trị THỰC SỰ nằm ngoài thời hạn bảo hiểm. Không được đoán hay sửa ngày.
 
-2.7. NGUYÊN TẮC ĐỘC LẬP MỖI MỤC — KHÔNG KÉO THEO
+2.7. NGUYÊN TẮC ĐỘC LẬP MỖI MỤC — KHÔNG KÉO THEO — LUẬT BẮT BUỘC
 
-- MỖI MỤC trong hóa đơn PHẢI được đánh giá ĐỘC LẬP. Không được kéo theo một mục khác vào khấu trừ chỉ vì chúng cùng xuất hiện trong hóa đơn hoặc cùng trang hợp đồng.
-- VD: Nếu 'Sanlein' xuất hiện trong định nghĩa 'thiết bị y tế' ở hợp đồng → chỉ đánh giá Sanlein theo định nghĩa đó. KHÔNG được kéo thêm Oflevid, Sancoba, Liposic vào khấu trừ cùng Sanlein nếu chúng KHÔNG được nhắc đến trong cùng định nghĩa.
-- MỖI MỤC PHẢI qua đủ 3 bước 2(A) → 2(B) → 2(C) độc lập. Kết quả khấu trừ/không khấu trừ của mục này KHÔNG ảnh hưởng đến mục khác.
-- CHỈ KHẤU TRỪ khi tìm thấy cơ sở rõ ràng cho MỤC ĐÓ. Không khấu trừ theo nhóm nếu hợp đồng không nói rõ cả nhóm bị loại trừ.
+[!] ĐÂY LÀ LUẬT CỨNG — KHÔNG CÓ NGOẠI LỆ:
+
+- MỖI MỤC trong hóa đơn PHẢI được đánh giá ĐỘC LẬP 100%. Kết quả của mục này KHÔNG ẢNH HƯỞNG đến mục khác.
+- KHÔNG ĐƯỢC kéo theo: nếu hợp đồng chỉ ghi loại trừ 'Sanlein' → CHỈ khấu trừ Sanlein. KHÔNG ĐƯỢC khấu trừ 'Liposic' hay bất kỳ mục nào khác với lí do 'tương tự Sanlein', 'cùng loại với Sanlein', 'cùng là thực phẩm chức năng như Sanlein'.
+- KHÔNG ĐƯỢC dùng kết quả của mục này làm tiền đề cho mục khác: 'A bị khấu trừ → B cũng bị khấu trừ vì giống A' → NGHIÊM CẤM.
+- MỖI MỤC PHẢI TỰ CÓ cơ sở riêng từ hợp đồng: nếu hợp đồng KHÔNG nhắc đến mục đó (không tên cụ thể, không nhóm chứa nó) → KHÔNG KHẤU TRỪ, dù mọi mục khác trong hóa đơn có bị khấu trừ.
+- Để khấu trừ một mục, bạn PHẢI tìm được ĐIỀU KHOẢN CỤ THỂ trong hợp đồng áp dụng cho CHÍNH MỤC ĐÓ (trùng tên trực tiếp hoặc thuộc nhóm được định nghĩa trong hợp đồng).
+
+VÍ DỤ SAI (TUYỆT ĐỐI KHÔNG LÀM):
+- Hợp đồng ghi loại trừ 'Sanlein' → khấu trừ Sanlein → kéo thêm Liposic vì 'cùng loại' → SAI. Liposic chỉ bị khấu trừ nếu hợp đồng CŨNG ghi Liposic hoặc ghi nhóm chứa Liposic.
+- Hợp đồng ghi loại trừ 'Sanlein' với lí do 'Sanlein là thực phẩm chức năng' → khấu trừ Sanlein → kéo thêm Liposic vì 'cũng là thực phẩm chức năng' → SAI. Liposic chỉ bị khấu trừ nếu hợp đồng CŨNG ghi Liposic.
+
+VÍ DỤ ĐÚNG:
+- Hợp đồng ghi loại trừ 'Sanlein' (Mục 10) → KHẤU TRỪ Sanlein. KHÔNG khấu trừ Liposic (hợp đồng không nhắc).
+- Hợp đồng ghi loại trừ 'thuốc nhỏ mắt' (cả nhóm) → KHẤU TRỪ cả Sanlein và Liposic (cùng thuộc nhóm thuốc nhỏ mắt).
+- Hợp đồng không nhắc 'Liposic' → KHÔNG KHẤU TRỪ Liposic, DÙ Sanlein bị khấu trừ.
 
 ===============================================
 BƯỚC 3 - XUẤT BẢNG KẾT QUẢ
@@ -939,11 +957,27 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
         if invoice_result and invoice_result.get("success") and invoice_result.get("text"):
             invoice_text = invoice_result["text"]
         elif invoice_result and not invoice_result.get("success") and photo_paths:
-            return {
-                "success": False,
-                "response": "",
-                "error": f"Tier 1 (đọc hóa đơn) thất bại: {invoice_result.get('error', 'unknown')}"
-            }
+            # ── RETRY 1 LẦN: Tier 1 đọc hóa đơn thất bại (cold start API) ──
+            _log(f"Tier 1 invoice thất bại ({invoice_result.get('error', 'unknown')}) — retry...")
+            any_photo = [p for p in photo_paths if os.path.exists(p)]
+            if any_photo:
+                with _status("Đang retry đọc hóa đơn (Tier 1 - lần 2)..."):
+                    invoice_result = extract_invoice_text(any_photo)
+                if invoice_result and invoice_result.get("success") and invoice_result.get("text"):
+                    invoice_text = invoice_result["text"]
+                    _log("Tier 1 invoice retry thành công")
+                else:
+                    return {
+                        "success": False,
+                        "response": "",
+                        "error": f"Tier 1 (đọc hóa đơn) thất bại sau retry: {invoice_result.get('error', 'unknown')}"
+                    }
+            else:
+                return {
+                    "success": False,
+                    "response": "",
+                    "error": f"Tier 1 (đọc hóa đơn) thất bại: {invoice_result.get('error', 'unknown')}"
+                }
 
         # Xử lý kết quả contract — gộp text pages + image chunks theo đúng thứ tự trang
         contract_chunk_texts = []
@@ -963,9 +997,25 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                 if res and res.get("success") and res.get("text"):
                     chunk_parts.append(res["text"])
                 elif res and not res.get("success"):
-                    chunk_parts.append(f"[Chunk {idx + 1} trích xuất thất bại: {res.get('error', 'unknown')}]")
+                    # ── RETRY 1 LẦN: chunk thất bại (cold start API) ──
+                    _log(f"Tier 1 chunk {idx + 1} thất bại ({res.get('error', 'unknown')}) — retry...")
+                    with _status(f"Đang retry đọc hợp đồng chunk {idx + 1}..."):
+                        retry_res = _read_contract_chunk(imgs, np)
+                    if retry_res and retry_res.get("success") and retry_res.get("text"):
+                        chunk_parts.append(retry_res["text"])
+                        _log(f"Tier 1 chunk {idx + 1} retry thành công")
+                    else:
+                        chunk_parts.append(f"[Chunk {idx + 1} trích xuất thất bại: {res.get('error', 'unknown')}")
                 else:
-                    chunk_parts.append(f"[Chunk {idx + 1} không có kết quả (timeout)]")
+                    # Timeout — retry 1 lần
+                    _log(f"Tier 1 chunk {idx + 1} timeout — retry...")
+                    with _status(f"Đang retry đọc hợp đồng chunk {idx + 1}..."):
+                        retry_res = _read_contract_chunk(imgs, np)
+                    if retry_res and retry_res.get("success") and retry_res.get("text"):
+                        chunk_parts.append(retry_res["text"])
+                        _log(f"Tier 1 chunk {idx + 1} retry thành công")
+                    else:
+                        chunk_parts.append(f"[Chunk {idx + 1} không có kết quả (timeout)]")
                 
                 contract_chunk_texts.append("\n".join(chunk_parts))
         elif not contract_text_pages and contract_path and os.path.exists(contract_path):
@@ -992,7 +1042,7 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
 
         system_msg = {
             "role": "system",
-            "content": "Bạn là chuyên gia kiểm toán hợp đồng bảo hiểm PJICO cao cấp. LUÔN trả lời bằng tiếng Việt. Nhiệm vụ: ĐỌC TOÀN BỘ text hóa đơn (ghi nhớ từng dòng, từng con số) -> ĐỌC TOÀN BỘ text hợp đồng (mọi điều khoản, phụ lục, đính chính) -> XÂY DỰNG 3 DANH SÁCH TRONG ĐẦU: (A) Điều khoản loại trừ, (B) Khái niệm/định nghĩa/danh mục, (C) Hạn mức chi trả -> MAP TỪNG MỤC trong hóa đơn vào 3 danh sách theo quy trình 2(A) -> 2(B) -> 2(C). ĐẶC BIỆT: khoản trong hóa đơn có thể KHÔNG TRÙNG TÊN trực tiếp với điều khoản loại trừ, nhưng có THUỘC một khái niệm/định nghĩa bị loại trừ (khấu trừ gián tiếp). Phải KẾT NỐI thông tin giữa các trang. QUAN TRỌNG: PHẢI PHÂN BIỆT ĐÚNG LOẠI ĐỐI TƯỢNG — thuốc là thuốc (có hoạt chất điều trị), thiết bị y tế là thiết bị (dụng cụ vật lý), vật tư y tế là vật tư (băng gạc, ống tiêm...). KHÔNG ĐƯỢC tự ý mở rộng khái niệm: nếu hợp đồng loại trừ 'thiết bị y tế' thì KHÔNG được khấu trừ THUỐC theo điều khoản đó. Chỉ khấu trừ khi hợp đồng THỰC SỰ áp dụng cho loại đối tượng đó. Mọi kết luận phải có điều khoản hợp đồng làm căn cứ. CHÍNH XÁC TUYỆT ĐỐI về con số - không làm tròn, không ước lượng. ĐỌC NGÀY CHÍNH XÁC: hóa đơn Việt Nam dùng định dạng dd/mm/yyyy, không được hoán đổi ngày/tháng hay sửa năm. MỖI MỤC trong hóa đơn PHẢI được đánh giá ĐỘC LẬP - KHÔNG được kéo theo mục khác vào khấu trừ chỉ vì cùng xuất hiện. Output cuối cùng là MỘT BẢNG DUY NHẤT theo mẫu, không kèm lời giải thích bên ngoài. KHÔNG trả lời 'không có khấu trừ' nếu chưa kiểm tra kỹ tất cả điều khoản hợp đồng."
+            "content": "Bạn là chuyên gia kiểm toán hợp đồng bảo hiểm PJICO cao cấp. LUÔN trả lời bằng tiếng Việt. Nhiệm vụ: ĐỌC TOÀN BỘ text hóa đơn (ghi nhớ từng dòng, từng con số) -> ĐỌC TOÀN BỘ text hợp đồng (mọi điều khoản, phụ lục, đính chính) -> XÂY DỰNG 3 DANH SÁCH TRONG ĐẦU: (A) Điều khoản loại trừ, (B) Khái niệm/định nghĩa/danh mục, (C) Hạn mức chi trả -> MAP TỪNG MỤC trong hóa đơn vào 3 danh sách theo quy trình 2(A) -> 2(B) -> 2(C). ĐẶC BIỆT: khoản trong hóa đơn có thể KHÔNG TRÙNG TÊN trực tiếp với điều khoản loại trừ, nhưng có THUỘC một khái niệm/định nghĩa bị loại trừ (khấu trừ gián tiếp). Phải KẾT NỐI thông tin giữa các trang. QUAN TRỌNG NHẤT - LUẬT CỨNG: (1) KHÔNG ĐƯỢC TỰ PHÂN LOẠI đối tượng (thuốc/thực phẩm chức năng/thiết bị y tế...) từ kiến thức ngoài hợp đồng. Chỉ được khấu trừ khi hợp đồng THỰC SỰ ghi rõ hạng mục đó bị loại trừ (trùng tên trực tiếp hoặc thuộc nhóm được định nghĩa trong hợp đồng). (2) KHÔNG ĐƯỢC BỔ SUNG lí do ngoài điều khoản hợp đồng — nếu hợp đồng ghi loại trừ 'Sanlein' thì lí do là 'hợp đồng ghi rõ loại trừ Sanlein', KHÔNG ĐƯỢC thêm 'vì là thực phẩm chức năng' hay bất kỳ lí do nào khác. (3) MỖI MỤC ĐỘC LẬP 100% — KHÔNG KÉO THEO: nếu hợp đồng chỉ ghi 'Sanlein' thì CHỈ khấu trừ Sanlein, KHÔNG KHẤU TRỪ Liposic hay mục nào khác không được hợp đồng nhắc đến. (4) KHÔNG trả lời 'không có khấu trừ' nếu chưa kiểm tra kỹ tất cả điều khoản hợp đồng. Mọi kết luận phải có điều khoản hợp đồng làm căn cứ. CHÍNH XÁC TUYỆT ĐỐI về con số - không làm tròn, không ước lượng. ĐỌC NGÀY CHÍNH XÁC: hóa đơn Việt Nam dùng định dạng dd/mm/yyyy, không được hoán đổi ngày/tháng hay sửa năm. Output cuối cùng là MỘT BẢNG DUY NHẤT theo mẫu, không kèm lời giải thích bên ngoài."
         }
         user_msg = {"role": "user", "content": prompt}
         messages = [system_msg, user_msg]
@@ -1017,6 +1067,28 @@ def analyze_deduction(claim_data, photo_paths, contract_path):
                     pass
 
         analysis_result = merge_result_box["result"]
+
+        # ── RETRY 1 LẦN nếu Tier 3 trả về rỗng/thất bại (cold start API) ──
+        if not analysis_result or not analysis_result.get("success") or not analysis_result.get("text", "").strip():
+            _log("Tier 3 lần 1 rỗng/thất bại — retry lần 2...")
+            retry_box = {"result": None}
+            def run_merge_retry():
+                retry_box["result"] = call_analysis_model(messages, max_tokens=16000, timeout=600)
+            with _status("Đang retry tổng hợp (Tier 3 - lần 2)...") as status2:
+                t_retry = threading.Thread(target=run_merge_retry)
+                t_retry.start()
+                t_retry.join(timeout=620)
+                if status2 is not None and hasattr(status2, "update"):
+                    try:
+                        status2.update(label=f"Retry Tier 3 xong")
+                    except Exception:
+                        pass
+            analysis_result = retry_box["result"]
+            if analysis_result and analysis_result.get("success") and analysis_result.get("text", "").strip():
+                _log("Tier 3 retry thành công")
+            else:
+                _log("Tier 3 retry vẫn thất bại")
+
         _log(f"Tổng thời gian analyze_deduction: {time.perf_counter() - t_total:.1f}s")
 
         if analysis_result and analysis_result.get("success") and analysis_result.get("text"):
