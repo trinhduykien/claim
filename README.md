@@ -1,6 +1,6 @@
-# PJICO AI Claim Chatbot - Streamlit App
+﻿# AI Claim Chatbot - Streamlit App
 
-## Cài đặt & chạy
+## CÃ i Ä‘áº·t & cháº¡y
 
 ```bash
 cd D:\WORK\idea
@@ -8,19 +8,19 @@ pip install streamlit openai
 python -m streamlit run app.py
 ```
 
-## Yêu cầu
+## YÃªu cáº§u
 
-### Cách 1: Dùng Ollama local (miễn phí)
+### CÃ¡ch 1: DÃ¹ng Ollama local (miá»…n phÃ­)
 
 ```bash
-# Cài Ollama: https://ollama.com
+# CÃ i Ollama: https://ollama.com
 ollama serve
-ollama pull qwen2.5:7b   # hoặc llama3.1:8b, glm4:9b...
+ollama pull qwen2.5:7b   # hoáº·c llama3.1:8b, glm4:9b...
 ```
 
-Mặc định app sẽ kết nối `http://localhost:11434/v1`, model `qwen2.5:7b`.
+Máº·c Ä‘á»‹nh app sáº½ káº¿t ná»‘i `http://localhost:11434/v1`, model `qwen2.5:7b`.
 
-### Cách 2: Dùng OpenAI API
+### CÃ¡ch 2: DÃ¹ng OpenAI API
 
 Set environment variable:
 ```bash
@@ -28,52 +28,52 @@ set OPENAI_API_KEY=sk-xxxxx
 set CLAIM_MODEL=gpt-4o-mini
 ```
 
-Hoặc chỉnh trực tiếp trong sidebar của app.
+Hoáº·c chá»‰nh trá»±c tiáº¿p trong sidebar cá»§a app.
 
-## Cách hoạt động
+## CÃ¡ch hoáº¡t Ä‘á»™ng
 
-1. Khách hàng mở web → chatbot AI chào hỏi
-2. Khách mô tả sự cố (vd: "nhà tôi bị cháy, tôi có mua bảo hiểm nhà ở combo 360")
-3. AI tự nhận diện sản phẩm bảo hiểm phù hợp
-4. AI hỏi linh hoạt như đánh giá viên thật — mỗi lần 1-2 câu, đợi trả lời rồi hỏi tiếp
-5. Khi đủ thông tin → AI đánh giá và kết luận:
-   - ✅ **ĐỦ ĐIỀU KIỆN TIẾP NHẬN BỒI THƯỜNG**
-   - ❌ **KHÔNG ĐỦ ĐIỀU KIỆN TIẾP NHẬN BỒI THƯỜNG** + lý do
-6. Hồ sơ tự động lưu vào `claim_logs/` dạng JSON
+1. KhÃ¡ch hÃ ng má»Ÿ web â†’ chatbot AI chÃ o há»i
+2. KhÃ¡ch mÃ´ táº£ sá»± cá»‘ (vd: "nhÃ  tÃ´i bá»‹ chÃ¡y, tÃ´i cÃ³ mua báº£o hiá»ƒm nhÃ  á»Ÿ combo 360")
+3. AI tá»± nháº­n diá»‡n sáº£n pháº©m báº£o hiá»ƒm phÃ¹ há»£p
+4. AI há»i linh hoáº¡t nhÆ° Ä‘Ã¡nh giÃ¡ viÃªn tháº­t â€” má»—i láº§n 1-2 cÃ¢u, Ä‘á»£i tráº£ lá»i rá»“i há»i tiáº¿p
+5. Khi Ä‘á»§ thÃ´ng tin â†’ AI Ä‘Ã¡nh giÃ¡ vÃ  káº¿t luáº­n:
+   - âœ… **Äá»¦ ÄIá»€U KIá»†N TIáº¾P NHáº¬N Bá»’I THÆ¯á»œNG**
+   - âŒ **KHÃ”NG Äá»¦ ÄIá»€U KIá»†N TIáº¾P NHáº¬N Bá»’I THÆ¯á»œNG** + lÃ½ do
+6. Há»“ sÆ¡ tá»± Ä‘á»™ng lÆ°u vÃ o `claim_logs/` dáº¡ng JSON
 
-## Sản phẩm bảo hiểm đã nhập liệu
+## Sáº£n pháº©m báº£o hiá»ƒm Ä‘Ã£ nháº­p liá»‡u
 
-11 sản phẩm từ https://www.pjico.com.vn/san-pham:
+11 sáº£n pháº©m tá»« https://www..com.vn/san-pham:
 
-1. Combo 360° Nhà – Gia đình – Ô tô (599k/năm)
-2. Combo 360° Nhà – Gia đình – Xe máy (199k/năm)
-3. Cháy nổ toàn diện nhà ở PJICO Phú Gia
-4. Sức khỏe gia đình Family Care (2-11.2 triệu/năm)
-5. TNDS chủ xe mô tô/xe gắn máy
-6. Gián đoạn kinh doanh
-7. Kết hợp con người (Bảo hiểm thân thể)
-8. Bệnh ung thư
-9. Bệnh hiểm nghèo
-10. Tai nạn con người 24/24
-11. Tai nạn con người mức trách nhiệm cao
+1. Combo 360Â° NhÃ  â€“ Gia Ä‘Ã¬nh â€“ Ã” tÃ´ (599k/nÄƒm)
+2. Combo 360Â° NhÃ  â€“ Gia Ä‘Ã¬nh â€“ Xe mÃ¡y (199k/nÄƒm)
+3. ChÃ¡y ná»• toÃ n diá»‡n nhÃ  á»Ÿ PhÃº Gia
+4. Sá»©c khá»e gia Ä‘Ã¬nh Family Care (2-11.2 triá»‡u/nÄƒm)
+5. TNDS chá»§ xe mÃ´ tÃ´/xe gáº¯n mÃ¡y
+6. GiÃ¡n Ä‘oáº¡n kinh doanh
+7. Káº¿t há»£p con ngÆ°á»i (Báº£o hiá»ƒm thÃ¢n thá»ƒ)
+8. Bá»‡nh ung thÆ°
+9. Bá»‡nh hiá»ƒm nghÃ¨o
+10. Tai náº¡n con ngÆ°á»i 24/24
+11. Tai náº¡n con ngÆ°á»i má»©c trÃ¡ch nhiá»‡m cao
 
-## Cấu trúc file
+## Cáº¥u trÃºc file
 
 ```
 D:\WORK\idea\
-├── app.py                  # App Streamlit AI chatbot
-├── insurance_products.py   # Dữ liệu sản phẩm + điều kiện tiếp nhận bồi thường
-├── requirements.txt
-├── README.md
-└── claim_logs/             # Thư mục lưu hồ sơ (tự tạo)
-    └── claim_*.json
+â”œâ”€â”€ app.py                  # App Streamlit AI chatbot
+â”œâ”€â”€ insurance_products.py   # Dá»¯ liá»‡u sáº£n pháº©m + Ä‘iá»u kiá»‡n tiáº¿p nháº­n bá»“i thÆ°á»ng
+â”œâ”€â”€ requirements.txt
+â”œâ”€â”€ README.md
+â””â”€â”€ claim_logs/             # ThÆ° má»¥c lÆ°u há»“ sÆ¡ (tá»± táº¡o)
+    â””â”€â”€ claim_*.json
 ```
 
-## Tùy chỉnh
+## TÃ¹y chá»‰nh
 
-- Đổi model: chỉnh trong sidebar hoặc set env `CLAIM_MODEL`
-- Đổi API endpoint: chỉnh trong sidebar hoặc set env `OLLAMA_BASE_URL`
-- Thêm sản phẩm: thêm vào `PRODUCTS` trong `insurance_products.py`
+- Äá»•i model: chá»‰nh trong sidebar hoáº·c set env `CLAIM_MODEL`
+- Äá»•i API endpoint: chá»‰nh trong sidebar hoáº·c set env `OLLAMA_BASE_URL`
+- ThÃªm sáº£n pháº©m: thÃªm vÃ o `PRODUCTS` trong `insurance_products.py`
 
 python -m streamlit run D:\WORK\idea\app.py
 
